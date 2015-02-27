@@ -1,0 +1,244 @@
+/** -*- mode: c++ -*-
+ *
+ * unitsafe.h 
+ *
+ * Safe conversion between physical units that is easier to use than
+ * boost::units.
+ *
+ * Copyright (C) 2015 Brian Davis
+ * All Rights Reserved
+ * 
+ * Limited copying permission is given solely
+ * for self-educational purpose.
+ * 
+ * Author: Brian Davis <bd@jollyrogerlabs.com>
+ * 
+ */
+
+#ifndef UNITSAFE_H
+#define UNITSAFE_H 1
+
+namespace jrl
+{
+
+// using std::assert;
+
+/**
+ * Base type for a unit-safe distance.
+ *
+ * TODO: need some way to specify a base unit (e.g. meters) similar to
+ * the way that systems are specified in boost::units.
+ */
+template<typename DistanceUnit>
+class Distance
+{
+private:
+  static constexpr const char * NAME = DistanceUnit::NAME;
+  static constexpr const char * SYMBOL = DistanceUnit::SYMBOL;
+
+public:
+  typedef Distance<DistanceUnit> BaseType;
+
+  // This conversion factor is the value that must be multiplied by
+  // units of a given type to produce units in the base type (i.e. how
+  // many units of this type are in one unit of the base type).
+  static constexpr double CONVERSION_FACTOR = DistanceUnit::CONVERSION_FACTOR;
+
+  Distance()
+    : value_(0.0)
+  {
+  }
+
+  Distance(const double value)
+    : value_(value)
+  {
+  }
+
+  /**
+   * Long name of the unit (e.g. "meters")
+   */
+  static const char *
+  getName()
+  {
+    return NAME;
+  }
+
+  /**
+   * Short symbol of the unit (e.g. "m")
+   */
+  static const char *
+  getSymbol()
+  {
+    return SYMBOL;
+  }
+
+  // NOTE: "operator double" should be used very sparingly!
+  explicit operator double() const
+  {
+    return value_;
+  }
+
+  // TODO: can there be a copy constructor?
+
+  /**
+   * Convert the value specified in units of this type to a value in a
+   * target type.
+   */
+  template<typename TargetDistanceType>
+  TargetDistanceType
+  get() const
+  {
+    return TargetDistanceType(TargetDistanceType::CONVERSION_FACTOR *
+			      (value_ / CONVERSION_FACTOR));
+  }
+
+  /**
+   * Short-circuited assignment operator for the same type.
+   */
+  BaseType &
+  operator=(const BaseType &rhs)
+  {
+    if (reinterpret_cast<uintptr_t>(&rhs) ==
+	reinterpret_cast<uintptr_t>(this)) {
+      return *this;
+    }
+    value_ = rhs.value_;
+    return *this;
+  }
+
+  /**
+   * assignment operator for a different distance type
+   *
+   * TODO: be more specific?
+   */
+  template<typename SourceDistanceType>
+  BaseType &
+  operator=(const SourceDistanceType &rhs)
+  {
+    // NOTE: self-assignment should automatically trigger the other
+    // version of operator=.
+    assert(!((sizeof(BaseType) == sizeof(SourceDistanceType)) &&
+	     (reinterpret_cast<uintptr_t>(&rhs) ==
+	      reinterpret_cast<uintptr_t>(this))));
+    value_ = double(rhs.get<BaseType>());
+    return *this;
+  }
+
+  /**
+   * Add any two distance types.
+   *
+   * TODO: be more specific?
+   */
+  template<typename RhsDistanceType>
+  BaseType &
+  operator+=(const RhsDistanceType &rhs)
+  {
+    value_ += double(rhs.get<BaseType>());
+    return *this;
+  }
+
+  /**
+   * Subtract any two distance types.
+   *
+   * TODO: be more specific?
+   */
+  template<typename RhsDistanceType>
+  BaseType &
+  operator-=(const RhsDistanceType &rhs)
+  {
+    value_ -= double(rhs.get<BaseType>());
+    return *this;
+  }
+
+  /**
+   * Multiply a distance by a unit-less quantity.
+   */
+  BaseType &
+  operator*=(const double rhs)
+  {
+    value_ *= rhs;
+    return *this;
+  }
+
+  /**
+   * Divide a distance by a unit-less quantity.
+   */
+  template<typename RhsDistanceType>
+  BaseType &
+  operator/=(const RhsDistanceType &rhs)
+  {
+    value_ /= double(rhs.get<BaseType>());
+    return *this;
+  }
+  
+private:
+  double value_;
+};
+
+/**
+ * Output the distance value.
+ *
+ * NOTE: may need to set the precision of the stream before calling
+ * this.
+ */
+template<typename DistanceType>
+std::ostream&
+operator<<(std::ostream &strm,
+	   const Distance<DistanceType> &distance)
+{
+  strm << double(distance) << distance.getSymbol();
+  return strm;
+}
+
+#define DEFINE_DISTANCE_UNIT(tname, name, symbol, factor)	\
+  class tname : public Distance<tname> {			\
+  public:							\
+  static constexpr const char * NAME = name;			\
+  static constexpr const char * SYMBOL = symbol;		\
+  static constexpr double CONVERSION_FACTOR = factor;		\
+  private:							\
+  typedef Distance<tname> Base;					\
+  public:							\
+  tname() : Base() {}						\
+  tname(const double value) : Base(value) {}			\
+  }
+
+/**
+ * A distance measured in meters (currently the base unit for all
+ * distances).
+ */
+DEFINE_DISTANCE_UNIT(Meters, "meters", "m", 1.0);
+
+/**
+ * A distance measured in centimeters.
+ */
+DEFINE_DISTANCE_UNIT(Centimeters, "centimeters", "cm", 100.0);
+
+/**
+ * A distance measured in millimeters.
+ */
+DEFINE_DISTANCE_UNIT(Millimeters, "millimeters", "mm", 1000.0);
+
+/**
+ * A distance measured in kilometers.
+ */
+DEFINE_DISTANCE_UNIT(Kilometers, "kilometers", "km", 0.001);
+
+/**
+ * A distance measured in inches.
+ */
+DEFINE_DISTANCE_UNIT(Inches, "inches", "\"", 39.3700787402);
+
+/**
+ * A distance measured in feet.
+ */
+DEFINE_DISTANCE_UNIT(Feet, "feet", "'", 3.28084);
+
+/**
+ * A distance measured in miles.
+ */
+DEFINE_DISTANCE_UNIT(Miles, "miles", "mi", 0.000621371192237);
+
+} // namespace jrl
+
+#endif // UNITSAFE_H

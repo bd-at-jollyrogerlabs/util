@@ -1,0 +1,277 @@
+/** -*- mode: c++ -*-
+ *
+ * jrl_util 
+ *
+ * Useful utility class and functions that don't seem to belong
+ * anywhere else.
+ *
+ * Copyright (C) 2014 Brian Davis
+ * All Rights Reserved
+ * 
+ * Limited copying permission is given solely
+ * for self-educational purpose.
+ * 
+ * Author: Brian Davis <bd@jollyrogerlabs.com>
+ * 
+ */
+
+#ifndef JRL_UTIL
+#define JRL_UTIL 1
+
+
+/**
+ * Replacement for assert() which will also abort the program during
+ * release builds.
+ *
+ * FIXME: find some tricky way for the NDEBUG version to print more
+ * details (e.g. print the operands when the failed predicate is
+ * operator==).
+ *
+ */
+#ifdef NDEBUG
+#define ASSERT(predicate)			\
+  do {						\
+    if (!(predicate)) {				\
+      abort();					\
+    }						\
+  } while (0)
+#else
+#define ASSERT(predicate)			\
+  do {						\
+    assert(predicate);				\
+  } while(0)
+#endif
+
+namespace jrl
+{
+
+namespace util
+{
+
+/**
+ * Function for converting a value into a bitset, which can be sent
+ * directly to an ostream to display the binary representation of the
+ * value.
+ */
+template<typename ArgType>
+std::bitset<sizeof(ArgType) * 8>
+asBinary(const ArgType arg)
+{
+  return std::bitset<sizeof(ArgType) * 8>(arg);
+}
+
+/**
+ * Template metaprogram that produces a bit mask with a number of bits
+ * set and then shifted to the left by a specified number of
+ * positions at static time.
+ *
+ * TODO: allow template argument for types other than unsigned
+ */
+template <unsigned SetBitCount, unsigned LeftShiftCount = 0>
+class BitMaskStatic
+{
+  template<unsigned Mask, unsigned Argument, unsigned Counter>
+  class Compute
+  {
+  public:
+    enum { result = Mask | Compute<(Mask << 1), Argument, Counter + 1>::result };
+  };
+
+  // Base case: (Argument == Counter) --> done counting
+  template<unsigned Mask, unsigned Argument>
+  class Compute<Mask, Argument, Argument>
+  {
+  public:
+    enum { result = 0 };
+  };
+
+  typedef std::bitset<sizeof(unsigned) * 8> BitSetType;
+
+public:
+  enum {
+    value = (Compute<1, SetBitCount, 0>::result << LeftShiftCount)
+  };
+
+  /**
+   * Useful for displaying the value as binary via ostream.
+   */
+  static BitSetType
+  displayAsBinary() {
+    return BitSetType(value);
+  }
+};
+
+/**
+ * Function that produces a bit mask with a number of bits set and
+ * then shifted to the left by a specified number of positions.
+ *
+ * Non-static equivalent to BitMaskStatic
+ */
+unsigned
+makeBitMask(const unsigned bitCount,
+	    const unsigned leftShiftCount = 0)
+{
+  unsigned result = 0;
+  unsigned mask = 1;
+  for (unsigned counter = 0; counter < bitCount; ++counter) {
+    result |= mask;
+    mask <<= 1;
+  }
+  result <<= leftShiftCount;
+  return result;
+}
+
+/**
+ * Object wrapped around timespec.
+ *
+ * Maybe use boost?
+ */
+class TimeSpecWrap
+{
+public:
+  TimeSpecWrap()
+    : clockId_(CLOCK_MONOTONIC)
+  {
+    memset(&time_, 0, sizeof(time_));
+  }
+
+  TimeSpecWrap(const clockid_t clockId)
+    : clockId_(clockId)
+  {
+    memset(&time_, 0, sizeof(time_));
+  }
+
+  TimeSpecWrap(const TimeSpecWrap &src)
+    : time_(src.time_), clockId_(src.clockId_)
+  {
+  }
+
+  virtual ~TimeSpecWrap()
+  {
+  }
+
+  const TimeSpecWrap &
+  operator=(const TimeSpecWrap &rhs)
+  {
+    clockId_ = rhs.clockId_;
+    time_ = rhs.time_;
+    return *this;
+  }
+
+  int
+  set()
+  {
+    return clock_gettime(clockId_, &time_);
+  }
+
+  struct timespec
+  get() const
+  {
+    return time_;
+  }
+
+  time_t
+  sec() const
+  {
+    return time_.tv_sec;
+  }
+
+  long
+  nsec() const
+  {
+    return time_.tv_nsec;
+  }
+
+  uint64_t
+  totalNsec() const
+  {
+    return (static_cast<uint64_t>(time_.tv_sec) * ONE_SECOND) +
+      static_cast<uint64_t>(time_.tv_nsec);
+  }
+
+  uint64_t
+  totalUsec() const
+  {
+    return ((static_cast<uint64_t>(time_.tv_sec) * ONE_SECOND) +
+	    static_cast<uint64_t>(time_.tv_nsec) / 1000);
+  }
+
+  uint64_t
+  totalMsec() const
+  {
+    return ((static_cast<uint64_t>(time_.tv_sec) * ONE_SECOND) +
+	    static_cast<uint64_t>(time_.tv_nsec) / 1000000);
+  }
+
+  bool
+  operator<(const TimeSpecWrap &rhs) const
+  {
+    if (time_.tv_sec < rhs.time_.tv_sec) {
+      return true;
+    }
+    if (time_.tv_sec > rhs.time_.tv_sec) {
+      return false;
+    }
+    if (time_.tv_nsec < rhs.time_.tv_nsec) {
+      return true;
+    }
+    return false;
+  }
+
+  // NOTE: absolute value diff
+  const TimeSpecWrap
+  operator-(const TimeSpecWrap &rhs) const
+  {
+    TimeSpecWrap result(clockId_);
+    const bool isLhsLess = *this < rhs;
+    const struct timespec *const start = isLhsLess ? &time_ : &(rhs.time_);
+    const struct timespec *const end = isLhsLess ? &(rhs.time_) : &time_;
+    result.time_.tv_sec = end->tv_sec - start->tv_sec;
+    if ((end->tv_nsec - start->tv_nsec) < 0) {
+      result.time_.tv_sec -= 1;
+      result.time_.tv_nsec = ONE_SECOND + (end->tv_nsec - start->tv_nsec);
+    }
+    else {
+      result.time_.tv_nsec = end->tv_nsec - start->tv_nsec;
+    }
+    return result;
+  }
+
+private:
+
+  enum {
+    ONE_SECOND = 1000000000
+  };
+
+  struct timespec time_;
+  clockid_t clockId_;
+};
+
+}
+
+}
+
+/* EXPERIMENTAL, stolen from stackoverflow */
+// namespace fast_random
+// {
+// static uint64_t x=123456789, y=362436069, z=521288629;
+
+// //period 2^96-1
+// uint64_t
+// xorshf96(void)
+// {
+//   uint64_t t;
+//   x ^= x << 16;
+//   x ^= x >> 5;
+//   x ^= x << 1;
+
+//   t = x;
+//   x = y;
+//   y = z;
+//   z = t ^ x ^ y;
+
+//   return z;
+// }
+// }
+
+#endif // JRL_UTIL

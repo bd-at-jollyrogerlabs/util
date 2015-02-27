@@ -1,0 +1,136 @@
+/** -*- mode: c++ -*-
+ *
+ * log2int 
+ *
+ * Integer portion of base 2 logarithm.
+ *
+ * Copyright (C) 2014 Brian Davis
+ * All Rights Reserved
+ * 
+ * Limited copying permission is given solely
+ * for self-educational purpose.
+ * 
+ * Author: Brian Davis <bd@jollyrogerlabs.com>
+ * 
+ */
+
+#ifndef LOG2INT
+#define LOG2INT 1
+
+namespace jrl
+{
+
+namespace util
+{
+
+/**
+ * Integer portion of base 2 logarithm of the argument, calculated
+ * statically; equivalent to static_cast<unsigned>(floor(log2(Argument))).
+ *
+ * FIXME: find a way to allow polymorphism on the argument type to
+ * support arguments other than 'unsigned'.
+ */
+template<unsigned Argument>
+class Log2IntStatic
+{
+  static_assert(Argument > 0, "Logarithm of 0 is undefined");
+  // Successively shift the mask to the right to search downward
+  // through the bits of the argument to find the highest bit which is
+  // set; the position number of the highest set bit is equal to the
+  // integer portion of the base 2 logarithm of the argument.
+  template<unsigned HighestSetBit, unsigned Mask, unsigned Arg>
+  class Compute
+  {
+  public:
+    // Mask matches Arg, HighestSetBit is the result.
+
+    // Reduce the highest set bit number by 1, shift the mask
+    // downward by 1, and try again.
+    enum { result = (Mask & Arg) ?
+	     HighestSetBit :
+	     Compute<(HighestSetBit - 1), (Mask >> 1), Arg>::result };
+  };
+
+  // This specialization is the terminating case: the argument is 0,
+  // indicating that the mask has run out, so the resulting base 2
+  // logarithm value is 0 (note that the case of log(0) is already
+  // handled by a static_assert).
+  template<unsigned Mask, unsigned Arg>
+  class Compute<0, Mask, Arg>
+  {
+  public:
+    enum { result = 0 };
+  };
+
+  // HIGHEST_BIT_POSITION is the highest bit position in the argument.
+  enum { HIGHEST_BIT_POSITION = ((8 * sizeof(Argument)) - 1) };
+
+public:
+  // Start the static computation by composing a mask with the highest
+  // bit position set and all other bit positions cleared.
+  enum { value = Compute<HIGHEST_BIT_POSITION,
+			 (1 << HIGHEST_BIT_POSITION),
+			       Argument>::result };
+};
+
+/**
+ * Integer portion of base 2 logarithm of the argument, equivalent to
+ * static_cast<UnsignedType>(floor(log2(Argument))).
+ *
+ * Non-static equivalent to BitMaskStatic
+ */
+template<typename UnsignedType>
+UnsignedType
+log2int(UnsignedType arg)
+{
+  assert(arg > 0);
+  // Find the highest bit position in the argument type.
+  const UnsignedType highestBitPosition = ((8 * sizeof(arg)) - 1);
+  // Generate a mask by shifting a 1 into the highest bit position
+  // (all other bits are 0).
+  UnsignedType mask = static_cast<UnsignedType>(1) << highestBitPosition;
+  // Successively shift the mask to the right to search downward
+  // through the bits of the argument to find the highest bit which is
+  // set; the position number of the highest set bit is equal to the
+  // integer portion of the base 2 logarithm of the argument.
+  UnsignedType highestSetBit;
+  for (highestSetBit = highestBitPosition;
+       highestSetBit > 0;
+       --highestSetBit, mask >>= 1) {
+    if (mask & arg) {
+      break;
+    }
+  }
+  return highestSetBit;
+}
+
+// /**
+//  * log2int calculated using inner class recursive static member
+//  * function; used to prototype the design of LogBase2IntStatic.
+//  */
+// template<typename UnsignedType>
+// UnsignedType
+// log2intRecursive(UnsignedType arg)
+// {
+//   class Inner
+//   {
+//   public:
+//     static UnsignedType
+//     calc(const UnsignedType count,
+// 	 const UnsignedType mask,
+// 	 const UnsignedType arg)
+//     {
+//       if (mask & arg) {
+// 	return count;
+//       }
+//       return calc(count - 1, mask >> 1, arg);
+//     }
+//   };
+//   const UnsignedType max = ((8 * sizeof(arg)) - 1);
+//   return Inner::calc(max, 1 << max, arg);
+// }
+
+}
+
+}
+#endif // LOG2INT
