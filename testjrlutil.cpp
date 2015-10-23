@@ -18,7 +18,7 @@
 #include "jrl_util"
 
 #define CATCH_CONFIG_MAIN
-#include <Catch/catch.hpp>
+#include <catch.hpp>
 
 using namespace jrl::util;
 

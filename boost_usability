@@ -1,0 +1,194 @@
+/** -*- mode: c++ -*-
+ *
+ * boost_usability
+ *
+ * Copyright (C) 2015 Brian Davis
+ * All Rights Reserved
+ *
+ * \TODO update license
+ *
+ * Limited copying permission is given solely
+ * for self-educational purpose.
+ *
+ * Author: Brian Davis <bd@jollyrogerlabs.com>
+ *
+ * Header-only definitions to simplify use of various Boost
+ * constructs.
+ */
+
+#ifndef BOOST_USABILITY_GUARD
+#define BOOST_USABILITY_GUARD
+
+#include <boost/iterator/zip_iterator.hpp>
+#include <boost/range.hpp>
+
+namespace jrl
+{
+
+/**
+ * Variadic version of make_zip_iterator
+ */
+template<typename... T>
+auto make_zip_iterator(const T &... containers) ->
+  boost::iterator_range<boost::zip_iterator<decltype(boost::make_tuple(std::begin(containers)...))>>
+{
+  auto zip_begin = boost::make_zip_iterator(boost::make_tuple(std::begin(containers)...));
+  auto zip_end = boost::make_zip_iterator(boost::make_tuple(std::end(containers)...));
+  return boost::make_iterator_range(zip_begin, zip_end);
+}
+
+// \TODO create a separate test case to document this
+// partial example of use
+//  vector<int> a;
+//  double b[];
+//  list<string> c;
+//  for (auto tup : jrl::make_zip_iterator(a, b, c)) {
+//    // ...
+//  }
+
+/**
+ * Lockstep iterate over two containers, applying a binary operator
+ * pairwise.  Any return value of the operator is ignored.
+ */
+template<typename _Container1,
+	 typename _Container2,
+	 typename _BinaryOperation>
+void
+for_each_streams(_Container1 &__c1,
+		 _Container2 &__c2,
+		 _BinaryOperation __op)
+{
+  for (auto elem : jrl::make_zip_iterator(__c1, __c2)) {
+    __op(boost::get<0>(elem), boost::get<1>(elem));
+  }
+}
+
+/**
+ * Lockstep iterate over three containers, applying a ternary operator
+ * triple-wise.  Any return value of the operator is ignored.
+ */
+template<typename _Container1,
+	 typename _Container2,
+	 typename _Container3,
+	 typename _TernaryOperation>
+void
+for_each_streams(_Container1 &__c1,
+		 _Container2 &__c2,
+		 _Container3 &__c3,
+		 _TernaryOperation __op)
+{
+  for (auto elem : jrl::make_zip_iterator(__c1, __c2, __c3)) {
+    __op(boost::get<0>(elem), boost::get<1>(elem), boost::get<2>(elem));
+  }
+}
+
+/**
+ * Lockstep iterate over four containers, applying an operator
+ * quad-wise.  Any return value of the operator is ignored.
+ */
+template<typename _Container1,
+	 typename _Container2,
+	 typename _Container3,
+	 typename _Container4,
+	 typename _QuadOperation>
+void
+for_each_streams(_Container1 &__c1,
+		 _Container2 &__c2,
+		 _Container3 &__c3,
+		 _Container4 &__c4,
+		 _QuadOperation __op)
+{
+  for (auto elem : jrl::make_zip_iterator(__c1, __c2, __c3, __c4)) {
+    __op(boost::get<0>(elem), boost::get<1>(elem),
+	 boost::get<2>(elem), boost::get<3>(elem));
+  }
+}
+
+/**
+ * Lockstep iterate over five containers, applying an operator.  Any
+ * return value of the operator is ignored.
+ */
+template<typename _Container1,
+	 typename _Container2,
+	 typename _Container3,
+	 typename _Container4,
+	 typename _Container5,
+	 typename _Operator>
+void
+for_each_streams(_Container1 &__c1,
+		 _Container2 &__c2,
+		 _Container3 &__c3,
+		 _Container4 &__c4,
+		 _Container5 &__c5,
+		 _Operator __op)
+{
+  for (auto elem : jrl::make_zip_iterator(__c1, __c2, __c3, __c4, __c5)) {
+    __op(boost::get<0>(elem), boost::get<1>(elem),
+	 boost::get<2>(elem), boost::get<3>(elem),
+	 boost::get<4>(elem));
+  }
+}
+
+// /**
+//  * Lockstep iterate over two containers applying the supplied binary
+//  * operator pairwise and returning an iterator to the first element of
+//  * the first container such that the operator returns true.
+//  */
+// template<typename _Container1,
+// 	 typename _Container2,
+// 	 typename _BinaryOperation>
+// typename _Container1::const_iterator
+// find_first_match(const _Container1 &__c1,
+// 		 const _Container2 &__c2,
+// 		 _BinaryOperation __op)
+// {
+// \TODO probably remove this or move to another library
+// }
+
+/**
+ * Lockstep iterate over two containers, applying a binary operator
+ * pairwise and storing the result in the output.
+ */
+template<typename _Container1,
+	 typename _Container2,
+	 typename _OutputIterator,
+	 typename _BinaryOperation>
+_OutputIterator
+transform_streams(const _Container1 &__c1,
+		  const _Container2 &__c2,
+		  _OutputIterator __res,
+		  _BinaryOperation __op)
+{
+  for (auto elem : jrl::make_zip_iterator(__c1, __c2)) {
+    __res = __op(boost::get<0>(elem), boost::get<1>(elem));
+    ++__res;
+  }
+  return __res;
+}
+
+/**
+ * Lockstep iterate over three containers, applying a ternary operator
+ * pairwise and storing the result in the output.
+ */
+template<typename _Container1,
+	 typename _Container2,
+	 typename _Container3,
+	 typename _OutputIterator,
+	 typename _TernaryOperation>
+_OutputIterator
+transform_streams(const _Container1 &__c1,
+		  const _Container2 &__c2,
+		  const _Container3 &__c3,
+		  _OutputIterator __res,
+		  _TernaryOperation __op)
+{
+  for (auto elem : jrl::make_zip_iterator(__c1, __c2, __c3)) {
+    __res = __op(boost::get<0>(elem), boost::get<1>(elem), boost::get<2>(elem));
+    ++__res;
+  }
+  return __res;
+}
+
+} // namespace jrl
+
+#endif // BOOST_USABILITY_GUARD

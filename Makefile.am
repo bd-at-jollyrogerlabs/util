@@ -32,7 +32,7 @@ WARNING_FLAGS=\
 # warnings (which appear after -Wall in the WARNING_FLAGS variable)
 # -Wextra
 
-AM_CXXFLAGS = $(WARNING_FLAGS) -std=c++0x $(BOOST_CPPFLAGS)
+AM_CXXFLAGS = $(WARNING_FLAGS) -std=c++14 $(BOOST_CPPFLAGS)
 ACLOCAL_AMFLAGS = -I m4
 
 # lib_LTLIBRARIES = \
@@ -40,19 +40,29 @@ ACLOCAL_AMFLAGS = -I m4
 
 include_HEADERS = \
 	unitsafe \
+	units_usability \
 	log2int \
 	jrl_util
 
 bin_PROGRAMS = \
 	testlog2int \
+	testboostusability \
 	testunitsafe \
 	testjrlutil
 
-testunitsafe_SOURCES = \
-	testunitsafe.cpp
+#	testunitsusability
 
 testlog2int_SOURCES = \
 	testlog2int.cpp
+
+# testunitsusability_SOURCES =
+# 	testunitsusability.cpp
+
+testboostusability_SOURCES = \
+	testboostusability.cpp
+
+testunitsafe_SOURCES = \
+	testunitsafe.cpp
 
 testjrlutil_SOURCES = \
 	testjrlutil.cpp

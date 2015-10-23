@@ -14,11 +14,12 @@
 
 #include <cassert>
 #include <cmath>
+#include <cstring>
 #include <ostream>
 #include "unitsafe"
 
 #define CATCH_CONFIG_MAIN
-#include <Catch/catch.hpp>
+#include <catch.hpp>
 
 using namespace std;
 using namespace jrl;

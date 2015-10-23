@@ -17,7 +17,7 @@
 #include "log2int"
 
 #define CATCH_CONFIG_MAIN
-#include <Catch/catch.hpp>
+#include <catch.hpp>
 
 using namespace jrl::util;
 
@@ -26,7 +26,9 @@ TEST_CASE("results of log2int", "[log2int]")
   SECTION("a few easy cases") {
     for (unsigned result = 1; result <= 10; ++result) {
       INFO("checking arguments that should evaluate to " << result);
-      for (unsigned arg = (1 << result); arg < (1 << (result + 1)); ++arg) {
+      for (unsigned arg = (1 << result);
+	   arg < static_cast<unsigned>((1 << (result + 1)));
+	   ++arg) {
 	INFO("checking argument " << arg);
 	REQUIRE(log2int(arg) == result);
       }

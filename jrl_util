@@ -15,9 +15,11 @@
  * 
  */
 
-#ifndef JRL_UTIL
-#define JRL_UTIL 1
+#ifndef JRL_UTIL_GUARD
+#define JRL_UTIL_GUARD 1
 
+// \TODO move utilities that require bitset to a separate file
+#include <bitset>
 
 /**
  * Replacement for assert() which will also abort the program during
@@ -42,11 +44,61 @@
   } while(0)
 #endif
 
+/**
+ * Easily define an exception type that derives from
+ * std::runtime_error
+ */
+#define DEF_RUNTIME_EXCEPTION(name)		\
+  class name : public std::runtime_error	\
+  {						\
+  public:					\
+    name(const std::string &what)		\
+      : std::runtime_error(what) {}		\
+}
+
 namespace jrl
 {
 
 namespace util
 {
+
+/**
+ * Wrapper for the insert result idiom for std::map where a result is
+ * a 2-tuple with the first element giving a value and the second
+ * element giving a boolean result code indicating success or failure
+ * of (some aspect of) the operation.
+ */
+template<typename __BaseType>
+struct bool_return : public std::tuple<__BaseType, bool>
+{
+  using Inner = std::tuple<__BaseType, bool>;
+  bool_return(const __BaseType value,
+	      const bool isSuccess)
+    : Inner(value, isSuccess)
+  {
+  }
+  /**
+   * Single-argument constructor gives successful return.
+   */
+  bool_return(const __BaseType value)
+    : Inner(value, true)
+  {
+  }
+};
+
+template<typename MapType>
+typename MapType::iterator
+fastMapInsert(MapType &tgt,
+	      const typename MapType::key_type &key,
+	      const typename MapType::mapped_type &val)
+{
+  typename MapType::value_type entry(key, val);
+  std::pair<typename MapType::iterator, bool> result = tgt.insert(entry);
+  if (!result.second) {
+    *(result.first) = val;
+  }
+  return result.first;
+}
 
 /**
  * Function for converting a value into a bitset, which can be sent
@@ -124,7 +176,7 @@ makeBitMask(const unsigned bitCount,
 /**
  * Object wrapped around timespec.
  *
- * Maybe use boost?
+ * \TODO use the standard C library versions
  */
 class TimeSpecWrap
 {
@@ -274,4 +326,4 @@ private:
 // }
 // }
 
-#endif // JRL_UTIL
+#endif // JRL_UTIL_GUARD

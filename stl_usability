@@ -1,0 +1,124 @@
+/** -*- mode: c++ -*-
+ *
+ * stl_usability
+ *
+ * Copyright (C) 2015 Brian Davis
+ * All Rights Reserved
+ *
+ * \TODO new license
+ *
+ * Limited copying permission is given solely
+ * for self-educational purpose.
+ *
+ * Author: Brian Davis <bd@jollyrogerlabs.com>
+ *
+ * Header-only definitions to simplify use of STL.
+ */
+
+#ifndef STL_USABILITY_GUARD
+#define STL_USABILITY_GUARD
+
+#include <algorithm>
+
+namespace jrl
+{
+
+// /**
+//  * Find the first occurrence of a value.
+//  */
+// template<typename _Container>
+// inline typename _Container::iterator
+// find(_Container __container, typename _Container::value_type __val)
+// {
+//   return find(__container.begin(), __container.end(), __val);
+// }
+
+/**
+ * Copy all container entries.
+ */
+template<typename _Container, typename _OutputIterator>
+inline _OutputIterator
+copy(const _Container &__container, _OutputIterator __result)
+{
+  return std::copy(__container.begin(), __container.end(), __result);
+}
+
+/**
+ * Transform all container entries.
+ */
+template<typename _Container, typename _OutputIterator,
+	 typename _UnaryOperation>
+_OutputIterator
+transform(const _Container &__container, _OutputIterator __result,
+	  _UnaryOperation __unary_op)
+{
+  return std::transform(__container.begin(), __container.end(),
+		   __result, __unary_op);
+}
+
+/**
+ * Transform the mixture of two containers.
+ */
+template<typename _Container1, typename _Container2, typename _OutputIterator,
+	 typename _UnaryOperation>
+_OutputIterator
+transform(const _Container1 &__container1, const _Container2 &__container2,
+	  _OutputIterator __result, _UnaryOperation __unary_op)
+{
+  return std::transform(__container1.begin(), __container1.end(),
+			__container2.begin(), __result, __unary_op);
+}
+
+// template<class _Container, class _Unary>
+// typename _Container::const_iterator
+// find(const _Container &__container,  _Unary __unary)
+// {
+//   return std::find(__container.begin(), __container.end(), __unary);
+// }
+
+#define UNARY_OP(name)							\
+  template<class _Container, class _Unary>				\
+  typename _Container::const_iterator					\
+  name(const _Container &__container,  _Unary __unary)			\
+  {									\
+    return name(__container.begin(), __container.end(), __unary);	\
+  }
+
+/**
+ * Find the first occurrence of a value.
+ */
+UNARY_OP(find);
+UNARY_OP(find_if);
+#undef UNARY_OP
+
+} // namespace jrl
+
+#endif // STL_USABILITY_GUARD
+
+// Actual STL signatures
+
+// template <class InputIterator, class OutputIterator>
+//   OutputIterator copy (InputIterator first, InputIterator last, OutputIterator result);
+
+// template<class InputIterator, class T>
+//   InputIterator find (InputIterator first, InputIterator last, const T& val)
+
+// template<class InputIterator, class Function>
+//   Function for_each(InputIterator first, InputIterator last, Function fn)
+
+// template<class InputIterator, class UnaryPredicate>
+//   InputIterator find_if (InputIterator first, InputIterator last, UnaryPredicate pred)
+
+// template <class InputIterator, class OutputIterator, class UnaryPredicate>
+//   OutputIterator copy_if (InputIterator first, InputIterator last,
+//                           OutputIterator result, UnaryPredicate pred);
+
+// template <class InputIterator, class OutputIterator, class UnaryOperator>
+//   OutputIterator transform (InputIterator first1, InputIterator last1,
+//                             OutputIterator result, UnaryOperator op)
+
+// template <class InputIterator1, class InputIterator2,
+//           class OutputIterator, class BinaryOperation>
+//   OutputIterator transform (InputIterator1 first1, InputIterator1 last1,
+//                             InputIterator2 first2, OutputIterator result,
+//                             BinaryOperation binary_op);

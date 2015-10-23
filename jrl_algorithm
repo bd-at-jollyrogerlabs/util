@@ -1,0 +1,51 @@
+/** -*- mode: c++ -*-
+ *
+ * jrl_algorithm
+ *
+ * Copyright (C) 2015 Brian Davis
+ * All Rights Reserved
+ *
+ * \TODO new license
+ *
+ * Limited copying permission is given solely
+ * for self-educational purpose.
+ *
+ * Author: Brian Davis <bd@jollyrogerlabs.com>
+ *
+ *
+ * Header-only definitions of algorithms and algorithm helpers.
+ */
+
+#ifndef JRL_ALGORITHM_GUARD
+#define JRL_ALGORITHM_GUARD
+
+/**
+ * @brief Insert a value at the end of a container only if it does not yet
+ * exist in the container.
+ * @param __container - container to insert the value into.
+ * @param __val - value to insert into the container.
+ * @param __extender - function-like type, taking the container size
+ *                     as argument, to apply to __container when a new
+ *                     element is successfully added.
+ * @return a 2-tuple where the first element is true if the value was
+ *         correctly inserted at the end of the container, false
+ *         otherwsie, and the second element is the position at which
+ *         the element was either inserted or found.
+ */
+template<typename _Container, typename _Extender>
+std::tuple<bool, _Container::size_type>
+nondestructive_insert(_Container &__container,
+		      const _Container::value_type &__val,
+		      _Extender __extender)
+{
+  __Container::const_iterator entry =
+    std::find(__container.begin(), __container.end(), __val);
+  if (__container.end() == entry) {
+    __container.push_back(__val);
+    __extender(__container.size());
+    return std::tuple(true, (__container.size()));
+  }
+  return std::tuple(false, std::distance(entry, __container.begin()));
+}
+
+#endif JRL_ALGORITHM_GUARD

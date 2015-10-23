@@ -1,6 +1,6 @@
 /** -*- mode: c++ -*-
  *
- * unitsafe.h 
+ * unitsafe
  *
  * Safe conversion between physical units that is easier to use than
  * boost::units.
