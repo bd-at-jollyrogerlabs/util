@@ -56,6 +56,16 @@
       : std::runtime_error(what) {}		\
 }
 
+/**
+ * Helper macro for simplifying the use of exceptions.
+ */
+#define THROW_EXCEPTION(exception, ...)		\
+  do {						\
+    ostringstream ss;				\
+    ss << __VA_ARGS__ << ends;			\
+    throw exception(ss.str());			\
+  } while(0)
+
 namespace jrl
 {
 
@@ -95,7 +105,7 @@ fastMapInsert(MapType &tgt,
   typename MapType::value_type entry(key, val);
   std::pair<typename MapType::iterator, bool> result = tgt.insert(entry);
   if (!result.second) {
-    *(result.first) = val;
+    result.first->second = val;
   }
   return result.first;
 }
@@ -151,27 +161,27 @@ public:
   displayAsBinary() {
     return BitSetType(value);
   }
-};
 
-/**
- * Function that produces a bit mask with a number of bits set and
- * then shifted to the left by a specified number of positions.
- *
- * Non-static equivalent to BitMaskStatic
- */
-unsigned
-makeBitMask(const unsigned bitCount,
-	    const unsigned leftShiftCount = 0)
-{
-  unsigned result = 0;
-  unsigned mask = 1;
-  for (unsigned counter = 0; counter < bitCount; ++counter) {
-    result |= mask;
-    mask <<= 1;
+  /**
+   * Function that produces a bit mask with a number of bits set and
+   * then shifted to the left by a specified number of positions.
+   *
+   * Non-static equivalent to BitMaskStatic
+   */
+  static unsigned
+  makeBitMask(const unsigned bitCount,
+	      const unsigned leftShiftCount = 0)
+  {
+    unsigned result = 0;
+    unsigned mask = 1;
+    for (unsigned counter = 0; counter < bitCount; ++counter) {
+      result |= mask;
+      mask <<= 1;
+    }
+    result <<= leftShiftCount;
+    return result;
   }
-  result <<= leftShiftCount;
-  return result;
-}
+};
 
 /**
  * Object wrapped around timespec.
