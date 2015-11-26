@@ -23,102 +23,137 @@
 namespace jrl
 {
 
-// /**
-//  * Find the first occurrence of a value.
-//  */
-// template<typename _Container>
-// inline typename _Container::iterator
-// find(_Container __container, typename _Container::value_type __val)
-// {
-//   return find(__container.begin(), __container.end(), __val);
-// }
+// Convenience macros for results.
+#define CONST_ITER typename _Container::const_iterator
+#define OUT_ITER _OutputIterator
+#define UNARY_OUT _Unary
+#define CONST_TYPE const
+#define NO_CONST_TYPE /* not const */
+
+// Algorithms that iterate over a range.
+#define NO_OP(name, result)					\
+  template<class _Container>					\
+  inline result							\
+  name(const _Container &__container)				\
+  {								\
+    return std::name(__container.begin(), __container.end());	\
+  }
+
+/**
+ * Sort an array by its natural ordering (AKA default less<>).
+ */
+NO_OP(sort, CONST_ITER)
+
+#undef NO_OP
+
+// Algorithms that iterate over a range applying a unary operator to
+// each element.
+#define UNARY_OP(name, result)						\
+  template<class _Container, typename _Unary>				\
+  inline result								\
+  name(const _Container &__container,  _Unary __unary)			\
+  {									\
+    return std::name(__container.begin(), __container.end(), __unary);	\
+  }
 
 /**
  * Copy all container entries.
  */
-template<typename _Container, typename _OutputIterator>
-inline _OutputIterator
-copy(const _Container &__container, _OutputIterator __result)
-{
-  return std::copy(__container.begin(), __container.end(), __result);
-}
+UNARY_OP(copy, UNARY_OUT)
+/**
+ * Iterate over all elements of a container, applying a unaery
+ * operator to each.
+ */
+UNARY_OP(for_each, UNARY_OUT)
+/**
+ * Find the first occurrence of a value.
+ */
+UNARY_OP(find, CONST_ITER)
+UNARY_OP(find_if, CONST_ITER)
+
+#undef UNARY_OP
+
+// Algorithms that iterate over a range applying an operator to each
+// element and storing the result of that application to a container.
+#define UNARY_OP_OUT(name, result)					\
+  template<class _Container, typename _OutputIterator, typename _Unary>	\
+  inline result								\
+  name(const _Container &__container, _OutputIterator __result,		\
+       _Unary __unary)							\
+  {									\
+    return std::name(__container.begin(), __container.end(), __result,	\
+		     __unary);						\
+  }
 
 /**
- * Transform all container entries.
+ * Transform all container entries (AKA "map")
  */
-template<typename _Container, typename _OutputIterator,
-	 typename _UnaryOperation>
-_OutputIterator
-transform(const _Container &__container, _OutputIterator __result,
-	  _UnaryOperation __unary_op)
-{
-  return std::transform(__container.begin(), __container.end(),
-		   __result, __unary_op);
-}
+UNARY_OP_OUT(transform, OUT_ITER)
+/**
+ * Copy all items that satisfy a predicate
+ */
+UNARY_OP_OUT(copy_if, OUT_ITER)
+
+#undef UNARY_OP_OUT
+
+#define BINARY_OP(name, result, const_type)				\
+  template<class _Container, typename _Binary>				\
+  inline result								\
+  name(const_type _Container &__container, _Binary __binary)		\
+  {									\
+    return std::name(__container.begin(), __container.end(), __binary);	\
+  }
+
+/**
+ * Sort an array using a binary comparison operator.
+ */
+BINARY_OP(sort, void, NO_CONST_TYPE)
+
+#undef BINARY_OP
+
+#define SEARCH_OP(name)							\
+  template<class _Container, typename _SearchType, typename _Binary>	\
+  inline typename _Container::iterator					\
+  name(const _Container &__container, const _SearchType &__val,		\
+       _Binary __binary)						\
+  {									\
+    return std::name(__container.begin(), __container.end(), __val,	\
+		     __binary);						\
+  }
+
+/**
+ * Find the first position in which an argument value can be inserted
+ * without changing the ordering.
+ */
+SEARCH_OP(lower_bound);
+SEARCH_OP(upper_bound);
+
+#undef SEARCH_OP
+
+#define PAIRWISE_BINARY_OP_OUT(name, result)				\
+  template<typename _Container1, typename _Container2,			\
+	   typename _OutputIterator, typename _Binary>			\
+  inline result								\
+  name(const _Container1 &__container1, const _Container2 &__container2, \
+       _OutputIterator __result, _Binary __binary)			\
+  {									\
+    return std::name(__container1.begin(), __container1.end(),		\
+		     __container2.begin(), __result, __binary);		\
+  }
 
 /**
  * Transform the mixture of two containers.
  */
-template<typename _Container1, typename _Container2, typename _OutputIterator,
-	 typename _UnaryOperation>
-_OutputIterator
-transform(const _Container1 &__container1, const _Container2 &__container2,
-	  _OutputIterator __result, _UnaryOperation __unary_op)
-{
-  return std::transform(__container1.begin(), __container1.end(),
-			__container2.begin(), __result, __unary_op);
-}
+PAIRWISE_BINARY_OP_OUT(transform, OUT_ITER)
 
-// template<class _Container, class _Unary>
-// typename _Container::const_iterator
-// find(const _Container &__container,  _Unary __unary)
-// {
-//   return std::find(__container.begin(), __container.end(), __unary);
-// }
+#undef PAIRWISE_BINARY_OP_OUT
 
-#define UNARY_OP(name)							\
-  template<class _Container, class _Unary>				\
-  typename _Container::const_iterator					\
-  name(const _Container &__container,  _Unary __unary)			\
-  {									\
-    return name(__container.begin(), __container.end(), __unary);	\
-  }
-
-/**
- * Find the first occurrence of a value.
- */
-UNARY_OP(find);
-UNARY_OP(find_if);
-#undef UNARY_OP
+#undef CONST_ITER
+#undef OUT_ITER
+#undef UNARY_OUT
+#undef CONST_TYPE
+#undef NO_CONST_TYPE
 
 } // namespace jrl
 
 #endif // STL_USABILITY_GUARD
-
-// Actual STL signatures
-
-// template <class InputIterator, class OutputIterator>
-//   OutputIterator copy (InputIterator first, InputIterator last, OutputIterator result);
-
-// template<class InputIterator, class T>
-//   InputIterator find (InputIterator first, InputIterator last, const T& val)
-
-// template<class InputIterator, class Function>
-//   Function for_each(InputIterator first, InputIterator last, Function fn)
-
-// template<class InputIterator, class UnaryPredicate>
-//   InputIterator find_if (InputIterator first, InputIterator last, UnaryPredicate pred)
-
-// template <class InputIterator, class OutputIterator, class UnaryPredicate>
-//   OutputIterator copy_if (InputIterator first, InputIterator last,
-//                           OutputIterator result, UnaryPredicate pred);
-
-// template <class InputIterator, class OutputIterator, class UnaryOperator>
-//   OutputIterator transform (InputIterator first1, InputIterator last1,
-//                             OutputIterator result, UnaryOperator op)
-
-// template <class InputIterator1, class InputIterator2,
-//           class OutputIterator, class BinaryOperation>
-//   OutputIterator transform (InputIterator1 first1, InputIterator1 last1,
-//                             InputIterator2 first2, OutputIterator result,
-//                             BinaryOperation binary_op);
