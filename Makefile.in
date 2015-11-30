@@ -19,8 +19,28 @@
 # Copyright (C) 2014 Brian Davis
 # All Rights Reserved
 # 
-# Limited copying permission is given solely
-# for self-educational purpose.
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+# 
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # 
 # Author: Brian Davis <bd@jollyrogerlabs.com>
 # 
@@ -91,7 +111,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = testlog2int$(EXEEXT) testboostusability$(EXEEXT) \
-	testunitsafe$(EXEEXT) testjrlutil$(EXEEXT)
+	testunitsafe$(EXEEXT) testjrlutil$(EXEEXT) \
+	testjrlgeom$(EXEEXT)
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
@@ -119,6 +140,9 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+am_testjrlgeom_OBJECTS = testjrlgeom.$(OBJEXT)
+testjrlgeom_OBJECTS = $(am_testjrlgeom_OBJECTS)
+testjrlgeom_LDADD = $(LDADD)
 am_testjrlutil_OBJECTS = testjrlutil.$(OBJEXT)
 testjrlutil_OBJECTS = $(am_testjrlutil_OBJECTS)
 testjrlutil_LDADD = $(LDADD)
@@ -162,10 +186,12 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(testboostusability_SOURCES) $(testjrlutil_SOURCES) \
-	$(testlog2int_SOURCES) $(testunitsafe_SOURCES)
-DIST_SOURCES = $(testboostusability_SOURCES) $(testjrlutil_SOURCES) \
-	$(testlog2int_SOURCES) $(testunitsafe_SOURCES)
+SOURCES = $(testboostusability_SOURCES) $(testjrlgeom_SOURCES) \
+	$(testjrlutil_SOURCES) $(testlog2int_SOURCES) \
+	$(testunitsafe_SOURCES)
+DIST_SOURCES = $(testboostusability_SOURCES) $(testjrlgeom_SOURCES) \
+	$(testjrlutil_SOURCES) $(testlog2int_SOURCES) \
+	$(testunitsafe_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -388,14 +414,9 @@ include_HEADERS = \
 	log2int \
 	jrl_util
 
-
-#	testunitsusability
 testlog2int_SOURCES = \
 	testlog2int.cpp
 
-
-# testunitsusability_SOURCES =
-# 	testunitsusability.cpp
 testboostusability_SOURCES = \
 	testboostusability.cpp
 
@@ -404,6 +425,9 @@ testunitsafe_SOURCES = \
 
 testjrlutil_SOURCES = \
 	testjrlutil.cpp
+
+testjrlgeom_SOURCES = \
+	testjrlgeom.cpp
 
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -513,6 +537,10 @@ testboostusability$(EXEEXT): $(testboostusability_OBJECTS) $(testboostusability_
 	@rm -f testboostusability$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(testboostusability_OBJECTS) $(testboostusability_LDADD) $(LIBS)
 
+testjrlgeom$(EXEEXT): $(testjrlgeom_OBJECTS) $(testjrlgeom_DEPENDENCIES) $(EXTRA_testjrlgeom_DEPENDENCIES) 
+	@rm -f testjrlgeom$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(testjrlgeom_OBJECTS) $(testjrlgeom_LDADD) $(LIBS)
+
 testjrlutil$(EXEEXT): $(testjrlutil_OBJECTS) $(testjrlutil_DEPENDENCIES) $(EXTRA_testjrlutil_DEPENDENCIES) 
 	@rm -f testjrlutil$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(testjrlutil_OBJECTS) $(testjrlutil_LDADD) $(LIBS)
@@ -532,6 +560,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testboostusability.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testjrlgeom.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testjrlutil.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testlog2int.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testunitsafe.Po@am__quote@

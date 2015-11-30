@@ -1,21 +1,39 @@
 /** -*- mode: c++ -*-
  *
- * testunitsafe.cpp 
+ * testunitsafe.cpp
+ *
+ * Test cases for unitsafe code.
  *
  * Copyright (C) 2015 Brian Davis
  * All Rights Reserved
- * 
- * Limited copying permission is given solely
- * for self-educational purpose.
- * 
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
  * Author: Brian Davis <bd@jollyrogerlabs.com>
- * 
+ *
  */
 
-#include <cassert>
-#include <cmath>
-#include <cstring>
-#include <ostream>
 #include "unitsafe"
 
 #define CATCH_CONFIG_MAIN
@@ -24,56 +42,50 @@
 using namespace std;
 using namespace jrl;
 
-static const double TEST_EPSILON = 0.00001;
+MAKE_UNITSAFE(Foo, unsigned);
+MAKE_UNITSAFE(Bar, unsigned);
 
-static bool
-isApproxEq(const double lhs, const double rhs)
+TEST_CASE("Basic operations", "[basic]")
 {
-  return fabs(lhs - rhs) < TEST_EPSILON;
-}
+  const Foo foo0(0);
+  const Foo foo1(1);
 
-TEST_CASE("Basic operations on distances", "[meters]")
-{
-  Meters m(10.0);
-  Millimeters mm(50.0);
-  Kilometers km(2.0);
-  Inches in(15.0);
-  Feet ft(20.0);
+  REQUIRE(foo0 == foo0);
+  REQUIRE(foo0 <= foo0);
+  REQUIRE(foo0 <= foo1);
+  REQUIRE(foo0 < foo1);
+  REQUIRE(foo1 > foo0);
+  REQUIRE(foo1 >= foo0);
 
-  SECTION("construction + output") {
-    REQUIRE(10.0 == double(m));
-    REQUIRE(!strcmp("meters", Meters::getName()));
-    REQUIRE(!strcmp("m", Meters::getSymbol()));
-    // cout << m << endl;
+  const unsigned two = 2;
+  REQUIRE(two > static_cast<unsigned>(foo1));
+  REQUIRE(two >= static_cast<unsigned>(foo1));
 
-    REQUIRE(50.0 == double(mm));
-    REQUIRE(!strcmp("millimeters", Millimeters::getName()));
-    REQUIRE(!strcmp("mm", Millimeters::getSymbol()));
-    // cout << mm << endl;
+  const Foo foo1a = foo0 + foo1;
+  const Foo foo1b = foo1 + foo0;
+  const Foo foo2 = foo1 + foo1;
 
-    REQUIRE(2.0 == double(km));
-    REQUIRE(!strcmp("kilometers", Kilometers::getName()));
-    REQUIRE(!strcmp("km", Kilometers::getSymbol()));
-    // cout << km << endl;
+  REQUIRE(foo1a >= foo1);
+  REQUIRE(foo1b >= foo1);
+  REQUIRE(foo1a <= foo1);
+  REQUIRE(foo1b <= foo1);
+  REQUIRE(foo1a == foo1);
+  REQUIRE(foo1b == foo1);
+  REQUIRE(foo2 >= foo1);
+  REQUIRE(foo2 > foo1);
 
-    REQUIRE(15.0 == double(in));
-    REQUIRE(!strcmp("inches", Inches::getName()));
-    REQUIRE(!strcmp("\"", Inches::getSymbol()));
-    // cout << in << endl;
-
-    REQUIRE(20.0 == double(ft));
-    REQUIRE(!strcmp("feet", Feet::getName()));
-    REQUIRE(!strcmp("\'", Feet::getSymbol()));
-    // cout << ft << endl;
-  }
-
-  SECTION("conversion") {
-    Meters m1 = mm.get<Meters>();
-    REQUIRE(isApproxEq(0.05, double(m1)));
-    // cout << mm << " --> " << m1 << endl;
-    Inches i1 = mm.get<Inches>();
-    REQUIRE(isApproxEq(1.9685, double(i1)));
-    // cout << mm << " --> " << i1 << endl;
-    REQUIRE(isApproxEq(double((Inches(1)).get<Millimeters>()), 25.4));
-  }
+  const Bar bar0(0);
+  const Bar bar1(1);
+  Bar bar = bar0;
+  REQUIRE(bar0 == bar);
+  REQUIRE(bar == bar0);
+  REQUIRE(bar0 <= bar);
+  REQUIRE(bar <= bar0);
+  bar = bar1;
+  REQUIRE(bar1 == bar);
+  REQUIRE(bar == bar1);
+  REQUIRE(bar1 >= bar);
+  REQUIRE(bar >= bar1);
+  REQUIRE(bar > bar0);
+  REQUIRE(bar0 < bar);
 }

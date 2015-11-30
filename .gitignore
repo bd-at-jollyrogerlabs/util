@@ -22,5 +22,9 @@ stamp-h1
 testjrlutil
 testlog2int
 testunitsafe
+testtypesafe
+testboostusability
+testjrlgeom
 cursorlist
-/config.h
+config.h
+compile

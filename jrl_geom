@@ -1,0 +1,138 @@
+/** -*- mode: c++ -*-
+ *
+ * jrl_geom
+ *
+ * Simple geometry utilities.
+ *
+ * Copyright (C) 2015 Brian Davis
+ * All Rights Reserved
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Author: Brian Davis <bd@jollyrogerlabs.com>
+ *
+ */
+
+#ifndef JRL_GEOM_GUARD
+#define JRL_GEOM_GUARD
+
+#include <tuple>
+#include <functional>
+#include <boost/geometry/geometries/point_xy.hpp>
+#include <boost/geometry/geometries/segment.hpp>
+
+namespace jrl
+{
+
+namespace geom
+{
+
+/**
+ * Point-slope form of a line, created from a segment.
+ */
+template<typename _DistanceType>
+class PointSlope
+{
+public:
+  using SegmentType = boost::geometry::model::segment<_DistanceType>;
+
+  PointSlope(const SegmentType &seg)
+    : slope_((seg.second.y() - seg.first.y()) / (seg.second.x() - seg.first.x())),
+      intercept_(seg.first.y() - seg.first.x())
+  {
+  }
+
+  /**
+   * Calculate the Y axis value given an X axis value.
+   */
+  _DistanceType
+  y(const _DistanceType x) const
+  {
+    return slope_ * x + intercept_;
+  }
+
+private:
+  _DistanceType slope_;
+  _DistanceType intercept_;
+};
+
+/**
+ * Parametric form of a line, parameterized by the distance from the
+ * first point on the line.
+ */
+template<typename _DistanceType>
+class DistanceParameterizedLine
+{
+public:
+  using distance_type = _DistanceType;
+  using point_type = boost::geometry::model::d2::point_xy<_DistanceType>;
+  using segment_type = boost::geometry::model::segment<point_type>;
+
+  DistanceParameterizedLine(const segment_type &seg)
+    : xParams_(makeParams<0>(seg)), yParams_(makeParams<1>(seg))
+  {
+  }
+
+  point_type
+  operator()(const _DistanceType lengthOnLine) const
+  {
+    return point_type(calcAxisValue(xParams_, lengthOnLine),
+		      calcAxisValue(yParams_, lengthOnLine));
+  }
+
+private:
+  using Params = std::tuple<_DistanceType, _DistanceType>;
+
+  static _DistanceType
+  length(const segment_type &seg)
+  {
+    const _DistanceType deltaX = seg.second.x() - seg.first.x();
+    const _DistanceType deltaY = seg.second.y() - seg.first.y();
+    return sqrt((deltaX * deltaX) + (deltaY * deltaY));
+  }
+
+  template<unsigned Axis>
+  static Params
+  makeParams(const segment_type &seg)
+  {
+    namespace bg = boost::geometry;
+    return Params((bg::get<Axis>(seg.second) - bg::get<Axis>(seg.first)) / length(seg),
+		  bg::get<Axis>(seg.first));
+  }
+
+  static _DistanceType
+  calcAxisValue(const Params &params, const _DistanceType dist)
+  {
+    return std::get<1>(params) + (dist * std::get<0>(params));
+  }
+
+  Params xParams_;
+  Params yParams_;
+};
+
+} // namespace geom
+
+} // namespace jrl
+
+#endif // JRL_GEOM_GUARD
