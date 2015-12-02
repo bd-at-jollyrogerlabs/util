@@ -49,15 +49,85 @@ namespace geom
 {
 
 /**
- * Point-slope form of a line, created from a segment.
+ * 2D distance formula.
  */
 template<typename _DistanceType>
-class PointSlope
+_DistanceType
+distance2D(const _DistanceType x, const _DistanceType y)
+{
+  return sqrt((x * x) + (y * y));
+}
+
+/**
+ * Polar form of a 2D coordinate, created from raw parameters or from
+ * Cartesian form.
+ */
+template<typename _DistanceType, typename _AngleType>
+class polar_form
 {
 public:
-  using SegmentType = boost::geometry::model::segment<_DistanceType>;
+  using cartesian_coordinates = boost::geometry::model::d2::point_xy<_DistanceType>;
 
-  PointSlope(const SegmentType &seg)
+  polar_form(const _DistanceType distance, const _AngleType angle)
+    : distance_(distance), angle_(angle)
+  {
+  }
+
+  polar_form(const cartesian_coordinates &point)
+    : distance_(distance2D(point.x(), point.y())),
+      angle_(1.0 / tan(point.y() / point.x()))
+  {
+  }
+
+  void
+  setDistance(const _DistanceType distance)
+  {
+    distance_ = distance;
+  }
+
+  void
+  setAngle(const _AngleType angle)
+  {
+    angle_ = angle;
+  }
+
+  _DistanceType
+  getDistance() const
+  {
+    return distance_;
+  }
+
+  _AngleType
+  getAngle() const
+  {
+    return angle_;
+  }
+
+  /**
+   * Direct conversion to Cartesian form.
+   */
+  explicit
+  operator cartesian_coordinates() const
+  {
+    return cartesian_coordinates(distance_ * cos(angle_),
+				 distance_ * sin(angle_));
+  }
+
+private:
+  _DistanceType distance_;
+  _AngleType angle_;
+};
+
+/**
+ * Slope-intercept form of a 2D line, created from a segment.
+ */
+template<typename _DistanceType>
+class slope_intercept_form
+{
+public:
+  using segment_type = boost::geometry::model::segment<_DistanceType>;
+
+  slope_intercept_form(const segment_type &seg)
     : slope_((seg.second.y() - seg.first.y()) / (seg.second.x() - seg.first.x())),
       intercept_(seg.first.y() - seg.first.x())
   {
@@ -78,46 +148,55 @@ private:
 };
 
 /**
- * Parametric form of a line, parameterized by the distance from the
- * first point on the line.
+ * Parametric form of a 2D line, parameterized by the distance from a
+ * point on the line.
  */
 template<typename _DistanceType>
-class DistanceParameterizedLine
+class parameterized_form
 {
 public:
   using distance_type = _DistanceType;
-  using point_type = boost::geometry::model::d2::point_xy<_DistanceType>;
-  using segment_type = boost::geometry::model::segment<point_type>;
+  using cartesian_point_type = boost::geometry::model::d2::point_xy<_DistanceType>;
+  using cartesian_segment_type = boost::geometry::model::segment<cartesian_point_type>;
 
-  DistanceParameterizedLine(const segment_type &seg)
+  /**
+   * Construct from Cartesian form of a line segment.  The first point
+   * of the segment is the 0 point of the parameterization.
+   */
+  parameterized_form(const cartesian_segment_type &seg)
     : xParams_(makeParams<0>(seg)), yParams_(makeParams<1>(seg))
   {
   }
 
-  point_type
+  /**
+   * Return the point that is the given distance away from the start
+   * point on the line, in 2D Cartesian form.
+   */
+  cartesian_point_type
   operator()(const _DistanceType lengthOnLine) const
   {
-    return point_type(calcAxisValue(xParams_, lengthOnLine),
-		      calcAxisValue(yParams_, lengthOnLine));
+    return cartesian_point_type(calcAxisValue(xParams_, lengthOnLine),
+				calcAxisValue(yParams_, lengthOnLine));
   }
 
 private:
   using Params = std::tuple<_DistanceType, _DistanceType>;
 
   static _DistanceType
-  length(const segment_type &seg)
+  length(const cartesian_segment_type &seg)
   {
     const _DistanceType deltaX = seg.second.x() - seg.first.x();
     const _DistanceType deltaY = seg.second.y() - seg.first.y();
-    return sqrt((deltaX * deltaX) + (deltaY * deltaY));
+    return distance2D(deltaX, deltaY);
   }
 
   template<unsigned Axis>
   static Params
-  makeParams(const segment_type &seg)
+  makeParams(const cartesian_segment_type &seg)
   {
     namespace bg = boost::geometry;
-    return Params((bg::get<Axis>(seg.second) - bg::get<Axis>(seg.first)) / length(seg),
+    return Params((bg::get<Axis>(seg.second) - bg::get<Axis>(seg.first))
+		  / length(seg),
 		  bg::get<Axis>(seg.first));
   }
 
