@@ -152,7 +152,7 @@ private:
  * point on the line.
  */
 template<typename _DistanceType>
-class parameterized_form
+class parametric_form
 {
 public:
   using distance_type = _DistanceType;
@@ -163,7 +163,7 @@ public:
    * Construct from Cartesian form of a line segment.  The first point
    * of the segment is the 0 point of the parameterization.
    */
-  parameterized_form(const cartesian_segment_type &seg)
+  parametric_form(const cartesian_segment_type &seg)
     : xParams_(makeParams<0>(seg)), yParams_(makeParams<1>(seg))
   {
   }

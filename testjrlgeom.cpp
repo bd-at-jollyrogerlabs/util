@@ -40,9 +40,9 @@ using namespace jrl::geom;
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
 
-TEST_CASE("test of parameterized_form", "[parameterized_form")
+TEST_CASE("test of parametric_form", "[parametric_form")
 {
-  using ParameterizedLine = parameterized_form<double>;
+  using ParameterizedLine = parametric_form<double>;
   using DistanceType = ParameterizedLine::distance_type;
   using PointType = ParameterizedLine::cartesian_point_type;
   using SegmentType = ParameterizedLine::cartesian_segment_type;
