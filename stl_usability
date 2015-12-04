@@ -43,6 +43,7 @@ namespace jrl
 {
 
 // Convenience macros for results.
+#define ITER typename _Container::iterator
 #define CONST_ITER typename _Container::const_iterator
 #define OUT_ITER _OutputIterator
 #define UNARY_OUT _Unary
@@ -50,10 +51,10 @@ namespace jrl
 #define NO_CONST_TYPE /* not const */
 
 // Algorithms that iterate over a range.
-#define NO_OP(name, result)					\
+#define NO_OP(name, result_type, const_type)			\
   template<class _Container>					\
-  inline result							\
-  name(const _Container &__container)				\
+  inline result_type						\
+  name(const_type _Container &__container)			\
   {								\
     return std::name(__container.begin(), __container.end());	\
   }
@@ -61,16 +62,16 @@ namespace jrl
 /**
  * Sort an array by its natural ordering (AKA default less<>).
  */
-NO_OP(sort, CONST_ITER)
+NO_OP(sort, void, NO_CONST_TYPE)
 
 #undef NO_OP
 
 // Algorithms that iterate over a range applying a unary operator to
 // each element.
-#define UNARY_OP(name, result)						\
+#define UNARY_OP(name, result_type, const_type)				\
   template<class _Container, typename _Unary>				\
-  inline result								\
-  name(const _Container &__container,  _Unary __unary)			\
+  inline result_type							\
+  name(const_type _Container &__container,  _Unary __unary)		\
   {									\
     return std::name(__container.begin(), __container.end(), __unary);	\
   }
@@ -78,26 +79,34 @@ NO_OP(sort, CONST_ITER)
 /**
  * Copy all container entries.
  */
-UNARY_OP(copy, UNARY_OUT)
+UNARY_OP(copy, UNARY_OUT, CONST_TYPE)
 /**
  * Iterate over all elements of a container, applying a unaery
  * operator to each.
  */
-UNARY_OP(for_each, UNARY_OUT)
+UNARY_OP(for_each, UNARY_OUT, CONST_TYPE)
 /**
  * Find the first occurrence of a value.
  */
-UNARY_OP(find, CONST_ITER)
-UNARY_OP(find_if, CONST_ITER)
+UNARY_OP(find, CONST_ITER, CONST_TYPE)
+UNARY_OP(find_if, CONST_ITER, CONST_TYPE)
+/**
+ * Remove all items that compare equal to an argument value
+ */
+UNARY_OP(remove, ITER, NO_CONST_TYPE)
+/**
+ * Remove all items that satisfy a predicate
+ */
+UNARY_OP(remove_if, ITER, NO_CONST_TYPE)
 
 #undef UNARY_OP
 
 // Algorithms that iterate over a range applying an operator to each
 // element and storing the result of that application to a container.
-#define UNARY_OP_OUT(name, result)					\
+#define UNARY_OP_OUT(name, result_type, const_type)			\
   template<class _Container, typename _OutputIterator, typename _Unary>	\
-  inline result								\
-  name(const _Container &__container, _OutputIterator __result,		\
+  inline result_type							\
+  name(const_type _Container &__container, _OutputIterator __result,	\
        _Unary __unary)							\
   {									\
     return std::name(__container.begin(), __container.end(), __result,	\
@@ -107,17 +116,17 @@ UNARY_OP(find_if, CONST_ITER)
 /**
  * Transform all container entries (AKA "map")
  */
-UNARY_OP_OUT(transform, OUT_ITER)
+UNARY_OP_OUT(transform, OUT_ITER, CONST_TYPE)
 /**
  * Copy all items that satisfy a predicate
  */
-UNARY_OP_OUT(copy_if, OUT_ITER)
+UNARY_OP_OUT(copy_if, OUT_ITER, CONST_TYPE)
 
 #undef UNARY_OP_OUT
 
-#define BINARY_OP(name, result, const_type)				\
+#define BINARY_OP(name, result_type, const_type)			\
   template<class _Container, typename _Binary>				\
-  inline result								\
+  inline result_type							\
   name(const_type _Container &__container, _Binary __binary)		\
   {									\
     return std::name(__container.begin(), __container.end(), __binary);	\
@@ -149,10 +158,10 @@ SEARCH_OP(upper_bound);
 
 #undef SEARCH_OP
 
-#define PAIRWISE_BINARY_OP_OUT(name, result)				\
+#define PAIRWISE_BINARY_OP_OUT(name, result_type)			\
   template<typename _Container1, typename _Container2,			\
 	   typename _OutputIterator, typename _Binary>			\
-  inline result								\
+  inline result_type							\
   name(const _Container1 &__container1, const _Container2 &__container2, \
        _OutputIterator __result, _Binary __binary)			\
   {									\
