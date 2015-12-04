@@ -111,8 +111,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = testlog2int$(EXEEXT) testboostusability$(EXEEXT) \
-	testunitsafe$(EXEEXT) testjrlutil$(EXEEXT) \
-	testjrlgeom$(EXEEXT)
+	testunitsafe$(EXEEXT) teststlusability$(EXEEXT) \
+	testjrlutil$(EXEEXT) testjrlgeom$(EXEEXT)
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
@@ -149,6 +149,9 @@ testjrlutil_LDADD = $(LDADD)
 am_testlog2int_OBJECTS = testlog2int.$(OBJEXT)
 testlog2int_OBJECTS = $(am_testlog2int_OBJECTS)
 testlog2int_LDADD = $(LDADD)
+am_teststlusability_OBJECTS = teststlusability.$(OBJEXT)
+teststlusability_OBJECTS = $(am_teststlusability_OBJECTS)
+teststlusability_LDADD = $(LDADD)
 am_testunitsafe_OBJECTS = testunitsafe.$(OBJEXT)
 testunitsafe_OBJECTS = $(am_testunitsafe_OBJECTS)
 testunitsafe_LDADD = $(LDADD)
@@ -188,10 +191,10 @@ am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
 SOURCES = $(testboostusability_SOURCES) $(testjrlgeom_SOURCES) \
 	$(testjrlutil_SOURCES) $(testlog2int_SOURCES) \
-	$(testunitsafe_SOURCES)
+	$(teststlusability_SOURCES) $(testunitsafe_SOURCES)
 DIST_SOURCES = $(testboostusability_SOURCES) $(testjrlgeom_SOURCES) \
 	$(testjrlutil_SOURCES) $(testlog2int_SOURCES) \
-	$(testunitsafe_SOURCES)
+	$(teststlusability_SOURCES) $(testunitsafe_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -423,6 +426,9 @@ testboostusability_SOURCES = \
 testunitsafe_SOURCES = \
 	testunitsafe.cpp
 
+teststlusability_SOURCES = \
+	teststlusability.cpp
+
 testjrlutil_SOURCES = \
 	testjrlutil.cpp
 
@@ -549,6 +555,10 @@ testlog2int$(EXEEXT): $(testlog2int_OBJECTS) $(testlog2int_DEPENDENCIES) $(EXTRA
 	@rm -f testlog2int$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(testlog2int_OBJECTS) $(testlog2int_LDADD) $(LIBS)
 
+teststlusability$(EXEEXT): $(teststlusability_OBJECTS) $(teststlusability_DEPENDENCIES) $(EXTRA_teststlusability_DEPENDENCIES) 
+	@rm -f teststlusability$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(teststlusability_OBJECTS) $(teststlusability_LDADD) $(LIBS)
+
 testunitsafe$(EXEEXT): $(testunitsafe_OBJECTS) $(testunitsafe_DEPENDENCIES) $(EXTRA_testunitsafe_DEPENDENCIES) 
 	@rm -f testunitsafe$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(testunitsafe_OBJECTS) $(testunitsafe_LDADD) $(LIBS)
@@ -563,6 +573,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testjrlgeom.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testjrlutil.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testlog2int.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/teststlusability.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testunitsafe.Po@am__quote@
 
 .cpp.o:

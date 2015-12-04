@@ -68,6 +68,7 @@ bin_PROGRAMS = \
 	testlog2int \
 	testboostusability \
 	testunitsafe \
+	teststlusability \
 	testjrlutil \
 	testjrlgeom
 
@@ -79,6 +80,9 @@ testboostusability_SOURCES = \
 
 testunitsafe_SOURCES = \
 	testunitsafe.cpp
+
+teststlusability_SOURCES = \
+	teststlusability.cpp
 
 testjrlutil_SOURCES = \
 	testjrlutil.cpp
