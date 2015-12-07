@@ -34,6 +34,7 @@
  *
  */
 
+#define USE_EXPERIMENTAL_UNITSAFE_STREAM_OPERATOR
 #include "unitsafe"
 
 #define CATCH_CONFIG_MAIN
@@ -88,4 +89,28 @@ TEST_CASE("Basic operations", "[basic]")
   REQUIRE(bar >= bar1);
   REQUIRE(bar > bar0);
   REQUIRE(bar0 < bar);
+}
+
+TEST_CASE("Streaming output from value", "[ostream]")
+{
+  const Foo foo0(0);
+  ostringstream ss;
+  ss << foo0;
+  REQUIRE(ss.str() == "0");
+}
+
+TEST_CASE("Streaming output from reference", "[ostream]")
+{
+  const Foo foo0(0);
+  const Foo &foo0Ref(foo0);
+  ostringstream ss;
+  ss << foo0Ref;
+  REQUIRE(ss.str() == "0");
+}
+
+TEST_CASE("square root", "[sqrt]")
+{
+  const Foo foo4(4);
+  const Foo foo2(sqrt(foo4));
+  REQUIRE(2.0 == BASE_CAST(foo2));
 }
