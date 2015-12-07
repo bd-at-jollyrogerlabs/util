@@ -38,21 +38,27 @@
 #ifndef UNITSAFE_GUARD
 #define UNITSAFE_GUARD
 
+#include <sstream>
+#include <type_traits>
+#include <cmath>
+
 namespace jrl
 {
 
 /**
  * Wrapper for constructing a safe type around a simple numeric type.
- *
- * \TODO use static assert to force the b
  */
 template<typename _BaseType, unsigned _TypeTag>
 class UnitSafeWrapper
 {
 public:
-  enum {
-    type_tag = _TypeTag
-  };
+  using base_type = _BaseType;
+  constexpr static const unsigned type_tag = _TypeTag;
+
+  UnitSafeWrapper()
+    : value_()
+  {
+  }
 
   UnitSafeWrapper(const _BaseType value)
     : value_(value)
@@ -118,6 +124,12 @@ public:
   }
 
   UnitSafeWrapper
+  operator-() const
+  {
+    return -value_;
+  }
+
+  UnitSafeWrapper
   operator*(const UnitSafeWrapper &rhs) const
   {
     return value_ * rhs.value_;
@@ -163,9 +175,60 @@ private:
   _BaseType value_;
 };
 
-#define MAKE_UNITSAFE(name, type)			\
-  using name = UnitSafeWrapper<type, __COUNTER__>
+/**
+ * Helper macro which creates a new safe type that wraps a base type.
+ */
+#define MAKE_UNITSAFE(UnitSafeType, BaseType)			\
+  using UnitSafeType = UnitSafeWrapper<BaseType, __COUNTER__>
+
+/**
+ * Helper macro that uses some type system magic to simplify the
+ * casting of a safe type constructed from UnitSafeWrapper to the base
+ * type which can be used in operations with other types.
+ *
+ * NOTE: this will also cast away a reference modifier on the type of
+ * the argument value.
+ */
+#define BASE_CAST(val)							\
+  static_cast<typename std::remove_reference<decltype(val)>::type::base_type>(val)
+
 
 } // namespace jrl
+
+namespace
+{
+// Various helper template functions defined inline in an empty
+// namespace to (hopefully) avoid the problem of multiply-defined
+// symbols while making life easier.
+
+/**
+ * sqrt
+ */
+template<typename _BaseType, unsigned _TypeTag>
+inline typename jrl::UnitSafeWrapper<_BaseType, _TypeTag>::base_type
+sqrt(const typename jrl::UnitSafeWrapper<_BaseType, _TypeTag> val)
+{
+  return ::sqrt(BASE_CAST(val));
+}
+
+// \TODO add other standard math functions
+
+#ifdef USE_EXPERIMENTAL_UNITSAFE_STREAM_OPERATOR
+// \TODO experimental, not sure if this will ever work...
+/**
+ * Override of operator<< for types derived from UnitSafeWrapper.
+ *
+ * NOTE: this is defined inline in text of the target translation unit
+ * to (hopefully) avoid the problem of multiply defined symbols.
+ */
+template<typename _BaseType, unsigned _TypeTag>
+inline std::ostream &
+operator<<(std::ostream &strm, const jrl::UnitSafeWrapper<_BaseType, _TypeTag>& val)
+{
+  strm << static_cast<typename jrl::UnitSafeWrapper<_BaseType, _TypeTag>::base_type>(val);
+  return strm;
+}
+#endif // #ifdef USE_EXPERIMENTAL_UNITSAFE_STREAM_OPERATOR
+} // empty namespace
 
 #endif // UNITSAFE_GUARD
