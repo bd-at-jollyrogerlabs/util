@@ -48,7 +48,7 @@ namespace detail
  */
 template<typename _Container>
 void
-null_extender(_Container& __container, const size_t sz)
+null_extender(_Container &__container, const size_t sz)
 {
 }
 
@@ -71,11 +71,12 @@ null_extender(_Container& __container, const size_t sz)
  * and _Extender template formal parameters.
  *
  */
-template<typename _Container, typename _Extender>
+template<typename _Container, typename _Extender =
+	 std::function<void(_Container &, const size_t)>>
 jrl::util::bool_return<typename _Container::size_type>
 nondestructive_insert(_Container &__container,
 		      const typename _Container::value_type &__val,
-		      _Extender __extender)
+		      _Extender __extender = detail::null_extender<_Container>)
 {
   using result_type = jrl::util::bool_return<typename _Container::size_type>;
   // @todo fix the following statement
