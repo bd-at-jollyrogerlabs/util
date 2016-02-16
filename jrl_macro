@@ -1,0 +1,99 @@
+/** -*- mode: c++ -*-
+ *
+ * jrl_macro
+ *
+ * Useful macros.
+ *
+ * Copyright (C) 2014 Brian Davis
+ * All Rights Reserved
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 
+ * Author: Brian Davis <bd@jollyrogerlabs.com>
+ * 
+ */
+
+#if !defined(JRL_MACRO_GUARD)
+#define JRL_MACRO_GUARD
+
+/**
+ * Replacement for assert() which will also abort the program during
+ * release builds.
+ *
+ * FIXME: find some tricky way for the NDEBUG version to print more
+ * details (e.g. print the operands when the failed predicate is
+ * operator==).
+ *
+ */
+#ifdef NDEBUG
+#define ASSERT(predicate)			\
+  do {						\
+    if (!(predicate)) {				\
+      abort();					\
+    }						\
+  } while (0)
+#else
+#define ASSERT(predicate)			\
+  do {						\
+    assert(predicate);				\
+  } while(0)
+#endif
+
+/**
+ * Easily define an exception type that derives from
+ * std::runtime_error
+ */
+#define DEF_RUNTIME_EXCEPTION(name)		\
+  class name : public std::runtime_error	\
+  {						\
+  public:					\
+    name(const std::string &what)		\
+      : std::runtime_error(what) {}		\
+}
+
+/**
+ * Helper macro for simplifying the use of exceptions.
+ */
+#define THROW_EXCEPTION(ExceptionType, ...)	\
+  do {						\
+    std::ostringstream what;			\
+    what << __VA_ARGS__;			\
+    throw ExceptionType(what.str());		\
+  } while(0)
+
+#define ERR_BUFF_SIZE 2048
+/**
+ * Helper macro for simplifying the use of exceptions which
+ * incorporate the value of strerror_r in the descriptive text.
+ */
+#define THROW_EXCEPTION_WITH_STRERROR(ExceptionType, ...)	\
+  do {								\
+    char buffer[ERR_BUFF_SIZE];					\
+    strerror_r(errno, buffer, ERR_BUFF_SIZE);			\
+    std::ostringstream what;					\
+    what << __VA_ARGS__ << ": " << buffer;			\
+    throw ExceptionType(what.str());				\
+  } while (0)
+
+#endif // JRL_MACRO_GUARD
