@@ -46,7 +46,9 @@ using namespace std;
 using namespace jrl;
 
 using IntVector = vector<int>;
-using Iterator = IntVector::const_iterator;
+using Iterator = IntVector::iterator;
+using ConstIterator = IntVector::const_iterator;
+using IntStringMap = map<int, const char *>;
 
 TEST_CASE("sort", "[sort]")
 {
@@ -57,13 +59,29 @@ TEST_CASE("sort", "[sort]")
   }
 }
 
+TEST_CASE("find", "[find]")
+{
+  {
+    IntVector ints{ 0, 1, 2, 3 };
+    Iterator entry = find(ints, 2);
+    REQUIRE(ints.end() != entry);
+    REQUIRE(2 == *entry);
+  }
+  {
+    const IntVector ints{ 4, 5, 6, 7 };
+    ConstIterator entry = find(ints, 6);
+    REQUIRE(ints.end() != entry);
+    REQUIRE(6 == *entry);
+  }
+}
+
 TEST_CASE("remove", "[remove]")
 {
   IntVector ints{ 0, 1, 2 };
-  const Iterator end = remove(ints, 1);
+  const ConstIterator end = remove(ints, 1);
   // NOTE: result is a shorter range, but size is unchanged
   REQUIRE(3 == ints.size());
-  Iterator itr = ints.begin();
+  ConstIterator itr = ints.begin();
   REQUIRE(0 == *(itr++));
   REQUIRE(2 == *(itr++));
   REQUIRE(end == itr);
@@ -72,13 +90,27 @@ TEST_CASE("remove", "[remove]")
 TEST_CASE("remove_if", "[remove_if]")
 {
   IntVector ints{ 0, 1, 2, 3, 4 };
-  const Iterator end = remove_if(ints, [](auto val) {
+  const ConstIterator end = remove_if(ints, [](auto val) {
       return 0 == (val % 2);
     });
   // NOTE: result is a shorter range, but size is unchanged
   REQUIRE(5 == ints.size());
-  Iterator itr = ints.begin();
+  ConstIterator itr = ints.begin();
   REQUIRE(1 == *(itr++));
   REQUIRE(3 == *(itr++));
   REQUIRE(end == itr);
+}
+
+TEST_CASE("is_present", "[is_present]")
+{
+  IntStringMap intsMap{
+    IntStringMap::value_type(0, "zero"),
+    IntStringMap::value_type(1, "one"),
+    IntStringMap::value_type(2, "two"),
+    IntStringMap::value_type(3, "three"),
+    IntStringMap::value_type(4, "four")
+  };
+  REQUIRE(is_present(intsMap, 0));
+  REQUIRE(is_present(intsMap, 4));
+  REQUIRE(!is_present(intsMap, 5));
 }
