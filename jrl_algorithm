@@ -34,8 +34,25 @@
  *
  */
 
-#ifndef JRL_ALGORITHM_GUARD
+#if !defined(JRL_ALGORITHM_GUARD)
 #define JRL_ALGORITHM_GUARD
+
+namespace jrl
+{
+
+namespace detail
+{
+
+/**
+ * Default extender
+ */
+template<typename _Container>
+void
+null_extender(_Container& __container, const size_t sz)
+{
+}
+
+} // namespace detail
 
 /**
  * @brief Insert a value at the end of a container only if it does not yet
@@ -49,21 +66,34 @@
  *         correctly inserted at the end of the container, false
  *         otherwsie, and the second element is the position at which
  *         the element was either inserted or found.
+ *
+ * @todo use type_traits to constrain the legal types for _Container
+ * and _Extender template formal parameters.
+ *
  */
 template<typename _Container, typename _Extender>
-std::tuple<bool, _Container::size_type>
+jrl::util::bool_return<typename _Container::size_type>
 nondestructive_insert(_Container &__container,
-		      const _Container::value_type &__val,
+		      const typename _Container::value_type &__val,
 		      _Extender __extender)
 {
-  __Container::const_iterator entry =
+  using result_type = jrl::util::bool_return<typename _Container::size_type>;
+  // @todo fix the following statement
+  // static_assert(std::is_member_function_pointer<typename _Container::push_back>::value,
+  // 		"_Container type parameter must be a class supporting a "
+  // 		"push_back member function");
+  typename _Container::const_iterator entry =
     std::find(__container.begin(), __container.end(), __val);
   if (__container.end() == entry) {
     __container.push_back(__val);
-    __extender(__container.size());
-    return std::tuple(true, (__container.size()));
+    __extender(__container, __container.size());
+    // successful insert and extension
+    return result_type(__container.size() - 1, true);
   }
-  return std::tuple(false, std::distance(entry, __container.begin()));
+  // value already exists
+  return result_type(std::distance(entry, __container.cbegin()), false);
 }
 
-#endif JRL_ALGORITHM_GUARD
+} // namespace jrl
+
+#endif // JRL_ALGORITHM_GUARD
