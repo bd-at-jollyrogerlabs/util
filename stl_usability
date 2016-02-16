@@ -34,13 +34,37 @@
  *
  */
 
-#ifndef STL_USABILITY_GUARD
+#if !defined(STL_USABILITY_GUARD)
 #define STL_USABILITY_GUARD
 
 #include <algorithm>
 
 namespace jrl
 {
+
+enum {
+  // enum to be used for accessing the key from a value_type object of
+  // a map-like container
+  KEY = 0,
+  VALUE = 1,
+  // enum to be used for accessing the result of calling insert() on a
+  // map-like container
+  ENTRY = 0,
+  INSERT_RESULT = 1
+};
+
+/**
+ * Helper function for the case where an element should only be
+ * inserted if not already present; this function should be called
+ * prior to the insert to determine if the key is present.
+ */
+template<typename _MapOrSetType>
+inline bool
+is_present(const _MapOrSetType &__mapOrSet,
+	   const typename _MapOrSetType::key_type &__key)
+{
+  return end(__mapOrSet) != __mapOrSet.find(__key);
+}
 
 // Convenience macros for results.
 #define ITER typename _Container::iterator
@@ -56,7 +80,7 @@ namespace jrl
   inline result_type						\
   name(const_type _Container &__container)			\
   {								\
-    return std::name(__container.begin(), __container.end());	\
+    return std::name(begin(__container), end(__container));	\
   }
 
 /**
@@ -73,7 +97,7 @@ NO_OP(sort, void, NO_CONST_TYPE)
   inline result_type							\
   name(const_type _Container &__container,  _Unary __unary)		\
   {									\
-    return std::name(__container.begin(), __container.end(), __unary);	\
+    return std::name(begin(__container), end(__container), __unary);	\
   }
 
 /**
@@ -89,7 +113,9 @@ UNARY_OP(for_each, UNARY_OUT, CONST_TYPE)
  * Find the first occurrence of a value.
  */
 UNARY_OP(find, CONST_ITER, CONST_TYPE)
+UNARY_OP(find, ITER, NO_CONST_TYPE)
 UNARY_OP(find_if, CONST_ITER, CONST_TYPE)
+UNARY_OP(find_if, ITER, NO_CONST_TYPE)
 /**
  * Remove all items that compare equal to an argument value
  */
@@ -109,7 +135,7 @@ UNARY_OP(remove_if, ITER, NO_CONST_TYPE)
   name(const_type _Container &__container, _OutputIterator __result,	\
        _Unary __unary)							\
   {									\
-    return std::name(__container.begin(), __container.end(), __result,	\
+    return std::name(begin(__container), end(__container), __result,	\
 		     __unary);						\
   }
 
@@ -129,7 +155,7 @@ UNARY_OP_OUT(copy_if, OUT_ITER, CONST_TYPE)
   inline result_type							\
   name(const_type _Container &__container, _Binary __binary)		\
   {									\
-    return std::name(__container.begin(), __container.end(), __binary);	\
+    return std::name(begin(__container), end(__container), __binary);	\
   }
 
 /**
@@ -145,7 +171,7 @@ BINARY_OP(sort, void, NO_CONST_TYPE)
   name(const _Container &__container, const _SearchType &__val,		\
        _Binary __binary)						\
   {									\
-    return std::name(__container.begin(), __container.end(), __val,	\
+    return std::name(begin(__container), end(__container), __val,	\
 		     __binary);						\
   }
 
@@ -165,8 +191,8 @@ SEARCH_OP(upper_bound);
   name(const _Container1 &__container1, const _Container2 &__container2, \
        _OutputIterator __result, _Binary __binary)			\
   {									\
-    return std::name(__container1.begin(), __container1.end(),		\
-		     __container2.begin(), __result, __binary);		\
+    return std::name(begin(__container1), end(__container1),		\
+		     begin(__container2), __result, __binary);		\
   }
 
 /**
