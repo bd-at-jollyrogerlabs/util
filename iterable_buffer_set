@@ -1,0 +1,452 @@
+/** -*- mode: c++ -*-
+ *
+ * iterable_buffer_set
+ *
+ * Wrap a set of buffers representing a single string or block of data
+ * in a vector of begin/length pairs, similar to iovec.
+ *
+ * Copyright (C) 2015 Brian Davis
+ * All Rights Reserved
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 
+ * Author: Brian Davis <bd@jollyrogerlabs.com>
+ * 
+ */
+
+#if !defined(ITERABLE_BUFFER_SET_GUARD)
+#define ITERABLE_BUFFER_SET_GUARD
+
+/**
+ * \TODO list
+ *
+ * 1. Use of std::string presents issues of object lifetime and
+ *    ownership which require extra research to determine the risk.
+ *    Possibly better to make a copy or eliminate these altogether.
+ *
+ * 2. Think carefully about issues of object ownership, especially in
+ *    the case where this type is used to store raw data read from a
+ *    socket.
+ *
+ * 3. Add branch prediction hints and possibly _NDEBUG wrapper to
+ *    error checking code.
+ *
+ * 4. Use uint8_t instead of char?
+ *
+ * 5. Support array_view.
+ *
+ * 6. Performance testing.
+ */
+
+namespace jrl
+{
+
+/**
+ * Class which represents a string using a vector of fragments, that
+ * allows cheaper insertion which is also non-destructive to the
+ * original raw string.
+ */
+template<typename _Alloc = std::allocator<char>>
+class iterable_buffer_set
+{
+private:
+  using CharArrayType = const char *;
+  using CharArrayElemType = const char;
+  using Fragment = std::tuple<CharArrayType, size_t>;
+  // selector constants
+  enum {
+    DATA = 0,
+    SIZE = 1
+  };
+
+  using Fragments = std::vector<Fragment, _Alloc>;
+
+public:
+  iterable_buffer_set(CharArrayType rawData, const size_t sz)
+  {
+    // \TODO error checking code, see TODO list
+    if (0 == sz) {
+      THROW_EXCEPTION(std::runtime_error, "iterable_buffer_set constructor "
+		      "called with fragment of size 0");
+    }
+    fragments_.emplace_back(Fragment(rawData, sz));
+  }
+
+  // iterable_buffer_set(const std::string &str)
+  // {
+  //   // \TODO error checking code, see TODO list
+  //   if (str.empty()) {
+  //     THROW_EXCEPTION(std::runtime_error, "iterable_buffer_set constructor "
+  // 		      "called with empty std::string");
+  //   }
+  //   // \TODO make copy?  see TODO list
+  //   fragments_.emplace_back(Fragment(str.c_str(), str.size()));
+  // }
+
+  /**
+   * Class to control iteration over individual elements of the buffer
+   * set.
+   */
+  template<bool IsConst>
+  class IteratorImpl : public std::iterator<std::forward_iterator_tag,
+					    CharArrayElemType>
+  {
+  public:
+    /**
+     * copy constructor
+     */
+    IteratorImpl(const IteratorImpl &src)
+      : fragments_(src.fragments_), fragPos_(src.fragPos_), idx_(src.idx_)
+    {
+    }
+
+    /**
+     * move constructor
+     */
+    IteratorImpl(IteratorImpl &&src)
+      : fragments_(src.fragments_), fragPos_(src.fragPos_), idx_(src.idx_)
+    {
+      src.fragPos_ = src.fragments_.end();
+      src.idx_ = 0;
+    }
+
+    /**
+     * copy assignment operator
+     */
+    IteratorImpl &
+    operator=(const IteratorImpl &rhs)
+    {
+      if (*this != rhs) {
+	fragments_ = rhs.fragments_;
+	fragPos_ = rhs.fragPos_;
+	idx_ = rhs.idx_;
+      }
+      return *this;
+    }
+
+    /**
+     * move assignment operator
+     */
+    IteratorImpl &
+    operator=(IteratorImpl &&rhs)
+    {
+      if (*this != rhs) {
+	fragments_ = rhs.fragments_;
+	fragPos_ = rhs.fragPos_;
+	idx_ = rhs.idx_;
+	rhs.fragPos_ = rhs.fragments_.end();
+	rhs.idx_ = 0;
+      }
+      return *this;
+    }
+    
+    CharArrayElemType &
+    operator*()
+    {
+      // \TODO error checking code, see TODO list
+      if (fragments_.end() == fragPos_) {
+	THROW_EXCEPTION(std::runtime_error, "attempt to dereference 'end' "
+			"iterator of iterable_buffer_set");
+      }
+      const Fragment &fragment = *fragPos_;
+      if (idx_ >= getSize(fragment)) {
+	THROW_EXCEPTION(std::logic_error, "internal iterable_buffer_set "
+			"iterator position is past fragment end");
+      }
+      CharArrayType raw = getRawData(fragment);
+      return raw[idx_];
+    }
+
+    // NOTE: post-increment not supported
+    void
+    operator++()
+    {
+      if (fragPos_ != fragments_.end()) {
+	const Fragment &fragment = *fragPos_;
+	const size_t sz = getSize(fragment);
+	// NOTE: fragment of size 0 is not permitted.
+	// assert(idx_ < sz);
+	if (idx_ >= sz) {
+	  THROW_EXCEPTION(std::logic_error, "internal iterable_buffer_set "
+			"iterator position is past fragment end");
+	}
+	if ((sz - 1) == idx_) {
+	  // Jump to the next fragment.
+	  ++fragPos_;
+	  idx_ = 0;
+	}
+	else {
+	  ++idx_;
+	}
+      }
+    }
+
+    inline bool
+    operator==(const IteratorImpl &rhs) const
+    {
+      return ((fragments_ == rhs.fragments_) &&
+	      (fragPos_ == rhs.fragPos_) &&
+	      (idx_ == rhs.idx_));
+    }
+
+    inline bool
+    operator!=(const IteratorImpl &rhs) const
+    {
+      return !(*this == rhs);
+    } 
+
+  private:
+    using FragmentsType = SELECTIVE_CONST(IsConst, Fragments);
+    using FragPosType =
+      typename std::conditional<IsConst, typename Fragments::const_iterator,
+				typename Fragments::iterator>::type;
+
+    /**
+     * construction with a fragment produces a 'begin' iterator
+     */
+    IteratorImpl(FragmentsType &fragments)
+      : fragments_(fragments), fragPos_(fragments_.begin()), idx_(0)
+    {
+    }
+
+    /**
+     * construction from a fragment and a position within that
+     * fragment
+     */
+    IteratorImpl(FragmentsType &fragments,
+		 // \TODO
+		 // typename Fragments::iterator fragPos,
+		 FragPosType fragPos,
+		 const size_t index)
+      : fragments_(fragments), fragPos_(fragPos), idx_(index)
+    {
+    }
+
+    static IteratorImpl
+    getEndIterator(FragmentsType &fragments)
+    {
+      // see comments in data member declarations for the definition
+      // of an end iterator
+      return IteratorImpl(fragments, fragments.end(), 0);
+    }
+
+    friend class iterable_buffer_set;
+    
+    static inline CharArrayType
+    getRawData(const Fragment &fragment)
+    {
+      return std::get<DATA>(fragment);
+    }
+
+    static inline size_t &
+    getSize(Fragment &fragment)
+    {
+      return std::get<SIZE>(fragment);
+    }
+
+    static inline size_t
+    getSize(const Fragment &fragment)
+    {
+      return std::get<SIZE>(fragment);
+    }
+
+    // NOTE: an end iterator for a vector of fragments is defined to
+    // have a reference to that vector in fragments_, the end position
+    // of that vector in fragPos_, and 0 in idx_.
+
+    // WARNING: the correctness of some portions of the code depends
+    // on the above definition of an end iterator, which should not be
+    // changed without careful analysis of the consequences.
+    FragmentsType &fragments_;
+    FragPosType fragPos_;
+    size_t idx_;
+  };
+
+  using iterator = IteratorImpl<false>;
+  using const_iterator = IteratorImpl<true>;
+
+  iterator
+  begin()
+  {
+    return iterator(fragments_);
+  }
+
+  const_iterator
+  begin() const
+  {
+    return const_iterator(fragments_);
+  }
+
+  const_iterator
+  cbegin() const
+  {
+    return const_iterator(fragments_);
+  }
+
+  iterator
+  end()
+  {
+    return iterator::getEndIterator(fragments_);
+  }
+
+  const_iterator
+  end() const
+  {
+    return const_iterator::getEndIterator(fragments_);
+  }
+
+  const_iterator
+  cend() const
+  {
+    return const_iterator::getEndIterator(fragments_);
+  }
+
+  /**
+   * Split the underlying buffer fragment at the argument position.
+   *
+   * @parameter pos - [in] position at which to split the buffer
+   *                  set.
+   * @return an iterator referencing the position at which the new
+   *         fragment begins, or the argument position iterator if it
+   *         references the beginning of a fragment, or an end iterator
+   *         if the argument position iterator did not reference an
+   *         entry in the argument fragment vector.
+   */
+  iterator
+  split(const iterator &pos)
+  {
+    // Handle the case where the split position is already at the end of the
+    // fragments vector.
+    const iterator endPos = this->end();
+    if (endPos == pos) {
+      return endPos;
+    }
+    // Calculate the size of the new fragment that will be inserted.
+    const size_t oldPosIdx = pos.idx_;
+    if (0 == oldPosIdx) {
+      // Split position already occurs on a fragment boundary, no need
+      // to split.
+      return pos;
+    }
+    typename Fragments::iterator oldFragPos = pos.fragPos_;
+    Fragment &oldFrag = *oldFragPos;
+    const char *oldFragBgn = iterator::getRawData(oldFrag);
+    const size_t oldFragSz = iterator::getSize(oldFrag);
+    const size_t newFragSz = oldFragSz - oldPosIdx;
+    // \TODO error checking code, see TODO list
+    // the following condition can only occur if there is a fragment
+    // of size 0, which is not permitted
+    if (0 >= newFragSz) {
+      THROW_EXCEPTION(std::logic_error, "detected a fragment of size 0");
+    }
+    
+    // Calculate the insertion position of the new fragment.
+    const char *newFragBgn = oldFragBgn + (oldFragSz - newFragSz);
+    typename Fragments::const_iterator newFragInsPos;
+    newFragInsPos = oldFragPos;
+    ++newFragInsPos;
+
+    // Truncate the old fragment.
+    const size_t oldFragTruncatedSz =
+      static_cast<size_t>(newFragBgn - oldFragBgn);
+    iterator::getSize(oldFrag) = oldFragTruncatedSz;
+
+    // Insert the new fragment into the appropriate position and
+    // return an iterator referencing it.
+    //
+    // NOTE; Must be done after the old fragment is truncated due to
+    // iterator invalidation.
+    typename Fragments::iterator insPos = 
+      fragments_.insert(newFragInsPos, Fragment(newFragBgn, newFragSz));
+    return iterator(fragments_, insPos, 0);
+  }
+
+  /**
+   * Insert a new fragment before a given position in the buffer set.
+   *
+   * @parameter pos - [in] position before which to insert the new
+   *                  fragment.
+   * @parameter raw - [in] pointer to new fragment raw data.
+   * @parameter sz - [in] size of new fragment.
+   * @return an iterator that references the inserted fragment.
+   */
+  iterator
+  insert(const iterator &pos,
+	 CharArrayType raw,
+	 const size_t sz)
+  {
+    const iterator splitPos = split(pos);
+    typename Fragments::iterator insertPos = fragments_.insert(splitPos.fragPos_,
+						      Fragment(raw, sz));
+    return iterator(fragments_, insertPos, 0);
+  }
+
+  /**
+   * Insert a new fragment before a given position in the buffer set.
+   *
+   * @parameter pos - [in] position before which to insert the new
+   *                  fragment.
+   * @parameter str - [in] pointer to new string fragment.
+   * @return an iterator that references the inserted fragment.
+   */
+  // inline iterator
+  // insert(const iterator &pos,
+  // 	 const std::string &str)
+  // {
+  //   return insert(pos, str.c_str(), str.size());
+  // }
+
+  /**
+   * Insert a new fragment at the end of the buffer set.
+   *
+   * @parameter pos - [in] position before which to insert the new
+   *                  fragment.
+   * @parameter raw - [in] pointer to new fragment raw data.
+   */
+  void
+  push_back(CharArrayType raw,
+	    const size_t sz)
+  {
+    return fragments_.push_back(Fragment(raw, sz));
+  }
+
+  /**
+   * Insert a new fragment at the end of the buffer set.
+   *
+   * @parameter str - [in] pointer to new string fragment.
+   */
+  // void
+  // push_back(const std::string &str)
+  // {
+  //   return fragments_.push_back(Fragment(str.c_str(), str.size()));
+  // }
+  
+private:
+
+  Fragments fragments_;
+};
+
+} // namespace jrl
+
+#endif // #if !defined(ITERABLE_BUFFER_SET_GUARD)
