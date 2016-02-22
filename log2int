@@ -34,8 +34,8 @@
  * 
  */
 
-#ifndef LOG2INT
-#define LOG2INT 1
+#if !defined(LOG2INT_GUARD)
+#define LOG2INT_GUARD 1
 
 namespace jrl
 {
@@ -153,4 +153,4 @@ log2int(UnsignedType arg)
 }
 
 }
-#endif // LOG2INT
+#endif // !defined(LOG2INT_GUARD)
