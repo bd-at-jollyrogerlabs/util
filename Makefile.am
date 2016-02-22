@@ -59,18 +59,25 @@ ACLOCAL_AMFLAGS = -I m4
 # 	libjrlutil.la
 
 include_HEADERS = \
-	unitsafe \
-	units_usability \
 	log2int \
-	jrl_util
+	logging \
+	jrl_algorithm \
+	jrl_macro \
+	jrl_metaprogram \
+	jrl_util \
+	unitsafe
 
 bin_PROGRAMS = \
 	testlog2int \
 	testboostusability \
-	testunitsafe \
-	teststlusability \
+	testjrlalgorithm \
+	testjrlgeom \
+	testjrlmetaprogram \
 	testjrlutil \
-	testjrlgeom
+	testlogging \
+	testiterablebufferset \
+	teststlusability \
+	testunitsafe
 
 testlog2int_SOURCES = \
 	testlog2int.cpp
@@ -84,10 +91,22 @@ testunitsafe_SOURCES = \
 teststlusability_SOURCES = \
 	teststlusability.cpp
 
-testjrlutil_SOURCES = \
-	testjrlutil.cpp
+testiterablebufferset_SOURCES = \
+	testiterablebufferset.cpp
 
 testjrlgeom_SOURCES = \
 	testjrlgeom.cpp
+
+testjrlalgorithm_SOURCES = \
+	testjrlalgorithm.cpp
+
+testjrlmetaprogram_SOURCES = \
+	testjrlmetaprogram.cpp
+
+testjrlutil_SOURCES = \
+	testjrlutil.cpp
+
+testlogging_SOURCES = \
+	testlogging.cpp
 
 rebuild: clean all

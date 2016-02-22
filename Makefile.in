@@ -111,12 +111,14 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = testlog2int$(EXEEXT) testboostusability$(EXEEXT) \
-	testunitsafe$(EXEEXT) teststlusability$(EXEEXT) \
-	testjrlutil$(EXEEXT) testjrlgeom$(EXEEXT)
+	testjrlalgorithm$(EXEEXT) testjrlgeom$(EXEEXT) \
+	testjrlmetaprogram$(EXEEXT) testjrlutil$(EXEEXT) \
+	testlogging$(EXEEXT) testiterablebufferset$(EXEEXT) \
+	teststlusability$(EXEEXT) testunitsafe$(EXEEXT)
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
-	$(srcdir)/config.h.in depcomp $(include_HEADERS) compile \
+	$(srcdir)/config.h.in depcomp $(include_HEADERS) TODO compile \
 	config.guess config.sub install-sh missing ltmain.sh
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -140,15 +142,27 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+am_testiterablebufferset_OBJECTS = testiterablebufferset.$(OBJEXT)
+testiterablebufferset_OBJECTS = $(am_testiterablebufferset_OBJECTS)
+testiterablebufferset_LDADD = $(LDADD)
+am_testjrlalgorithm_OBJECTS = testjrlalgorithm.$(OBJEXT)
+testjrlalgorithm_OBJECTS = $(am_testjrlalgorithm_OBJECTS)
+testjrlalgorithm_LDADD = $(LDADD)
 am_testjrlgeom_OBJECTS = testjrlgeom.$(OBJEXT)
 testjrlgeom_OBJECTS = $(am_testjrlgeom_OBJECTS)
 testjrlgeom_LDADD = $(LDADD)
+am_testjrlmetaprogram_OBJECTS = testjrlmetaprogram.$(OBJEXT)
+testjrlmetaprogram_OBJECTS = $(am_testjrlmetaprogram_OBJECTS)
+testjrlmetaprogram_LDADD = $(LDADD)
 am_testjrlutil_OBJECTS = testjrlutil.$(OBJEXT)
 testjrlutil_OBJECTS = $(am_testjrlutil_OBJECTS)
 testjrlutil_LDADD = $(LDADD)
 am_testlog2int_OBJECTS = testlog2int.$(OBJEXT)
 testlog2int_OBJECTS = $(am_testlog2int_OBJECTS)
 testlog2int_LDADD = $(LDADD)
+am_testlogging_OBJECTS = testlogging.$(OBJEXT)
+testlogging_OBJECTS = $(am_testlogging_OBJECTS)
+testlogging_LDADD = $(LDADD)
 am_teststlusability_OBJECTS = teststlusability.$(OBJEXT)
 teststlusability_OBJECTS = $(am_teststlusability_OBJECTS)
 teststlusability_LDADD = $(LDADD)
@@ -189,12 +203,18 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(testboostusability_SOURCES) $(testjrlgeom_SOURCES) \
+SOURCES = $(testboostusability_SOURCES) \
+	$(testiterablebufferset_SOURCES) $(testjrlalgorithm_SOURCES) \
+	$(testjrlgeom_SOURCES) $(testjrlmetaprogram_SOURCES) \
 	$(testjrlutil_SOURCES) $(testlog2int_SOURCES) \
-	$(teststlusability_SOURCES) $(testunitsafe_SOURCES)
-DIST_SOURCES = $(testboostusability_SOURCES) $(testjrlgeom_SOURCES) \
+	$(testlogging_SOURCES) $(teststlusability_SOURCES) \
+	$(testunitsafe_SOURCES)
+DIST_SOURCES = $(testboostusability_SOURCES) \
+	$(testiterablebufferset_SOURCES) $(testjrlalgorithm_SOURCES) \
+	$(testjrlgeom_SOURCES) $(testjrlmetaprogram_SOURCES) \
 	$(testjrlutil_SOURCES) $(testlog2int_SOURCES) \
-	$(teststlusability_SOURCES) $(testunitsafe_SOURCES)
+	$(testlogging_SOURCES) $(teststlusability_SOURCES) \
+	$(testunitsafe_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -412,10 +432,13 @@ ACLOCAL_AMFLAGS = -I m4
 # lib_LTLIBRARIES = \
 # 	libjrlutil.la
 include_HEADERS = \
-	unitsafe \
-	units_usability \
 	log2int \
-	jrl_util
+	logging \
+	jrl_algorithm \
+	jrl_macro \
+	jrl_metaprogram \
+	jrl_util \
+	unitsafe
 
 testlog2int_SOURCES = \
 	testlog2int.cpp
@@ -429,11 +452,23 @@ testunitsafe_SOURCES = \
 teststlusability_SOURCES = \
 	teststlusability.cpp
 
-testjrlutil_SOURCES = \
-	testjrlutil.cpp
+testiterablebufferset_SOURCES = \
+	testiterablebufferset.cpp
 
 testjrlgeom_SOURCES = \
 	testjrlgeom.cpp
+
+testjrlalgorithm_SOURCES = \
+	testjrlalgorithm.cpp
+
+testjrlmetaprogram_SOURCES = \
+	testjrlmetaprogram.cpp
+
+testjrlutil_SOURCES = \
+	testjrlutil.cpp
+
+testlogging_SOURCES = \
+	testlogging.cpp
 
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -543,9 +578,21 @@ testboostusability$(EXEEXT): $(testboostusability_OBJECTS) $(testboostusability_
 	@rm -f testboostusability$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(testboostusability_OBJECTS) $(testboostusability_LDADD) $(LIBS)
 
+testiterablebufferset$(EXEEXT): $(testiterablebufferset_OBJECTS) $(testiterablebufferset_DEPENDENCIES) $(EXTRA_testiterablebufferset_DEPENDENCIES) 
+	@rm -f testiterablebufferset$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(testiterablebufferset_OBJECTS) $(testiterablebufferset_LDADD) $(LIBS)
+
+testjrlalgorithm$(EXEEXT): $(testjrlalgorithm_OBJECTS) $(testjrlalgorithm_DEPENDENCIES) $(EXTRA_testjrlalgorithm_DEPENDENCIES) 
+	@rm -f testjrlalgorithm$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(testjrlalgorithm_OBJECTS) $(testjrlalgorithm_LDADD) $(LIBS)
+
 testjrlgeom$(EXEEXT): $(testjrlgeom_OBJECTS) $(testjrlgeom_DEPENDENCIES) $(EXTRA_testjrlgeom_DEPENDENCIES) 
 	@rm -f testjrlgeom$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(testjrlgeom_OBJECTS) $(testjrlgeom_LDADD) $(LIBS)
+
+testjrlmetaprogram$(EXEEXT): $(testjrlmetaprogram_OBJECTS) $(testjrlmetaprogram_DEPENDENCIES) $(EXTRA_testjrlmetaprogram_DEPENDENCIES) 
+	@rm -f testjrlmetaprogram$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(testjrlmetaprogram_OBJECTS) $(testjrlmetaprogram_LDADD) $(LIBS)
 
 testjrlutil$(EXEEXT): $(testjrlutil_OBJECTS) $(testjrlutil_DEPENDENCIES) $(EXTRA_testjrlutil_DEPENDENCIES) 
 	@rm -f testjrlutil$(EXEEXT)
@@ -554,6 +601,10 @@ testjrlutil$(EXEEXT): $(testjrlutil_OBJECTS) $(testjrlutil_DEPENDENCIES) $(EXTRA
 testlog2int$(EXEEXT): $(testlog2int_OBJECTS) $(testlog2int_DEPENDENCIES) $(EXTRA_testlog2int_DEPENDENCIES) 
 	@rm -f testlog2int$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(testlog2int_OBJECTS) $(testlog2int_LDADD) $(LIBS)
+
+testlogging$(EXEEXT): $(testlogging_OBJECTS) $(testlogging_DEPENDENCIES) $(EXTRA_testlogging_DEPENDENCIES) 
+	@rm -f testlogging$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(testlogging_OBJECTS) $(testlogging_LDADD) $(LIBS)
 
 teststlusability$(EXEEXT): $(teststlusability_OBJECTS) $(teststlusability_DEPENDENCIES) $(EXTRA_teststlusability_DEPENDENCIES) 
 	@rm -f teststlusability$(EXEEXT)
@@ -570,9 +621,13 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testboostusability.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testiterablebufferset.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testjrlalgorithm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testjrlgeom.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testjrlmetaprogram.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testjrlutil.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testlog2int.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testlogging.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/teststlusability.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testunitsafe.Po@am__quote@
 
