@@ -28,4 +28,7 @@ testjrlgeom
 cursorlist
 config.h
 compile
-/teststlusability
+teststlusability
+testiterablebufferset
+testjrlalgorithm
+testjrlmetaprogram
