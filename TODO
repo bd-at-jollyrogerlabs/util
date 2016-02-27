@@ -18,11 +18,10 @@ Move to enum in internal namespace, seems like #define followed by
 * unitsafe
 ** Change name to jrl_unitsafe?
 ** Fix handling of type tags
-Need a registration mechanism with very good documentation (or perhaps
-a script to generate the registry).
+*** mostly works now, but need to figure out how to handle operator<< correctly
+See USE_EXPERIMENTAL_UNITSAFE_STREAM_OPERATOR
 
-Use the David Lee Roth Brown M&Ms trick to ensure that the user has
-read and followed the documentation?
+Works in test code but not pcbfixturing.
 * log2int
 ** Convert to C++14
 ** Change name to jrl_log_base2
