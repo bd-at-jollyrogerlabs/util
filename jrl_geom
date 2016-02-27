@@ -141,7 +141,7 @@ private:
       // 180 degress
       return _AngleType(2 * M_PI_2);
     }
-    float intermediate = tan(y / x);
+    float intermediate = tanf(y / x);
     if (0.0 == intermediate) {
       return _AngleType(0);
     }
