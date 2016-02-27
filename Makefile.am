@@ -72,6 +72,7 @@ bin_PROGRAMS = \
 	testboostusability \
 	testjrlalgorithm \
 	testjrlgeom \
+	testjrlmacro \
 	testjrlmetaprogram \
 	testjrlutil \
 	testlogging \
@@ -84,6 +85,7 @@ TESTS = \
 	testboostusability \
 	testjrlalgorithm \
 	testjrlgeom \
+	testjrlmacro \
 	testjrlmetaprogram \
 	testjrlutil \
 	testlogging \
@@ -102,6 +104,9 @@ testjrlalgorithm_SOURCES = \
 
 testjrlgeom_SOURCES = \
 	test/testjrlgeom.cpp
+
+testjrlmacro_SOURCES = \
+	test/testjrlmacro.cpp
 
 testjrlmetaprogram_SOURCES = \
 	test/testjrlmetaprogram.cpp

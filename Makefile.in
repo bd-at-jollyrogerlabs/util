@@ -112,14 +112,16 @@ build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = testlog2int$(EXEEXT) testboostusability$(EXEEXT) \
 	testjrlalgorithm$(EXEEXT) testjrlgeom$(EXEEXT) \
-	testjrlmetaprogram$(EXEEXT) testjrlutil$(EXEEXT) \
-	testlogging$(EXEEXT) testiterablebufferset$(EXEEXT) \
-	teststlusability$(EXEEXT) testunitsafe$(EXEEXT)
+	testjrlmacro$(EXEEXT) testjrlmetaprogram$(EXEEXT) \
+	testjrlutil$(EXEEXT) testlogging$(EXEEXT) \
+	testiterablebufferset$(EXEEXT) teststlusability$(EXEEXT) \
+	testunitsafe$(EXEEXT)
 TESTS = testlog2int$(EXEEXT) testboostusability$(EXEEXT) \
 	testjrlalgorithm$(EXEEXT) testjrlgeom$(EXEEXT) \
-	testjrlmetaprogram$(EXEEXT) testjrlutil$(EXEEXT) \
-	testlogging$(EXEEXT) testiterablebufferset$(EXEEXT) \
-	teststlusability$(EXEEXT) testunitsafe$(EXEEXT)
+	testjrlmacro$(EXEEXT) testjrlmetaprogram$(EXEEXT) \
+	testjrlutil$(EXEEXT) testlogging$(EXEEXT) \
+	testiterablebufferset$(EXEEXT) teststlusability$(EXEEXT) \
+	testunitsafe$(EXEEXT)
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
@@ -157,6 +159,9 @@ testjrlalgorithm_LDADD = $(LDADD)
 am_testjrlgeom_OBJECTS = testjrlgeom.$(OBJEXT)
 testjrlgeom_OBJECTS = $(am_testjrlgeom_OBJECTS)
 testjrlgeom_LDADD = $(LDADD)
+am_testjrlmacro_OBJECTS = testjrlmacro.$(OBJEXT)
+testjrlmacro_OBJECTS = $(am_testjrlmacro_OBJECTS)
+testjrlmacro_LDADD = $(LDADD)
 am_testjrlmetaprogram_OBJECTS = testjrlmetaprogram.$(OBJEXT)
 testjrlmetaprogram_OBJECTS = $(am_testjrlmetaprogram_OBJECTS)
 testjrlmetaprogram_LDADD = $(LDADD)
@@ -211,16 +216,16 @@ am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
 SOURCES = $(testboostusability_SOURCES) \
 	$(testiterablebufferset_SOURCES) $(testjrlalgorithm_SOURCES) \
-	$(testjrlgeom_SOURCES) $(testjrlmetaprogram_SOURCES) \
-	$(testjrlutil_SOURCES) $(testlog2int_SOURCES) \
-	$(testlogging_SOURCES) $(teststlusability_SOURCES) \
-	$(testunitsafe_SOURCES)
+	$(testjrlgeom_SOURCES) $(testjrlmacro_SOURCES) \
+	$(testjrlmetaprogram_SOURCES) $(testjrlutil_SOURCES) \
+	$(testlog2int_SOURCES) $(testlogging_SOURCES) \
+	$(teststlusability_SOURCES) $(testunitsafe_SOURCES)
 DIST_SOURCES = $(testboostusability_SOURCES) \
 	$(testiterablebufferset_SOURCES) $(testjrlalgorithm_SOURCES) \
-	$(testjrlgeom_SOURCES) $(testjrlmetaprogram_SOURCES) \
-	$(testjrlutil_SOURCES) $(testlog2int_SOURCES) \
-	$(testlogging_SOURCES) $(teststlusability_SOURCES) \
-	$(testunitsafe_SOURCES)
+	$(testjrlgeom_SOURCES) $(testjrlmacro_SOURCES) \
+	$(testjrlmetaprogram_SOURCES) $(testjrlutil_SOURCES) \
+	$(testlog2int_SOURCES) $(testlogging_SOURCES) \
+	$(teststlusability_SOURCES) $(testunitsafe_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -634,6 +639,9 @@ testjrlalgorithm_SOURCES = \
 testjrlgeom_SOURCES = \
 	test/testjrlgeom.cpp
 
+testjrlmacro_SOURCES = \
+	test/testjrlmacro.cpp
+
 testjrlmetaprogram_SOURCES = \
 	test/testjrlmetaprogram.cpp
 
@@ -772,6 +780,10 @@ testjrlgeom$(EXEEXT): $(testjrlgeom_OBJECTS) $(testjrlgeom_DEPENDENCIES) $(EXTRA
 	@rm -f testjrlgeom$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(testjrlgeom_OBJECTS) $(testjrlgeom_LDADD) $(LIBS)
 
+testjrlmacro$(EXEEXT): $(testjrlmacro_OBJECTS) $(testjrlmacro_DEPENDENCIES) $(EXTRA_testjrlmacro_DEPENDENCIES) 
+	@rm -f testjrlmacro$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(testjrlmacro_OBJECTS) $(testjrlmacro_LDADD) $(LIBS)
+
 testjrlmetaprogram$(EXEEXT): $(testjrlmetaprogram_OBJECTS) $(testjrlmetaprogram_DEPENDENCIES) $(EXTRA_testjrlmetaprogram_DEPENDENCIES) 
 	@rm -f testjrlmetaprogram$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(testjrlmetaprogram_OBJECTS) $(testjrlmetaprogram_LDADD) $(LIBS)
@@ -806,6 +818,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testiterablebufferset.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testjrlalgorithm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testjrlgeom.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testjrlmacro.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testjrlmetaprogram.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testjrlutil.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testlog2int.Po@am__quote@
@@ -889,6 +902,20 @@ testjrlgeom.obj: test/testjrlgeom.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testjrlgeom.cpp' object='testjrlgeom.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testjrlgeom.obj `if test -f 'test/testjrlgeom.cpp'; then $(CYGPATH_W) 'test/testjrlgeom.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testjrlgeom.cpp'; fi`
+
+testjrlmacro.o: test/testjrlmacro.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testjrlmacro.o -MD -MP -MF $(DEPDIR)/testjrlmacro.Tpo -c -o testjrlmacro.o `test -f 'test/testjrlmacro.cpp' || echo '$(srcdir)/'`test/testjrlmacro.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testjrlmacro.Tpo $(DEPDIR)/testjrlmacro.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testjrlmacro.cpp' object='testjrlmacro.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testjrlmacro.o `test -f 'test/testjrlmacro.cpp' || echo '$(srcdir)/'`test/testjrlmacro.cpp
+
+testjrlmacro.obj: test/testjrlmacro.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testjrlmacro.obj -MD -MP -MF $(DEPDIR)/testjrlmacro.Tpo -c -o testjrlmacro.obj `if test -f 'test/testjrlmacro.cpp'; then $(CYGPATH_W) 'test/testjrlmacro.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testjrlmacro.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testjrlmacro.Tpo $(DEPDIR)/testjrlmacro.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testjrlmacro.cpp' object='testjrlmacro.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testjrlmacro.obj `if test -f 'test/testjrlmacro.cpp'; then $(CYGPATH_W) 'test/testjrlmacro.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testjrlmacro.cpp'; fi`
 
 testjrlmetaprogram.o: test/testjrlmetaprogram.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testjrlmetaprogram.o -MD -MP -MF $(DEPDIR)/testjrlmetaprogram.Tpo -c -o testjrlmetaprogram.o `test -f 'test/testjrlmetaprogram.cpp' || echo '$(srcdir)/'`test/testjrlmetaprogram.cpp
@@ -1228,6 +1255,13 @@ testjrlalgorithm.log: testjrlalgorithm$(EXEEXT)
 testjrlgeom.log: testjrlgeom$(EXEEXT)
 	@p='testjrlgeom$(EXEEXT)'; \
 	b='testjrlgeom'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+testjrlmacro.log: testjrlmacro$(EXEEXT)
+	@p='testjrlmacro$(EXEEXT)'; \
+	b='testjrlmacro'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
