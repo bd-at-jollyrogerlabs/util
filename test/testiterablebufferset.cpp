@@ -63,6 +63,7 @@ using namespace jrl;
 using IbsIterator = iterable_buffer_set<>::iterator;
 using ConstIbsIterator = iterable_buffer_set<>::const_iterator;
 
+// @todo
 // iterable_buffer_set<>
 // makeBuffSet(const string &str)
 // {
@@ -75,6 +76,7 @@ makeBuffSet(const char * const str)
   return iterable_buffer_set<>(str, strlen(str));
 }
 
+// @todo
 // void
 // insertString(iterable_buffer_set<> &buffSet,
 // 	     IbsIterator insertPos,
@@ -91,6 +93,7 @@ insertString(iterable_buffer_set<> &buffSet,
   buffSet.insert(insertPos, insStr, strlen(insStr));
 }
 
+// @todo
 // void
 // pushBackString(iterable_buffer_set<> &buffSet,
 // 	       const string &insStr)
@@ -147,6 +150,7 @@ insertTest(const char *testStr, const char *insertStr, Inserter inserter)
 
 TEST_CASE("Basic C string insertion test", "[insert]")
 {
+  // @todo
   // BASIC_INSERT_TEST(char * const);
   const string result =
     insertTest("Hello World!\n", "Cruel ",
@@ -163,6 +167,7 @@ TEST_CASE("Basic C string insertion test", "[insert]")
   REQUIRE("Hello Cruel World!\n" == result);
 }
 
+// @todo
 // TEST_CASE("Basic STL string insertion test", "[insert]")
 // {
 //   BASIC_INSERT_TEST(string);
@@ -191,6 +196,7 @@ TEST_CASE("C string front insert test", "[insert]")
   FRONT_INSERT_TEST(char * const);
 }
 
+// @todo
 // TEST_CASE("STL string front insert test", "[insert]")
 // {
 //   FRONT_INSERT_TEST(string);
@@ -218,6 +224,7 @@ TEST_CASE("C string back insert test", "[insert]")
   BACK_INSERT_TEST(char * const);
 }
 
+// @todo
 // TEST_CASE("STL string back insert test", "[insert]")
 // {
 //   BACK_INSERT_TEST(string);
