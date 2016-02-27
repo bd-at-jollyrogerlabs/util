@@ -57,10 +57,9 @@ namespace logging_hidden
     ERROR_LEVEL_FLAG = 1 << 3,
     FATAL_LEVEL_FLAG = 1 << 4
   };
-  struct LogLevelFlagsTag {};
 } // namespace logging_hidden
 
-MAKE_UNITSAFE(LogLevelFlags, uint8_t, logging_hidden::LogLevelFlagsTag);
+MAKE_UNITSAFE(LogLevelFlags, uint8_t);
 
 #define ENABLE_LOG_LEVEL_BUILDER(NEW_LEVEL)				\
   do {									\
