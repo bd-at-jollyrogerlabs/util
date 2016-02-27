@@ -12,11 +12,13 @@ Need to convert libbatch to some benchmarking library.
 ** Apply patches to nondestructive_insert
 See @todo comments in the function definition.
 * jrl_macro
-** get rid of magic number constants
+** Get rid of magic number constants
 Move to enum in internal namespace, seems like #define followed by
 #undef will not work...
 * unitsafe
 ** Change name to jrl_unitsafe?
+** Use type_traits to restrict use to base types
+Only numeric types?
 ** Fix handling of type tags
 *** mostly works now, but need to figure out how to handle operator<< correctly
 See USE_EXPERIMENTAL_UNITSAFE_STREAM_OPERATOR
