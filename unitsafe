@@ -179,15 +179,30 @@ private:
 
 /**
  * Helper macro which creates a new safe type that wraps a base type.
+ *
+ * NOTE: this macro cannot be used create a publicly accessible type
+ * in a class, use MAKE_PUBLIC_UNITSAFE instead.
  */
-#define MAKE_UNITSAFE_OLD(UnitSafeType, BaseType)			\
-  using UnitSafeType = UnitSafeWrapper<BaseType, __COUNTER__>
+#define MAKE_UNITSAFE(UnitSafeType, BaseType)				\
+  namespace unitsafetag { struct UnitSafeType ## TAG {}; }		\
+  using UnitSafeType = UnitSafeWrapper<BaseType, unitsafetag::UnitSafeType ## TAG>
 
 /**
- * Helper macro which creates a new safe type that wraps a base type.
+ * Helper macro which creates a new safe type that wraps a base type
+ * and exists within an enclosing class.
  */
-#define MAKE_UNITSAFE(UnitSafeType, BaseType, TypeTag)				\
-  using UnitSafeType = UnitSafeWrapper<BaseType, TypeTag>
+#define MAKE_CONTAINED_UNITSAFE(UnitSafeType, BaseType, accessibility)	\
+private:								\
+  struct UnitSafeType ## TAG {};					\
+accessibility:								\
+  using UnitSafeType = UnitSafeWrapper<BaseType, UnitSafeType ## TAG>
+
+/**
+ * Helper macro which creates a new safe type that wraps a base type
+ * and is publicly accessible from within its enclosing class.
+ */
+#define MAKE_PUBLIC_UNITSAFE(UnitSafeType, BaseType)		\
+  MAKE_CONTAINED_UNITSAFE(UnitSafeType, BaseType, public)
 
 /**
  * Helper macro that uses some type system magic to simplify the
@@ -220,9 +235,29 @@ sqrt(const typename jrl::UnitSafeWrapper<_BaseType, _TypeTag> val)
   return ::sqrt(BASE_CAST(val));
 }
 
+/**
+ * tan
+ */
+template<typename _BaseType, typename _TypeTag>
+inline typename jrl::UnitSafeWrapper<_BaseType, _TypeTag>::base_type
+tan(const typename jrl::UnitSafeWrapper<_BaseType, _TypeTag> val)
+{
+  return ::tan(BASE_CAST(val));
+}
+
+/**
+ * tanf
+ */
+template<typename _BaseType, typename _TypeTag>
+inline typename jrl::UnitSafeWrapper<_BaseType, _TypeTag>::base_type
+tanf(const typename jrl::UnitSafeWrapper<_BaseType, _TypeTag> val)
+{
+  return ::tanf(BASE_CAST(val));
+}
+
 // \TODO add other standard math functions
 
-#ifdef USE_EXPERIMENTAL_UNITSAFE_STREAM_OPERATOR
+#if defined(USE_EXPERIMENTAL_UNITSAFE_STREAM_OPERATOR)
 // \TODO experimental, not sure if this will ever work...
 /**
  * Override of operator<< for types derived from UnitSafeWrapper.
@@ -237,7 +272,7 @@ operator<<(std::ostream &strm, const jrl::UnitSafeWrapper<_BaseType, _TypeTag>& 
   strm << static_cast<typename jrl::UnitSafeWrapper<_BaseType, _TypeTag>::base_type>(val);
   return strm;
 }
-#endif // #ifdef USE_EXPERIMENTAL_UNITSAFE_STREAM_OPERATOR
+#endif // #if defined(USE_EXPERIMENTAL_UNITSAFE_STREAM_OPERATOR)
 } // empty namespace
 
 #else

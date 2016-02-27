@@ -46,8 +46,8 @@ using namespace jrl;
 struct FooTag {};
 struct BarTag {};
 
-MAKE_UNITSAFE(Foo, unsigned, FooTag);
-MAKE_UNITSAFE(Bar, unsigned, BarTag);
+MAKE_UNITSAFE(Foo, unsigned);
+MAKE_UNITSAFE(Bar, unsigned);
 
 TEST_CASE("Basic operations", "[basic]")
 {
