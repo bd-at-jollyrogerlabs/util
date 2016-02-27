@@ -1,0 +1,75 @@
+-*- Mode: Outline -*-
+
+* jrl_util
+** DONE - Convert to C++14
+** Move utilities that require bitset to a separate file
+** Eliminate TimeSpecWrap
+Need to convert libbatch to some benchmarking library.
+** DONE - Move all macro definitions to jrl_macro
+** DONE Use enable_if + type_traits to constrain the template arguments for asBinary
+* jrl_algorithm
+** DONE - Convert to C++14
+** Apply patches to nondestructive_insert
+See @todo comments in the function definition.
+* jrl_macro
+** get rid of magic number constants
+Move to enum in internal namespace, seems like #define followed by
+#undef will not work...
+* unitsafe
+** Change name to jrl_unitsafe?
+** Fix handling of type tags
+Need a registration mechanism with very good documentation (or perhaps
+a script to generate the registry).
+
+Use the David Lee Roth Brown M&Ms trick to ensure that the user has
+read and followed the documentation?
+* log2int
+** Convert to C++14
+** Change name to jrl_log_base2
+Possibly log_base2_int
+** Use STL style names
+** Log2IntStatic: allow types other than unsigned for Argument
+* logging
+** Convert to C++14
+** Possibly incorporate ideas from log_wrap
+Allow users to choose some other implementation such as Boost logging?
+** Add admin control support
+This opens a big can of worms, requiring the addition of an admin
+server.  Should obviously be controlled by conditional compilation.
+Investigate extant solutions to this problem.
+* additions
+** Add iterable_buffer_set
+* project level modifications
+** Move all test code to a separate directory
+** Convert to C++14
+log2int
+logging
+jrl_algorithm
+jrl_macro
+jrl_metaprogram
+jrl_util
+unitsafe
+** convert to STL style names
+log2int
+logging
+jrl_algorithm
+jrl_macro
+jrl_metaprogram
+jrl_util
+unitsafe
+** Set up doxygen support
+Review results and add/update documentary comments where necessary.
+** Add conditional include of required headers
+There should be a single INCLUDE_REQUIRED_HEADERS macro that controls
+this behavior.
+** Add gnu standard files
+e.g. NEWS, LICENSE, etc
+* review
+** Standardize handling of namespaces
+Add to coding standards.
+** Verify that all files have appropriate licenses
+* misc
+** Create a coding style guideline for commenting macros
+** Create a coding style guideline for internal/implementation namespaces
+e.g. "impl" or "detail", used to indicate that certain definitions
+should not be used externally.
