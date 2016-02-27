@@ -34,44 +34,42 @@
  *
  */
 
-// #include <iostream>
-// #include <vector>
-// #include <type_traits>
-// #include <typeinfo>
+#include <iostream>
+#include <vector>
+#include <type_traits>
+#include <typeinfo>
 
-// #include "jrl_metaprogram"
+#include "jrl_metaprogram"
 
-// using namespace std;
+#define CATCH_CONFIG_MAIN
+#include <catch.hpp>
 
-// struct Inner {};
+using namespace std;
 
-// using IntVec = vector<int>;
+struct Inner {};
 
-// template<bool IsConst>
-// struct Outer
-// {
-//   Outer() : inner() {}
-//   using EffectiveInner = SELECTIVE_CONST(IsConst, Inner);
-//   using ArrayType = SELECTIVE_CONST(IsConst, IntVec);
+using IntVec = vector<int>;
 
-//   EffectiveInner inner;
-//   ArrayType array;
-// };
-
-// using ConstInner = Outer<true>;
-// using NonConstInner = Outer<false>;
-
-int
-main(int argc,
-     const char *argv[])
+template<bool IsConst>
+struct Outer
 {
-//   ConstInner ci;
-//   NonConstInner nci;
-//   cout << boolalpha;
-//   cout << is_const<decltype(ci.inner)>::value << endl;
-//   cout << is_const<decltype(nci.inner)>::value << endl;
-//   cout << is_const<decltype(ci.array)>::value << endl;
-//   cout << is_const<decltype(nci.array)>::value << endl;
-//   // cout << typeid(decltype(ci.inner)).name() << endl;
-//   // cout << typeid(decltype(nci.inner)).name() << endl;
+  Outer() : inner() {}
+  using EffectiveInner = SELECTIVE_CONST(IsConst, Inner);
+  using ArrayType = SELECTIVE_CONST(IsConst, IntVec);
+
+  EffectiveInner inner;
+  ArrayType array;
+};
+
+using ConstInner = Outer<true>;
+using NonConstInner = Outer<false>;
+
+TEST_CASE("SELECTIVE_CONST", "[SELECTIVE_CONST]")
+{
+  ConstInner ci;
+  NonConstInner nci;
+  REQUIRE(is_const<decltype(ci.inner)>::value);
+  REQUIRE(!is_const<decltype(nci.inner)>::value);
+  REQUIRE(is_const<decltype(ci.array)>::value);
+  REQUIRE(!is_const<decltype(nci.array)>::value);
 }
