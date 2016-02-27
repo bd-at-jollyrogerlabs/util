@@ -46,7 +46,7 @@
  * operator==).
  *
  */
-#ifdef NDEBUG
+#if defined(NDEBUG)
 #define ASSERT(predicate)			\
   do {						\
     if (!(predicate)) {				\
@@ -59,6 +59,26 @@
     assert(predicate);				\
   } while(0)
 #endif
+
+/**
+ * Macro double expansion trick to produce a string from a non-string
+ * token that is already a macro, (e.g. __LINE__).
+ */
+#define JRL_STRINGIFY_(x) #x
+#define JRL_STRINGIFY(x) JRL_STRINGIFY_(x)
+
+/**
+ * Produce an error message that has file name and line number
+ * embedded in it.
+ */
+#define ERR_MSG_HELPER(msg) "at " __FILE__ "(" JRL_STRINGIFY(__LINE__) "), " msg
+
+/**
+ * Throw an instance of std::system_error which embeds the file name,
+ * line number and a user defined string.
+ */
+#define THROW_SYSTEM_ERROR(msg) \
+  throw std::system_error(errno, std::system_category(), ERR_MSG_HELPER(msg))
 
 /**
  * Easily define an exception type that derives from
@@ -82,19 +102,23 @@
     throw ExceptionType(what.str());		\
   } while(0)
 
-#define ERR_BUFF_SIZE 2048
 /**
- * Helper macro for simplifying the use of exceptions which
- * incorporate the value of strerror_r in the descriptive text.
+ * Helper macro for wrapping the behavior of calling a system
+ * function, checking the return code against a known error value and
+ * throwing an appropriate exception if an error is detected.
+ *
+ * NOTE: this only works for functions which return a single error
+ * value (e.g. -1 or nullptr) and set errno appropriately, which does
+ * not include several classes of system functions
+ * (e.g. pthread_create, which returns 0 on success and an error code
+ * on error, or gethostbyname_r, which returns nullptr on error but
+ * uses h_errno to report the cause)
  */
-#define THROW_EXCEPTION_WITH_STRERROR(ExceptionType, ...)	\
-  do {								\
-    char buffer[ERR_BUFF_SIZE];					\
-    auto rv = strerror_r(errno, buffer, ERR_BUFF_SIZE);		\
-    assert(nullptr != rv);					\
-    std::ostringstream what;					\
-    what << __VA_ARGS__ << ": " << buffer;			\
-    throw ExceptionType(what.str());				\
+#define CALL_SYSTEM_FUNC(func, errVal, errMsg)		\
+  do {							\
+    if (errVal == func) {				\
+      THROW_SYSTEM_ERROR(errMsg);			\
+    }							\
   } while (0)
 
 #endif // JRL_MACRO_GUARD
