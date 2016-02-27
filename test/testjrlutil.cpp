@@ -35,13 +35,32 @@
 #include <cstring>
 #include <ctime>
 #include <bitset>
+#include <sstream>
 #include "jrl_util"
 
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
 
+using namespace std;
 using namespace jrl::util;
 
+#define DO_TEST(Type, construction, result)	\
+  do {						\
+    Type testValue = (construction);		\
+    ostringstream ss;				\
+    ss << asBinary(testValue);			\
+    REQUIRE(result == ss.str());		\
+  } while (0)
+
+TEST_CASE("test of asBinary", "asBinary")
+{
+  // 8 bit value
+  DO_TEST(uint8_t, (1 << 3) | (1 << 1), "00001010");
+  // 32 bit value
+  DO_TEST(uint32_t, (1 << 3) | (1 << 1), "00000000000000000000000000001010");
+}
+
+#undef DO_TEST
 
 TEST_CASE("test of BitMaskStatic", "BitMaskStatic")
 {

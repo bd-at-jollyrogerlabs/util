@@ -90,7 +90,8 @@
 #define THROW_EXCEPTION_WITH_STRERROR(ExceptionType, ...)	\
   do {								\
     char buffer[ERR_BUFF_SIZE];					\
-    strerror_r(errno, buffer, ERR_BUFF_SIZE);			\
+    auto rv = strerror_r(errno, buffer, ERR_BUFF_SIZE);		\
+    assert(nullptr != rv);					\
     std::ostringstream what;					\
     what << __VA_ARGS__ << ": " << buffer;			\
     throw ExceptionType(what.str());				\

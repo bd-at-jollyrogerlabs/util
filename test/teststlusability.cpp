@@ -34,8 +34,11 @@
  *
  */
 
+#include <cstring>
+
 #include <vector>
 #include <functional>
+#include <sstream>
 
 #include "stl_usability"
 
@@ -113,4 +116,117 @@ TEST_CASE("is_present", "[is_present]")
   REQUIRE(is_present(intsMap, 0));
   REQUIRE(is_present(intsMap, 4));
   REQUIRE(!is_present(intsMap, 5));
+}
+
+/**
+ * Simple struct whose instances record whether they have been moved
+ * via either move constructor or move assignment operator.
+ */
+struct Moveable
+{
+  Moveable() = default;
+
+  Moveable(Moveable &&src)
+    : constructorMoved_(false)
+  {
+    src.constructorMoved_ = true;
+  }
+
+  Moveable&
+  operator=(Moveable &&rhs)
+  {
+    if (&rhs != this) {
+      assignmentMoved_ = false;
+      rhs.assignmentMoved_ = true;
+    }
+    return *this;
+  }
+
+  bool constructorMoved_ = false;
+  bool assignmentMoved_ = false;
+};
+
+TEST_CASE("move_all", "[move_all]")
+{
+  {
+    vector<Moveable> src(2);
+    REQUIRE(2 == src.size());
+    for_each(src, [](const auto &entry) {
+	REQUIRE(!entry.constructorMoved_);
+	REQUIRE(!entry.assignmentMoved_);
+      });
+    vector<Moveable> tgt;
+    REQUIRE(tgt.empty());
+    move_all(src, back_emplacer(tgt));
+    REQUIRE(2 == src.size());
+    REQUIRE(2 == tgt.size());
+    for_each(src, [](const auto &entry) {
+	REQUIRE(entry.constructorMoved_);
+	REQUIRE(!entry.assignmentMoved_);
+      });
+    for_each(tgt, [](const auto &entry) {
+	REQUIRE(!entry.constructorMoved_);
+	REQUIRE(!entry.assignmentMoved_);
+      });
+  }
+  {
+    vector<Moveable> src(2);
+    REQUIRE(2 == src.size());
+    for_each(src, [](const auto &entry) {
+	REQUIRE(!entry.constructorMoved_);
+	REQUIRE(!entry.assignmentMoved_);
+      });
+    vector<Moveable> tgt(2);
+    for_each(tgt, [](const auto &entry) {
+	REQUIRE(!entry.constructorMoved_);
+	REQUIRE(!entry.assignmentMoved_);
+      });
+    REQUIRE(2 == tgt.size());
+    move_all(src, begin(tgt));
+    REQUIRE(2 == src.size());
+    REQUIRE(2 == tgt.size());
+    for_each(src, [](const auto &entry) {
+	REQUIRE(!entry.constructorMoved_);
+	REQUIRE(entry.assignmentMoved_);
+      });
+    for_each(tgt, [](const auto &entry) {
+	REQUIRE(!entry.constructorMoved_);
+	REQUIRE(!entry.assignmentMoved_);
+      });
+  }
+}
+
+TEST_CASE("ostream_innerator in 'innerate' mode", "[ostream_innerator]")
+{
+  ostringstream ss;
+  ostream_innerator<int> output(ss, ",");
+
+  // basic functionality
+  vector<int> iVec = { 0, 1, 2, 3 };
+  copy(iVec, output);
+  REQUIRE("0,1,2,3" == ss.str());
+
+  // automatic reset
+  copy(iVec, output);
+  REQUIRE("0,1,2,30,1,2,3" == ss.str());
+  // manual reset
+  for (auto entry : iVec) {
+    output = entry;
+    // NOTE: no need to increment output object here since the
+    // increment operators are noops
+  }
+  REQUIRE("0,1,2,30,1,2,30,1,2,3" == ss.str());
+}
+
+
+TEST_CASE("ostream_innerator *NOT* in 'innerate' mode", "[ostream_innerator]")
+{
+  ostringstream ss;
+  ostream_innerator<int> output(ss, ",", false /* turn off 'innerate' mode */);
+  // basic functionality
+  vector<int> iVec = { 0, 1, 2, 3 };
+  copy(iVec, output);
+  REQUIRE("0,1,2,3," == ss.str());
+  copy(iVec, output);
+  REQUIRE("0,1,2,3,0,1,2,3," == ss.str());
 }

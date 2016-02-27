@@ -79,34 +79,46 @@ bin_PROGRAMS = \
 	teststlusability \
 	testunitsafe
 
+TESTS = \
+	testlog2int \
+	testboostusability \
+	testjrlalgorithm \
+	testjrlgeom \
+	testjrlmetaprogram \
+	testjrlutil \
+	testlogging \
+	testiterablebufferset \
+	teststlusability \
+	testunitsafe
+
 testlog2int_SOURCES = \
-	testlog2int.cpp
+	test/testlog2int.cpp
 
 testboostusability_SOURCES = \
-	testboostusability.cpp
-
-testunitsafe_SOURCES = \
-	testunitsafe.cpp
-
-teststlusability_SOURCES = \
-	teststlusability.cpp
-
-testiterablebufferset_SOURCES = \
-	testiterablebufferset.cpp
-
-testjrlgeom_SOURCES = \
-	testjrlgeom.cpp
+	test/testboostusability.cpp
 
 testjrlalgorithm_SOURCES = \
-	testjrlalgorithm.cpp
+	test/testjrlalgorithm.cpp
+
+testjrlgeom_SOURCES = \
+	test/testjrlgeom.cpp
 
 testjrlmetaprogram_SOURCES = \
-	testjrlmetaprogram.cpp
+	test/testjrlmetaprogram.cpp
 
 testjrlutil_SOURCES = \
-	testjrlutil.cpp
+	test/testjrlutil.cpp
 
 testlogging_SOURCES = \
-	testlogging.cpp
+	test/testlogging.cpp
+
+testiterablebufferset_SOURCES = \
+	test/testiterablebufferset.cpp
+
+teststlusability_SOURCES = \
+	test/teststlusability.cpp
+
+testunitsafe_SOURCES = \
+	test/testunitsafe.cpp
 
 rebuild: clean all

@@ -63,7 +63,7 @@ inline bool
 is_present(const _MapOrSetType &__mapOrSet,
 	   const typename _MapOrSetType::key_type &__key)
 {
-  return end(__mapOrSet) != __mapOrSet.find(__key);
+  return std::end(__mapOrSet) != __mapOrSet.find(__key);
 }
 
 // Convenience macros for results.
@@ -75,12 +75,12 @@ is_present(const _MapOrSetType &__mapOrSet,
 #define NO_CONST_TYPE /* not const */
 
 // Algorithms that iterate over a range.
-#define NO_OP(name, result_type, const_type)			\
-  template<class _Container>					\
-  inline result_type						\
-  name(const_type _Container &__container)			\
-  {								\
-    return std::name(begin(__container), end(__container));	\
+#define NO_OP(name, ResultType, ConstSpec)				\
+  template<class _Container>						\
+  inline ResultType							\
+  name(ConstSpec _Container &__container)				\
+  {									\
+    return std::name(begin(__container), std::end(__container));	\
   }
 
 /**
@@ -92,12 +92,12 @@ NO_OP(sort, void, NO_CONST_TYPE)
 
 // Algorithms that iterate over a range applying a unary operator to
 // each element.
-#define UNARY_OP(name, result_type, const_type)				\
+#define UNARY_OP(name, ResultType, ConstSpec)				\
   template<class _Container, typename _Unary>				\
-  inline result_type							\
-  name(const_type _Container &__container,  _Unary __unary)		\
+  inline ResultType							\
+  name(ConstSpec _Container &__container,  _Unary __unary)		\
   {									\
-    return std::name(begin(__container), end(__container), __unary);	\
+    return std::name(begin(__container), std::end(__container), __unary); \
   }
 
 /**
@@ -105,7 +105,7 @@ NO_OP(sort, void, NO_CONST_TYPE)
  */
 UNARY_OP(copy, UNARY_OUT, CONST_TYPE)
 /**
- * Iterate over all elements of a container, applying a unaery
+ * Iterate over all elements of a container, applying a unary
  * operator to each.
  */
 UNARY_OP(for_each, UNARY_OUT, CONST_TYPE)
@@ -129,20 +129,20 @@ UNARY_OP(remove_if, ITER, NO_CONST_TYPE)
 
 // Algorithms that iterate over a range applying an operator to each
 // element and storing the result of that application to a container.
-#define UNARY_OP_OUT(name, result_type, const_type)			\
+#define UNARY_OP_OUT(name, ResultType, ConstSpec)			\
   template<class _Container, typename _OutputIterator, typename _Unary>	\
-  inline result_type							\
-  name(const_type _Container &__container, _OutputIterator __result,	\
+  inline ResultType							\
+  name(ConstSpec _Container &__container, _OutputIterator __result,	\
        _Unary __unary)							\
   {									\
-    return std::name(begin(__container), end(__container), __result,	\
+    return std::name(std::begin(__container), std::end(__container), __result, \
 		     __unary);						\
   }
 
 /**
  * Transform all container entries (AKA "map")
  */
-UNARY_OP_OUT(transform, OUT_ITER, CONST_TYPE)
+UNARY_OP_OUT(transform, OUT_ITER, NO_CONST_TYPE)
 /**
  * Copy all items that satisfy a predicate
  */
@@ -150,12 +150,12 @@ UNARY_OP_OUT(copy_if, OUT_ITER, CONST_TYPE)
 
 #undef UNARY_OP_OUT
 
-#define BINARY_OP(name, result_type, const_type)			\
+#define BINARY_OP(name, ResultType, ConstSpec)				\
   template<class _Container, typename _Binary>				\
-  inline result_type							\
-  name(const_type _Container &__container, _Binary __binary)		\
+  inline ResultType							\
+  name(ConstSpec _Container &__container, _Binary __binary)		\
   {									\
-    return std::name(begin(__container), end(__container), __binary);	\
+    return std::name(std::begin(__container), std::end(__container), __binary);	\
   }
 
 /**
@@ -171,7 +171,7 @@ BINARY_OP(sort, void, NO_CONST_TYPE)
   name(const _Container &__container, const _SearchType &__val,		\
        _Binary __binary)						\
   {									\
-    return std::name(begin(__container), end(__container), __val,	\
+    return std::name(std::begin(__container), std::end(__container), __val, \
 		     __binary);						\
   }
 
@@ -184,15 +184,15 @@ SEARCH_OP(upper_bound);
 
 #undef SEARCH_OP
 
-#define PAIRWISE_BINARY_OP_OUT(name, result_type)			\
+#define PAIRWISE_BINARY_OP_OUT(name, ResultType)			\
   template<typename _Container1, typename _Container2,			\
 	   typename _OutputIterator, typename _Binary>			\
-  inline result_type							\
+  inline ResultType							\
   name(const _Container1 &__container1, const _Container2 &__container2, \
        _OutputIterator __result, _Binary __binary)			\
   {									\
-    return std::name(begin(__container1), end(__container1),		\
-		     begin(__container2), __result, __binary);		\
+    return std::name(std::begin(__container1), std::end(__container1),	\
+		     std::begin(__container2), __result, __binary);	\
   }
 
 /**
@@ -207,6 +207,224 @@ PAIRWISE_BINARY_OP_OUT(transform, OUT_ITER)
 #undef UNARY_OUT
 #undef CONST_TYPE
 #undef NO_CONST_TYPE
+
+/**
+ * Move all elements (potentially destructively) from source
+ * container/range to target.
+ */
+template<typename _Container, typename _OutputIterator>
+inline _OutputIterator
+move_all(_Container &__src, _OutputIterator __tgt)
+{
+  // \TODO
+  // for (typename _Container::iterator entry = std::begin(__src);
+  //      entry != std::end(__src); ++entry) {
+  //   *__tgt = std::move(*entry);
+  for (auto &entry : __src) {
+    *__tgt = std::move(entry);
+    ++__tgt;
+  }
+  return __tgt;
+}
+
+/**
+ * @brief Turns assignment into insertion.
+ *
+ * These are output iterators, constructed from a container type,
+ * assigning a instance of the containers value_type to the iterator
+ * appends it to the container using emplace_back.
+ *
+ * Tip: Using the back_emplaceer function to create these iterators can
+ * save typing.
+ *
+ * NOTE: Code stolen from gcc implementation of back_insert_iterator
+ * and modified.
+ */
+template<typename _Container>
+class back_emplace_iterator
+  : public std::iterator<std::output_iterator_tag, void, void, void, void>
+{
+protected:
+  _Container& container_;
+
+public:
+  using container_type = _Container;
+  /// The only way to create this %iterator is with a target
+  /// container.
+  explicit
+  back_emplace_iterator(_Container& __tgt) : container_(__tgt) { }
+
+  /**
+   * Emplace the value in the back of the container.
+   *
+   * @param __value an instance of whatever type
+   *                container_type::value_type is
+   * @return this %iterator, for chained operations.
+   */
+  back_emplace_iterator&
+  operator=(typename _Container::value_type&& __value)
+  {
+    container_.emplace_back(std::move(__value));
+    return *this;
+  }
+
+  /// noop
+  back_emplace_iterator&
+  operator*()
+  {
+    return *this;
+  }
+
+  /// noop
+  back_emplace_iterator&
+  operator++()
+  {
+    return *this;
+  }
+
+  /// noop
+  back_emplace_iterator
+  operator++(int)
+  {
+    return *this;
+  }
+};
+
+/**
+ * Helper function template for creating an instance of
+ * back_emplace_operator.
+ *
+ * @param  __tgt  A container of arbitrary type.
+ * @return An instance of back_emplace_iterator working on @p __tgt.
+ */
+template<typename _Container>
+inline back_emplace_iterator<_Container>
+back_emplacer(_Container& __tgt)
+{
+  return back_emplace_iterator<_Container>(__tgt);
+}
+
+/**
+ * ostream_iterator with correct behavior for delimiters.
+ *
+ * In "innerate" mode, the delimiter is inserted BEFORE every element
+ * EXCEPT the first one.  The internal flag which controls this
+ * behavior is reset whenever the object is copy constructed, which
+ * gives the correct behavior when passing an instance of
+ * ostream_innerator to standard algorithms such as copy, transform,
+ * etc.  The flag can also be reset by calling the reset() member
+ * function.
+ *
+ * When not in "innerate" mode, the delimiter is inserted AFTER every
+ * element just like ostream_iterator.
+ */
+template<typename _Tp, typename _CharT = char,
+	 typename _Traits = std::char_traits<_CharT> >
+class ostream_innerator
+  : public std::iterator<std::output_iterator_tag, void, void, void, void>
+{
+public:
+  using char_type = _CharT;
+  using traits_type = _Traits;
+  using ostream_type = std::basic_ostream<_CharT, _Traits>;
+
+  /**
+   * Construct from an ostream.
+   *
+   * NOTE: since there is no delimiter, "innerate" mode is irrelevant.
+   */
+  ostream_innerator(ostream_type &__tgt)
+    : tgt_(&__tgt), delimiter_(0), innerate_(false), first_(false)
+  {
+  }
+
+  /**
+   * Construct from an ostream and delimiter.
+   *
+   * Insertion of The delimiter string @a delimiter is controlled by
+   * the value of @a innerate.  The delimiter is not copied, and thus
+   * must not be destroyed while this iterator is in use.
+   *
+   * @param __tgt Underlying ostream to write to.
+   * @param __delimiter CharT delimiter string to insert.
+   * @param __innerate if true, the delimiter is inserted before each
+   *                   element except the first; otherwise, it is
+   *                   inserted after each element.
+   */
+  ostream_innerator(ostream_type &__tgt, const char_type* __delimiter,
+		    bool __innerate = true)
+    : tgt_(&__tgt), delimiter_(__delimiter), innerate_(__innerate), first_(false)
+  {
+  }
+
+  /// Copy constructor.
+  ostream_innerator(const ostream_innerator &__src)
+    : tgt_(__src.tgt_), delimiter_(__src.delimiter_),
+      innerate_(__src.innerate_), first_(false)
+  {
+  }
+
+  /// Writes @a val to underlying ostream using operator<<.  If
+  /// constructed with delimiter string, writes delimiter to ostream.
+  ostream_innerator&
+  operator=(const _Tp &__val)
+  {
+    if (innerate_ && (nullptr != delimiter_)) {
+      if (!first_) {
+	first_ = true;
+      }
+      else {
+	*tgt_ << delimiter_;
+      }
+    }
+    *tgt_ << __val;
+    if (!innerate_ && (nullptr != delimiter_)) {
+      *tgt_ << delimiter_;
+    }
+    return *this;
+  }
+
+  /// noop
+  ostream_innerator&
+  operator*()
+  {
+    return *this;
+  }
+
+  /// noop
+  ostream_innerator&
+  operator++()
+  {
+    return *this;
+  }
+
+  /// noop
+  ostream_innerator&
+  operator++(int)
+  {
+    return *this;
+  }
+
+  /**
+   * Explicitly reset the internal flag, which prevents the delimiter
+   * from being printed before the next element passed to operator=.
+   *
+   * Call this function if using ostream_innerator in "innerate" mode
+   * in an explicit loop instead of passing it to an algorithm.
+   */
+  void
+  reset()
+  {
+    first_ = false;
+  }
+
+private:
+  ostream_type* tgt_;
+  const char_type* delimiter_;
+  bool innerate_;
+  bool first_;
+  
+};
 
 } // namespace jrl
 

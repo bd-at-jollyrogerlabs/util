@@ -43,8 +43,11 @@
 using namespace std;
 using namespace jrl;
 
-MAKE_UNITSAFE(Foo, unsigned);
-MAKE_UNITSAFE(Bar, unsigned);
+struct FooTag {};
+struct BarTag {};
+
+MAKE_UNITSAFE(Foo, unsigned, FooTag);
+MAKE_UNITSAFE(Bar, unsigned, BarTag);
 
 TEST_CASE("Basic operations", "[basic]")
 {

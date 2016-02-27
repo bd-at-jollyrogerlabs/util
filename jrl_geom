@@ -34,7 +34,12 @@
  *
  */
 
-#ifndef JRL_GEOM_GUARD
+/**
+ * Simplified library for some useful 2D geometry calculations since
+ * the third party libraries are difficult to use.
+ */
+
+#if !defined(JRL_GEOM_GUARD)
 #define JRL_GEOM_GUARD
 
 #include <tuple>
@@ -75,7 +80,8 @@ public:
 
   polar_form(const cartesian_coordinates &point)
     : distance_(distance2D(point.x(), point.y())),
-      angle_(1.0 / tan(point.y() / point.x()))
+      // angle_(1.0 / tan(point.y() / point.x()))
+      angle_(calcAngle(point.x(), point.y()))
   {
   }
 
@@ -114,9 +120,46 @@ public:
   }
 
 private:
+  static _AngleType
+  calcAngle(const _DistanceType x, const _DistanceType y)
+  {
+    if (static_cast<_DistanceType>(0) == x) {
+      if (static_cast<_DistanceType>(0) == y) {
+	return 0;
+      }
+      if (y > static_cast<_DistanceType>(0)) {
+	// 90 degrees
+	return _AngleType(M_PI_2);
+      }
+      // 270 degrees
+      return _AngleType(3 * M_PI_2);
+    }
+    if (static_cast<_DistanceType>(0) == y) {
+      if (x > static_cast<_DistanceType>(0)) {
+	return _AngleType(0);
+      }
+      // 180 degress
+      return _AngleType(2 * M_PI_2);
+    }
+    float intermediate = tan(y / x);
+    if (0.0 == intermediate) {
+      return _AngleType(0);
+    }
+    return _AngleType(1.0 / intermediate);
+  }
+
   _DistanceType distance_;
   _AngleType angle_;
 };
+
+template<typename _DistanceType, typename _AngleType>
+inline std::ostream &
+operator<<(std::ostream &strm, const polar_form<_DistanceType, _AngleType> &val)
+{
+  strm << "[angle=" << val.getAngle()
+       << ",distance=" << val.getDistance() << "]";
+  return strm;
+}
 
 /**
  * Slope-intercept form of a 2D line, created from a segment.
@@ -214,4 +257,4 @@ private:
 
 } // namespace jrl
 
-#endif // JRL_GEOM_GUARD
+#endif // !defined(JRL_GEOM_GUARD)

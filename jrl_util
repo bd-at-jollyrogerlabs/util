@@ -1,8 +1,8 @@
 /** -*- mode: c++ -*-
  *
- * jrl_util 
+ * jrl_util
  *
- * Useful utility class and functions that don't seem to belong
+ * Useful utility classes and functions that don't seem to belong
  * anywhere else.
  *
  * Copyright (C) 2014 Brian Davis
@@ -35,56 +35,11 @@
  * 
  */
 
-#ifndef JRL_UTIL_GUARD
+#if !defined(JRL_UTIL_GUARD)
 #define JRL_UTIL_GUARD 1
 
 // \TODO move utilities that require bitset to a separate file
 #include <bitset>
-
-/**
- * Replacement for assert() which will also abort the program during
- * release builds.
- *
- * FIXME: find some tricky way for the NDEBUG version to print more
- * details (e.g. print the operands when the failed predicate is
- * operator==).
- *
- */
-#ifdef NDEBUG
-#define ASSERT(predicate)			\
-  do {						\
-    if (!(predicate)) {				\
-      abort();					\
-    }						\
-  } while (0)
-#else
-#define ASSERT(predicate)			\
-  do {						\
-    assert(predicate);				\
-  } while(0)
-#endif
-
-/**
- * Easily define an exception type that derives from
- * std::runtime_error
- */
-#define DEF_RUNTIME_EXCEPTION(name)		\
-  class name : public std::runtime_error	\
-  {						\
-  public:					\
-    name(const std::string &what)		\
-      : std::runtime_error(what) {}		\
-}
-
-/**
- * Helper macro for simplifying the use of exceptions.
- */
-#define THROW_EXCEPTION(exception, ...)		\
-  do {						\
-    ostringstream ss;				\
-    ss << __VA_ARGS__ << ends;			\
-    throw exception(ss.str());			\
-  } while(0)
 
 namespace jrl
 {
@@ -101,6 +56,10 @@ namespace util
 template<typename __BaseType>
 struct bool_return : public std::tuple<__BaseType, bool>
 {
+  enum {
+    VALUE = 0,
+    RESULT = 1
+  };
   using Inner = std::tuple<__BaseType, bool>;
   bool_return(const __BaseType value,
 	      const bool isSuccess)
@@ -116,27 +75,13 @@ struct bool_return : public std::tuple<__BaseType, bool>
   }
 };
 
-template<typename MapType>
-typename MapType::iterator
-fastMapInsert(MapType &tgt,
-	      const typename MapType::key_type &key,
-	      const typename MapType::mapped_type &val)
-{
-  typename MapType::value_type entry(key, val);
-  std::pair<typename MapType::iterator, bool> result = tgt.insert(entry);
-  if (!result.second) {
-    result.first->second = val;
-  }
-  return result.first;
-}
-
 /**
  * Function for converting a value into a bitset, which can be sent
  * directly to an ostream to display the binary representation of the
  * value.
  */
 template<typename ArgType>
-std::bitset<sizeof(ArgType) * 8>
+typename std::enable_if<std::is_unsigned<ArgType>::value, std::bitset<sizeof(ArgType) * 8>>::type
 asBinary(const ArgType arg)
 {
   return std::bitset<sizeof(ArgType) * 8>(arg);
@@ -146,32 +91,30 @@ asBinary(const ArgType arg)
  * Template metaprogram that produces a bit mask with a number of bits
  * set and then shifted to the left by a specified number of
  * positions at static time.
- *
- * TODO: allow template argument for types other than unsigned
  */
 template <unsigned SetBitCount, unsigned LeftShiftCount = 0>
 class BitMaskStatic
 {
-  template<unsigned Mask, unsigned Argument, unsigned Counter>
+  template<unsigned Mask, unsigned Counter>
   class Compute
   {
   public:
-    enum { result = Mask | Compute<(Mask << 1), Argument, Counter + 1>::result };
+    enum { result = Mask | Compute<(Mask << 1), Counter - 1>::result };
   };
 
-  // Base case: (Argument == Counter) --> done counting
-  template<unsigned Mask, unsigned Argument>
-  class Compute<Mask, Argument, Argument>
+  // Base case: (0 == Counter) --> done counting
+  template<unsigned Mask>
+  class Compute<Mask, 0>
   {
   public:
     enum { result = 0 };
   };
 
-  typedef std::bitset<sizeof(unsigned) * 8> BitSetType;
+  using BitSetType = std::bitset<sizeof(unsigned) * 8>;
 
 public:
   enum {
-    value = (Compute<1, SetBitCount, 0>::result << LeftShiftCount)
+    value = (Compute<1, SetBitCount>::result << LeftShiftCount)
   };
 
   /**
@@ -203,10 +146,12 @@ public:
   }
 };
 
+#if defined(USE_TIMESPEC_WRAP)
 /**
  * Object wrapped around timespec.
  *
- * \TODO use the standard C library versions
+ * \TODO use the standard C library versions and mark this as
+ * deprecated
  */
 class TimeSpecWrap
 {
@@ -328,10 +273,11 @@ private:
   struct timespec time_;
   clockid_t clockId_;
 };
+#endif
 
-}
+} // namespace util
 
-}
+} // namespace jrl
 
 /* EXPERIMENTAL, stolen from stackoverflow */
 // namespace fast_random
