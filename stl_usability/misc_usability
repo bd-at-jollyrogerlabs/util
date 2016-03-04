@@ -1,0 +1,87 @@
+/** -*- mode: c++ -*-
+ *
+ * misc_usability
+ *
+ * Header-only definitions of miscellaneous ways to simplify the use
+ * of STL.
+ *
+ * Copyright (C) 2015 Brian Davis
+ * All Rights Reserved
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Author: Brian Davis <bd@jollyrogerlabs.com>
+ *
+ */
+
+#if !defined(STL_USABILITY_GUARD)
+#define STL_USABILITY_GUARD
+
+namespace jrl
+{
+
+namespace util
+{
+
+namespace stl_usability
+{
+
+enum {
+  /*
+   * Enums to be used for accessing the key from a value_type object
+   * of a map-like container.  For some object e whose type is
+   * instantiated from the value_type inner type of a map-like
+   * container, the following operations are equivalent:
+   *
+   *  1) get<KEY>(e) and e.first
+   *  2) get<VALUE>(e) and e.second
+   */
+  KEY = 0,
+  VALUE = 1,
+};
+
+enum {
+  /*
+   * Enums to be used for accessing the result of calling insert() on
+   * a map-like container.  e.g.
+   *
+   *   auto result = mapInstance.insert(value_type(key, val));
+   *   const string action = get<INSERT_RESULT>(result)) ?
+   *     "newly inserted into" : "overwritten in";
+   *   cout << "Key [" << key << "] with value [" << val << "] was "
+   *        << action << " the map" << endl;
+   *
+   */
+  ENTRY = 0,
+  INSERT_RESULT = 1
+};
+
+
+} // namespace stl_usability
+
+} // namespace util
+
+} // namespace jrl
+
+#endif // STL_USABILITY_GUARD

@@ -1,0 +1,354 @@
+/** -*- mode: c++ -*-
+ *
+ * algorithm_usability
+ *
+ * Header-only definitions to simplify use of STL algorithms.
+ *
+ * Copyright (C) 2015 Brian Davis
+ * All Rights Reserved
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Author: Brian Davis <bd@jollyrogerlabs.com>
+ *
+ */
+
+#if !defined(ALGORITHM_USABILITY_GUARD)
+#define ALGORITHM_USABILITY_GUARD
+
+#include <algorithm>
+
+namespace jrl
+{
+
+namespace util
+{
+
+namespace stl_usability
+{
+
+
+
+
+/**
+ * Helper function for the case where an element should only be
+ * inserted if not already present; this function should be called
+ * prior to the insert to determine if the key is present.
+ *
+ * @todo use enable_if to create an overload that works for containers
+ * that need to use the std::find algorithm.
+ */
+template<typename _MapOrSetType>
+inline bool
+is_present(const _MapOrSetType &__mapOrSet,
+	   const typename _MapOrSetType::key_type &__key)
+{
+  return std::end(__mapOrSet) != __mapOrSet.find(__key);
+}
+
+
+
+
+/**
+ * @brief Turns assignment into emplace.
+ *
+ * These are output iterators, constructed from a container type,
+ * assigning a instance of the containers value_type to the iterator
+ * appends it to the container using emplace_back.
+ *
+ * Tip: Using the back_emplaceer function to create these iterators can
+ * save typing.
+ *
+ * NOTE: Code stolen from gcc implementation of back_insert_iterator
+ * and modified.
+ */
+template<typename _Container>
+class back_emplace_iterator
+  : public std::iterator<std::output_iterator_tag, void, void, void, void>
+{
+protected:
+  _Container& container_;
+
+public:
+  using container_type = _Container;
+  /// The only way to create this %iterator is with a target
+  /// container.
+  explicit
+  back_emplace_iterator(_Container& __tgt) : container_(__tgt) { }
+
+  /**
+   * Emplace the value in the back of the container.
+   *
+   * @param __value an instance of whatever type
+   *                container_type::value_type is
+   * @return this %iterator, for chained operations.
+   */
+  back_emplace_iterator&
+  operator=(typename _Container::value_type&& __value)
+  {
+    container_.emplace_back(std::move(__value));
+    return *this;
+  }
+
+  /// noop
+  back_emplace_iterator&
+  operator*()
+  {
+    return *this;
+  }
+
+  /// noop
+  back_emplace_iterator&
+  operator++()
+  {
+    return *this;
+  }
+
+  /// noop
+  back_emplace_iterator
+  operator++(int)
+  {
+    return *this;
+  }
+};
+
+/**
+ * Helper function template for creating an instance of
+ * back_emplace_operator.
+ *
+ * @param  __tgt  A container of arbitrary type.
+ * @return An instance of back_emplace_iterator working on @p __tgt.
+ */
+template<typename _Container>
+inline back_emplace_iterator<_Container>
+back_emplacer(_Container& __tgt)
+{
+  return back_emplace_iterator<_Container>(__tgt);
+}
+
+
+
+
+/*  ***** Reduced argument versions of algorithms *****
+ *
+ * Reduced argument versions of algorithms are designed to take a
+ * single argument specifying a container (or any class on which
+ * std::begin and std::end may be called) and expand into the
+ * appropriate ranged call.
+ *
+ * The code is organized into sections of algorithms by signature
+ * semantics, with each section having a helper macro that simplifies
+ * the definition of the template functions in the section.
+ */
+
+
+// Convenience macros for results.
+#define ITER typename _Container::iterator
+#define CONST_ITER typename _Container::const_iterator
+#define OUT_ITER _OutputIterator
+#define OP_OR_OUT _OpOrOut
+
+/*
+ * Section: algorithms that iterate over a range and take no extra
+ * parameters.
+ */
+#define NO_OP(name, ResultType)						\
+  template<class _Container>						\
+  inline ResultType							\
+  name(_Container &__container)						\
+  {									\
+    return std::name(begin(__container), std::end(__container));	\
+  }
+
+/**
+ * Sort an array by its natural ordering (AKA default less<>).
+ */
+NO_OP(sort, void)
+
+#undef NO_OP
+
+/*
+ * Section: algorithms that iterate over a range applying an operator
+ * in some fashion or storing the result in an output iterator and
+ * then finally returning a result.
+ */
+
+#define APPLY_OP(name, ResultType)					\
+  template<class _Container, typename _OpOrOut>				\
+  inline ResultType							\
+  name(_Container &__container,  _OpOrOut __opOrOut)			\
+  {									\
+    return std::name(begin(__container), std::end(__container), __opOrOut); \
+  }
+
+/**
+ * Copy all container entries.
+ */
+APPLY_OP(copy, OP_OR_OUT)
+/**
+ * Iterate over all elements of a container, applying a unary
+ * operator to each.
+ */
+APPLY_OP(for_each, OP_OR_OUT)
+/**
+ * Find the first occurrence of a value.
+ */
+APPLY_OP(find, ITER)
+APPLY_OP(find_if, ITER)
+/**
+ * Remove all items that compare equal to an argument value
+ */
+APPLY_OP(remove, ITER)
+/**
+ * Remove all items that satisfy a predicate
+ */
+APPLY_OP(remove_if, ITER)
+/**
+ * Sort an array using a binary comparison operator.
+ */
+APPLY_OP(sort, void)
+
+#undef APPLY_OP
+
+#define APPLY_OP_CONST(name)						\
+  template<class _Container, typename _OpOrOut>				\
+  inline typename _Container::const_iterator				\
+  name(const _Container &__container,  _OpOrOut __opOrOut)		\
+  {									\
+    return std::name(begin(__container), std::end(__container), __opOrOut); \
+  }
+
+/**
+ * Find the first occurrence of a value.
+ */
+APPLY_OP_CONST(find)
+APPLY_OP_CONST(find_if)
+
+#undef APPLY_OP_CONST
+
+/*
+ * Section: algorithms that iterate over a range applying an operator
+ * to each element and storing the result of that application to a
+ * container.
+ */
+
+#define APPLY_OP_OUT(name, ResultType)					\
+  template<class _Container, typename _OutputIterator, typename _Op>	\
+  inline ResultType							\
+  name(_Container &__container, _OutputIterator __result, _Op __op)	\
+  {									\
+    return std::name(std::begin(__container), std::end(__container), __result, \
+		     __op);						\
+  }
+
+/**
+ * Transform all container entries (AKA "map")
+ */
+APPLY_OP_OUT(transform, OUT_ITER)
+/**
+ * Copy all items that satisfy a predicate
+ */
+APPLY_OP_OUT(copy_if, OUT_ITER)
+
+#undef APPLY_OP_OUT
+
+/*
+ * Section: algorithms that search a container and return a result by
+ * applying a binary operator to elements of the container.
+ */
+
+#define SEARCH_OP(name)							\
+  template<class _Container, typename _SearchType, typename _Binary>	\
+  inline typename _Container::iterator					\
+  name(_Container &__container, _SearchType &__val,			\
+       _Binary __binary)						\
+  {									\
+    return std::name(std::begin(__container), std::end(__container), __val, \
+		     __binary);						\
+  }
+
+/**
+ * Find the first position in which an argument value can be inserted
+ * without changing the ordering.
+ */
+SEARCH_OP(lower_bound);
+SEARCH_OP(upper_bound);
+
+#undef SEARCH_OP
+
+#define CONST_SEARCH_OP(name)						\
+  template<class _Container, typename _SearchType, typename _Binary>	\
+  inline typename _Container::const_iterator				\
+  name(const _Container &__container, _SearchType &__val,		\
+       _Binary __binary)						\
+  {									\
+    return std::name(std::begin(__container), std::end(__container), __val, \
+		     __binary);						\
+  }
+
+/**
+ * Find the first position in which an argument value can be inserted
+ * without changing the ordering.
+ */
+CONST_SEARCH_OP(lower_bound);
+CONST_SEARCH_OP(upper_bound);
+
+#undef SEARCH_OP
+
+/*
+ * Section: algorithms that iterate over two containers, applying a
+ * binary operator to elements in a pairwise fashion, storing the
+ * result of the application in a (possibly) separate container and
+ * returning a result.
+ */
+
+#define PAIRWISE_BINARY_OP_OUT(name, ResultType)			\
+  template<typename _Container1, typename _Container2,			\
+	   typename _OutputIterator, typename _Binary>			\
+  inline ResultType							\
+  name(const _Container1 &__container1, const _Container2 &__container2, \
+       _OutputIterator __result, _Binary __binary)			\
+  {									\
+    return std::name(std::begin(__container1), std::end(__container1),	\
+		     std::begin(__container2), __result, __binary);	\
+  }
+
+/**
+ * Transform the mixture of two containers.
+ */
+PAIRWISE_BINARY_OP_OUT(transform, OUT_ITER)
+
+#undef PAIRWISE_BINARY_OP_OUT
+
+#undef CONST_ITER
+#undef OUT_ITER
+#undef OP_OR_OUT
+
+} // namespace algorithm_usability
+
+} // namespace util
+
+} // namespace jrl
+
+#endif // if !defined(ALGORITHM_USABILITY_GUARD)

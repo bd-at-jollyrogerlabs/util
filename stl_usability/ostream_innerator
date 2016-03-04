@@ -1,0 +1,177 @@
+/** -*- mode: c++ -*-
+ *
+ * ostream_innerator
+ *
+ * Header-only definition of ostream_innerator.
+ *
+ * Copyright (C) 2015 Brian Davis
+ * All Rights Reserved
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Author: Brian Davis <bd@jollyrogerlabs.com>
+ *
+ */
+
+#if !defined(OSTREAM_INNERATOR_GUARD)
+#define OSTREAM_INNERATOR_GUARD
+
+namespace jrl
+{
+
+namespace util
+{
+
+namespace stl_usability
+{
+
+/**
+ * ostream_iterator with correct behavior for delimiters.
+ *
+ * In "innerate" mode, the delimiter is inserted BEFORE every element
+ * EXCEPT the first one.  The internal flag which controls this
+ * behavior is reset whenever the object is copy constructed, which
+ * gives the correct behavior when passing an instance of
+ * ostream_innerator to standard algorithms such as copy, transform,
+ * etc.  The flag can also be reset by calling the reset() member
+ * function.
+ *
+ * When not in "innerate" mode, the delimiter is inserted AFTER every
+ * element just like ostream_iterator.
+ */
+template<typename _Tp, typename _CharT = char,
+	 typename _Traits = std::char_traits<_CharT> >
+class ostream_innerator
+  : public std::iterator<std::output_iterator_tag, void, void, void, void>
+{
+public:
+  using char_type = _CharT;
+  using traits_type = _Traits;
+  using ostream_type = std::basic_ostream<_CharT, _Traits>;
+
+  /**
+   * Construct from an ostream.
+   *
+   * NOTE: since there is no delimiter, "innerate" mode is irrelevant.
+   */
+  ostream_innerator(ostream_type &__tgt)
+    : tgt_(&__tgt), delimiter_(0), innerate_(false), first_(false)
+  {
+  }
+
+  /**
+   * Construct from an ostream and delimiter.
+   *
+   * Insertion of The delimiter string @a delimiter is controlled by
+   * the value of @a innerate.  The delimiter is not copied, and thus
+   * must not be destroyed while this iterator is in use.
+   *
+   * @param __tgt Underlying ostream to write to.
+   * @param __delimiter CharT delimiter string to insert.
+   * @param __innerate if true, the delimiter is inserted before each
+   *                   element except the first; otherwise, it is
+   *                   inserted after each element.
+   */
+  ostream_innerator(ostream_type &__tgt, const char_type* __delimiter,
+		    bool __innerate = true)
+    : tgt_(&__tgt), delimiter_(__delimiter), innerate_(__innerate), first_(false)
+  {
+  }
+
+  /// Copy constructor.
+  ostream_innerator(const ostream_innerator &__src)
+    : tgt_(__src.tgt_), delimiter_(__src.delimiter_),
+      innerate_(__src.innerate_), first_(false)
+  {
+  }
+
+  /// Writes @a val to underlying ostream using operator<<.  If
+  /// constructed with delimiter string, writes delimiter to ostream.
+  ostream_innerator&
+  operator=(const _Tp &__val)
+  {
+    if (innerate_ && (nullptr != delimiter_)) {
+      if (!first_) {
+	first_ = true;
+      }
+      else {
+	*tgt_ << delimiter_;
+      }
+    }
+    *tgt_ << __val;
+    if (!innerate_ && (nullptr != delimiter_)) {
+      *tgt_ << delimiter_;
+    }
+    return *this;
+  }
+
+  /// noop
+  ostream_innerator&
+  operator*()
+  {
+    return *this;
+  }
+
+  /// noop
+  ostream_innerator&
+  operator++()
+  {
+    return *this;
+  }
+
+  /// noop
+  ostream_innerator&
+  operator++(int)
+  {
+    return *this;
+  }
+
+  /**
+   * Explicitly reset the internal flag, which prevents the delimiter
+   * from being printed before the next element passed to operator=.
+   *
+   * Call this function if using ostream_innerator in "innerate" mode
+   * in an explicit loop instead of passing it to an algorithm.
+   */
+  void
+  reset()
+  {
+    first_ = false;
+  }
+
+private:
+  ostream_type* tgt_;
+  const char_type* delimiter_;
+  bool innerate_;
+  bool first_;
+  
+};
+
+} // namespace stl_usability
+
+} // namespace util
+
+} // namespace jrl
+
+#endif // if !defined(OSTREAM_INNERATOR_GUARD)
