@@ -40,13 +40,15 @@
 #include <functional>
 #include <sstream>
 
-#include "stl_usability"
+#include "stl_usability/algorithm_usability"
+#include "stl_usability/ostream_innerator"
+#include "jrl_algorithm"
 
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
 
 using namespace std;
-using namespace jrl;
+using namespace jrl::util::stl_usability;
 
 using IntVector = vector<int>;
 using Iterator = IntVector::iterator;
@@ -64,17 +66,51 @@ TEST_CASE("sort", "[sort]")
 
 TEST_CASE("find", "[find]")
 {
+  IntVector ints{ 0, 1, 2, 3 };
   {
-    IntVector ints{ 0, 1, 2, 3 };
     Iterator entry = find(ints, 2);
     REQUIRE(ints.end() != entry);
     REQUIRE(2 == *entry);
   }
   {
-    const IntVector ints{ 4, 5, 6, 7 };
+    Iterator entry = find(ints, 0);
+    REQUIRE(ints.end() != entry);
+    REQUIRE(0 == *entry);
+    REQUIRE(ints.begin() == entry);
+  }
+  {
+    Iterator entry = find(ints, 3);
+    REQUIRE(ints.end() != entry);
+    REQUIRE(3 == *entry);
+  }
+  {
+    Iterator entry = find(ints, 4);
+    REQUIRE(ints.end() == entry);
+  }
+}
+
+TEST_CASE("find on const", "[find]")
+{
+  const IntVector ints{ 4, 5, 6, 7 };
+  {
     ConstIterator entry = find(ints, 6);
     REQUIRE(ints.end() != entry);
     REQUIRE(6 == *entry);
+  }
+  {
+    ConstIterator entry = find(ints, 4);
+    REQUIRE(ints.end() != entry);
+    REQUIRE(4 == *entry);
+    REQUIRE(ints.begin() == entry);
+  }
+  {
+    ConstIterator entry = find(ints, 7);
+    REQUIRE(ints.end() != entry);
+    REQUIRE(7 == *entry);
+  }
+  {
+    ConstIterator entry = find(ints, 8);
+    REQUIRE(ints.end() == entry);
   }
 }
 
@@ -148,6 +184,8 @@ struct Moveable
 
 TEST_CASE("move_all", "[move_all]")
 {
+  using jrl::util::stl_usability::back_emplacer;
+  using jrl::util::algorithm::move_all;
   {
     vector<Moveable> src(2);
     REQUIRE(2 == src.size());

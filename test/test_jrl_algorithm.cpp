@@ -44,8 +44,8 @@
 #include <catch.hpp>
 
 using namespace std;
-using namespace jrl;
 using namespace jrl::util;
+using namespace jrl::util::algorithm;
 
 TEST_CASE("test of nondestructive_insert", "[nondestructive_insert]")
 {

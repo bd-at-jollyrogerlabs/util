@@ -67,18 +67,25 @@
 #define JRL_STRINGIFY_(x) #x
 #define JRL_STRINGIFY(x) JRL_STRINGIFY_(x)
 
+#define ERR_MSG_LOCATION "at " __FILE__ "(" JRL_STRINGIFY(__LINE__) "), "
+
 /**
  * Produce an error message that has file name and line number
  * embedded in it.
  */
-#define ERR_MSG_HELPER(msg) "at " __FILE__ "(" JRL_STRINGIFY(__LINE__) "), " msg
+#define ERR_MSG_HELPER(msg) ERR_MSG_LOCATION msg
 
 /**
  * Throw an instance of std::system_error which embeds the file name,
  * line number and a user defined string.
  */
-#define THROW_SYSTEM_ERROR(msg) \
-  throw std::system_error(errno, std::system_category(), ERR_MSG_HELPER(msg))
+#define THROW_SYSTEM_ERROR(msg)						\
+  do {									\
+    std::ostringstream ss;						\
+    const std::string location(ERR_MSG_LOCATION);			\
+    ss << location << msg;						\
+    throw std::system_error(errno, std::system_category(), ss.str());	\
+  } while (0)
 
 /**
  * Easily define an exception type that derives from

@@ -65,65 +65,68 @@ include_HEADERS = \
 	jrl_macro \
 	jrl_metaprogram \
 	jrl_util \
+	stl_usability/algorithm_usability \
+	stl_usability/misc_usability \
+	stl_usability/ostream_innerator \
 	unitsafe
 
 bin_PROGRAMS = \
-	testlog2int \
-	testboostusability \
-	testjrlalgorithm \
-	testjrlgeom \
-	testjrlmacro \
-	testjrlmetaprogram \
-	testjrlutil \
-	testlogging \
-	testiterablebufferset \
-	teststlusability \
-	testunitsafe
+	test_log2_int \
+	test_boost_usability \
+	test_jrl_algorithm \
+	test_jrl_geom \
+	test_jrl_macro \
+	test_jrl_metaprogram \
+	test_jrl_util \
+	test_logging \
+	test_iterable_buffer_set \
+	test_stl_usability \
+	test_unitsafe
 
 TESTS = \
-	testlog2int \
-	testboostusability \
-	testjrlalgorithm \
-	testjrlgeom \
-	testjrlmacro \
-	testjrlmetaprogram \
-	testjrlutil \
-	testlogging \
-	testiterablebufferset \
-	teststlusability \
-	testunitsafe
+	test_log2_int \
+	test_boost_usability \
+	test_jrl_algorithm \
+	test_jrl_geom \
+	test_jrl_macro \
+	test_jrl_metaprogram \
+	test_jrl_util \
+	test_logging \
+	test_iterable_buffer_set \
+	test_stl_usability \
+	test_unitsafe
 
-testlog2int_SOURCES = \
-	test/testlog2int.cpp
+test_log2_int_SOURCES = \
+	test/test_log2_int.cpp
 
-testboostusability_SOURCES = \
-	test/testboostusability.cpp
+test_boost_usability_SOURCES = \
+	test/test_boost_usability.cpp
 
-testjrlalgorithm_SOURCES = \
-	test/testjrlalgorithm.cpp
+test_jrl_algorithm_SOURCES = \
+	test/test_jrl_algorithm.cpp
 
-testjrlgeom_SOURCES = \
-	test/testjrlgeom.cpp
+test_jrl_geom_SOURCES = \
+	test/test_jrl_geom.cpp
 
-testjrlmacro_SOURCES = \
-	test/testjrlmacro.cpp
+test_jrl_macro_SOURCES = \
+	test/test_jrl_macro.cpp
 
-testjrlmetaprogram_SOURCES = \
-	test/testjrlmetaprogram.cpp
+test_jrl_metaprogram_SOURCES = \
+	test/test_jrl_metaprogram.cpp
 
-testjrlutil_SOURCES = \
-	test/testjrlutil.cpp
+test_jrl_util_SOURCES = \
+	test/test_jrl_util.cpp
 
-testlogging_SOURCES = \
-	test/testlogging.cpp
+test_logging_SOURCES = \
+	test/test_logging.cpp
 
-testiterablebufferset_SOURCES = \
-	test/testiterablebufferset.cpp
+test_iterable_buffer_set_SOURCES = \
+	test/test_iterable_buffer_set.cpp
 
-teststlusability_SOURCES = \
-	test/teststlusability.cpp
+test_stl_usability_SOURCES = \
+	test/test_stl_usability.cpp
 
-testunitsafe_SOURCES = \
-	test/testunitsafe.cpp
+test_unitsafe_SOURCES = \
+	test/test_unitsafe.cpp
 
 rebuild: clean all

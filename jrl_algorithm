@@ -37,8 +37,19 @@
 #if !defined(JRL_ALGORITHM_GUARD)
 #define JRL_ALGORITHM_GUARD
 
+#include "jrl_util"
+#include "stl_usability/algorithm_usability"
+
 namespace jrl
 {
+
+namespace util
+{
+
+namespace algorithm
+{
+
+namespace jutil = jrl::util;
 
 namespace detail
 {
@@ -73,7 +84,7 @@ null_extender(_Container &__container, const size_t sz)
  */
 template<typename _Container, typename _Extender =
 	 std::function<void(_Container &, const size_t)>>
-jrl::util::bool_return<typename _Container::size_type>
+jutil::bool_return<typename _Container::size_type>
 nondestructive_insert(_Container &__container,
 		      const typename _Container::value_type &__val,
 		      _Extender __extender = detail::null_extender<_Container>)
@@ -94,6 +105,29 @@ nondestructive_insert(_Container &__container,
   // value already exists
   return result_type(std::distance(entry, __container.cbegin()), false);
 }
+
+/**
+ * Move all elements (potentially destructively) from source
+ * container/range to target.
+ */
+template<typename _Container, typename _OutputIterator>
+inline _OutputIterator
+move_all(_Container &__src, _OutputIterator __tgt)
+{
+  // \TODO
+  // for (typename _Container::iterator entry = std::begin(__src);
+  //      entry != std::end(__src); ++entry) {
+  //   *__tgt = std::move(*entry);
+  for (auto &entry : __src) {
+    *__tgt = std::move(entry);
+    ++__tgt;
+  }
+  return __tgt;
+}
+
+} // namespace algorithm
+
+} // namespace util
 
 } // namespace jrl
 

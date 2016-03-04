@@ -49,14 +49,14 @@
 #include "jrl_util"
 #include "jrl_macro"
 #include "jrl_metaprogram"
-#include "stl_usability"
+#include "stl_usability/algorithm_usability"
 #include "iterable_buffer_set"
 
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
 
 using namespace std;
-using namespace jrl;
+using namespace jrl::util;
 
 
 // Helper definitions.

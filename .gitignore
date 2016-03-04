@@ -28,16 +28,17 @@ missing
 stamp-h1
 test-driver
 
-testboostusability
-testiterablebufferset
-testjrlalgorithm
-testjrlgeom
-testjrlmetaprogram
-testjrlutil
-testlog2int
-testlogging
-teststlusability
-testunitsafe
+test_boost_usability
+test_iterable_buffer_set
+test_jrl_algorithm
+test_jrl_geom
+test_jrl_macro
+test_jrl_metaprogram
+test_jrl_util
+test_log2_int
+test_logging
+test_stl_usability
+test_unitsafe
 
 cursorlist
 

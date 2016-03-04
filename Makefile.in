@@ -110,18 +110,18 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = testlog2int$(EXEEXT) testboostusability$(EXEEXT) \
-	testjrlalgorithm$(EXEEXT) testjrlgeom$(EXEEXT) \
-	testjrlmacro$(EXEEXT) testjrlmetaprogram$(EXEEXT) \
-	testjrlutil$(EXEEXT) testlogging$(EXEEXT) \
-	testiterablebufferset$(EXEEXT) teststlusability$(EXEEXT) \
-	testunitsafe$(EXEEXT)
-TESTS = testlog2int$(EXEEXT) testboostusability$(EXEEXT) \
-	testjrlalgorithm$(EXEEXT) testjrlgeom$(EXEEXT) \
-	testjrlmacro$(EXEEXT) testjrlmetaprogram$(EXEEXT) \
-	testjrlutil$(EXEEXT) testlogging$(EXEEXT) \
-	testiterablebufferset$(EXEEXT) teststlusability$(EXEEXT) \
-	testunitsafe$(EXEEXT)
+bin_PROGRAMS = test_log2_int$(EXEEXT) test_boost_usability$(EXEEXT) \
+	test_jrl_algorithm$(EXEEXT) test_jrl_geom$(EXEEXT) \
+	test_jrl_macro$(EXEEXT) test_jrl_metaprogram$(EXEEXT) \
+	test_jrl_util$(EXEEXT) test_logging$(EXEEXT) \
+	test_iterable_buffer_set$(EXEEXT) test_stl_usability$(EXEEXT) \
+	test_unitsafe$(EXEEXT)
+TESTS = test_log2_int$(EXEEXT) test_boost_usability$(EXEEXT) \
+	test_jrl_algorithm$(EXEEXT) test_jrl_geom$(EXEEXT) \
+	test_jrl_macro$(EXEEXT) test_jrl_metaprogram$(EXEEXT) \
+	test_jrl_util$(EXEEXT) test_logging$(EXEEXT) \
+	test_iterable_buffer_set$(EXEEXT) test_stl_usability$(EXEEXT) \
+	test_unitsafe$(EXEEXT)
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
@@ -143,43 +143,45 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(includedir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_testboostusability_OBJECTS = testboostusability.$(OBJEXT)
-testboostusability_OBJECTS = $(am_testboostusability_OBJECTS)
-testboostusability_LDADD = $(LDADD)
+am_test_boost_usability_OBJECTS = test_boost_usability.$(OBJEXT)
+test_boost_usability_OBJECTS = $(am_test_boost_usability_OBJECTS)
+test_boost_usability_LDADD = $(LDADD)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-am_testiterablebufferset_OBJECTS = testiterablebufferset.$(OBJEXT)
-testiterablebufferset_OBJECTS = $(am_testiterablebufferset_OBJECTS)
-testiterablebufferset_LDADD = $(LDADD)
-am_testjrlalgorithm_OBJECTS = testjrlalgorithm.$(OBJEXT)
-testjrlalgorithm_OBJECTS = $(am_testjrlalgorithm_OBJECTS)
-testjrlalgorithm_LDADD = $(LDADD)
-am_testjrlgeom_OBJECTS = testjrlgeom.$(OBJEXT)
-testjrlgeom_OBJECTS = $(am_testjrlgeom_OBJECTS)
-testjrlgeom_LDADD = $(LDADD)
-am_testjrlmacro_OBJECTS = testjrlmacro.$(OBJEXT)
-testjrlmacro_OBJECTS = $(am_testjrlmacro_OBJECTS)
-testjrlmacro_LDADD = $(LDADD)
-am_testjrlmetaprogram_OBJECTS = testjrlmetaprogram.$(OBJEXT)
-testjrlmetaprogram_OBJECTS = $(am_testjrlmetaprogram_OBJECTS)
-testjrlmetaprogram_LDADD = $(LDADD)
-am_testjrlutil_OBJECTS = testjrlutil.$(OBJEXT)
-testjrlutil_OBJECTS = $(am_testjrlutil_OBJECTS)
-testjrlutil_LDADD = $(LDADD)
-am_testlog2int_OBJECTS = testlog2int.$(OBJEXT)
-testlog2int_OBJECTS = $(am_testlog2int_OBJECTS)
-testlog2int_LDADD = $(LDADD)
-am_testlogging_OBJECTS = testlogging.$(OBJEXT)
-testlogging_OBJECTS = $(am_testlogging_OBJECTS)
-testlogging_LDADD = $(LDADD)
-am_teststlusability_OBJECTS = teststlusability.$(OBJEXT)
-teststlusability_OBJECTS = $(am_teststlusability_OBJECTS)
-teststlusability_LDADD = $(LDADD)
-am_testunitsafe_OBJECTS = testunitsafe.$(OBJEXT)
-testunitsafe_OBJECTS = $(am_testunitsafe_OBJECTS)
-testunitsafe_LDADD = $(LDADD)
+am_test_iterable_buffer_set_OBJECTS =  \
+	test_iterable_buffer_set.$(OBJEXT)
+test_iterable_buffer_set_OBJECTS =  \
+	$(am_test_iterable_buffer_set_OBJECTS)
+test_iterable_buffer_set_LDADD = $(LDADD)
+am_test_jrl_algorithm_OBJECTS = test_jrl_algorithm.$(OBJEXT)
+test_jrl_algorithm_OBJECTS = $(am_test_jrl_algorithm_OBJECTS)
+test_jrl_algorithm_LDADD = $(LDADD)
+am_test_jrl_geom_OBJECTS = test_jrl_geom.$(OBJEXT)
+test_jrl_geom_OBJECTS = $(am_test_jrl_geom_OBJECTS)
+test_jrl_geom_LDADD = $(LDADD)
+am_test_jrl_macro_OBJECTS = test_jrl_macro.$(OBJEXT)
+test_jrl_macro_OBJECTS = $(am_test_jrl_macro_OBJECTS)
+test_jrl_macro_LDADD = $(LDADD)
+am_test_jrl_metaprogram_OBJECTS = test_jrl_metaprogram.$(OBJEXT)
+test_jrl_metaprogram_OBJECTS = $(am_test_jrl_metaprogram_OBJECTS)
+test_jrl_metaprogram_LDADD = $(LDADD)
+am_test_jrl_util_OBJECTS = test_jrl_util.$(OBJEXT)
+test_jrl_util_OBJECTS = $(am_test_jrl_util_OBJECTS)
+test_jrl_util_LDADD = $(LDADD)
+am_test_log2_int_OBJECTS = test_log2_int.$(OBJEXT)
+test_log2_int_OBJECTS = $(am_test_log2_int_OBJECTS)
+test_log2_int_LDADD = $(LDADD)
+am_test_logging_OBJECTS = test_logging.$(OBJEXT)
+test_logging_OBJECTS = $(am_test_logging_OBJECTS)
+test_logging_LDADD = $(LDADD)
+am_test_stl_usability_OBJECTS = test_stl_usability.$(OBJEXT)
+test_stl_usability_OBJECTS = $(am_test_stl_usability_OBJECTS)
+test_stl_usability_LDADD = $(LDADD)
+am_test_unitsafe_OBJECTS = test_unitsafe.$(OBJEXT)
+test_unitsafe_OBJECTS = $(am_test_unitsafe_OBJECTS)
+test_unitsafe_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -214,18 +216,20 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(testboostusability_SOURCES) \
-	$(testiterablebufferset_SOURCES) $(testjrlalgorithm_SOURCES) \
-	$(testjrlgeom_SOURCES) $(testjrlmacro_SOURCES) \
-	$(testjrlmetaprogram_SOURCES) $(testjrlutil_SOURCES) \
-	$(testlog2int_SOURCES) $(testlogging_SOURCES) \
-	$(teststlusability_SOURCES) $(testunitsafe_SOURCES)
-DIST_SOURCES = $(testboostusability_SOURCES) \
-	$(testiterablebufferset_SOURCES) $(testjrlalgorithm_SOURCES) \
-	$(testjrlgeom_SOURCES) $(testjrlmacro_SOURCES) \
-	$(testjrlmetaprogram_SOURCES) $(testjrlutil_SOURCES) \
-	$(testlog2int_SOURCES) $(testlogging_SOURCES) \
-	$(teststlusability_SOURCES) $(testunitsafe_SOURCES)
+SOURCES = $(test_boost_usability_SOURCES) \
+	$(test_iterable_buffer_set_SOURCES) \
+	$(test_jrl_algorithm_SOURCES) $(test_jrl_geom_SOURCES) \
+	$(test_jrl_macro_SOURCES) $(test_jrl_metaprogram_SOURCES) \
+	$(test_jrl_util_SOURCES) $(test_log2_int_SOURCES) \
+	$(test_logging_SOURCES) $(test_stl_usability_SOURCES) \
+	$(test_unitsafe_SOURCES)
+DIST_SOURCES = $(test_boost_usability_SOURCES) \
+	$(test_iterable_buffer_set_SOURCES) \
+	$(test_jrl_algorithm_SOURCES) $(test_jrl_geom_SOURCES) \
+	$(test_jrl_macro_SOURCES) $(test_jrl_metaprogram_SOURCES) \
+	$(test_jrl_util_SOURCES) $(test_log2_int_SOURCES) \
+	$(test_logging_SOURCES) $(test_stl_usability_SOURCES) \
+	$(test_unitsafe_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -625,40 +629,43 @@ include_HEADERS = \
 	jrl_macro \
 	jrl_metaprogram \
 	jrl_util \
+	stl_usability/algorithm_usability \
+	stl_usability/misc_usability \
+	stl_usability/ostream_innerator \
 	unitsafe
 
-testlog2int_SOURCES = \
-	test/testlog2int.cpp
+test_log2_int_SOURCES = \
+	test/test_log2_int.cpp
 
-testboostusability_SOURCES = \
-	test/testboostusability.cpp
+test_boost_usability_SOURCES = \
+	test/test_boost_usability.cpp
 
-testjrlalgorithm_SOURCES = \
-	test/testjrlalgorithm.cpp
+test_jrl_algorithm_SOURCES = \
+	test/test_jrl_algorithm.cpp
 
-testjrlgeom_SOURCES = \
-	test/testjrlgeom.cpp
+test_jrl_geom_SOURCES = \
+	test/test_jrl_geom.cpp
 
-testjrlmacro_SOURCES = \
-	test/testjrlmacro.cpp
+test_jrl_macro_SOURCES = \
+	test/test_jrl_macro.cpp
 
-testjrlmetaprogram_SOURCES = \
-	test/testjrlmetaprogram.cpp
+test_jrl_metaprogram_SOURCES = \
+	test/test_jrl_metaprogram.cpp
 
-testjrlutil_SOURCES = \
-	test/testjrlutil.cpp
+test_jrl_util_SOURCES = \
+	test/test_jrl_util.cpp
 
-testlogging_SOURCES = \
-	test/testlogging.cpp
+test_logging_SOURCES = \
+	test/test_logging.cpp
 
-testiterablebufferset_SOURCES = \
-	test/testiterablebufferset.cpp
+test_iterable_buffer_set_SOURCES = \
+	test/test_iterable_buffer_set.cpp
 
-teststlusability_SOURCES = \
-	test/teststlusability.cpp
+test_stl_usability_SOURCES = \
+	test/test_stl_usability.cpp
 
-testunitsafe_SOURCES = \
-	test/testunitsafe.cpp
+test_unitsafe_SOURCES = \
+	test/test_unitsafe.cpp
 
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -764,49 +771,49 @@ clean-binPROGRAMS:
 	echo " rm -f" $$list; \
 	rm -f $$list
 
-testboostusability$(EXEEXT): $(testboostusability_OBJECTS) $(testboostusability_DEPENDENCIES) $(EXTRA_testboostusability_DEPENDENCIES) 
-	@rm -f testboostusability$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(testboostusability_OBJECTS) $(testboostusability_LDADD) $(LIBS)
+test_boost_usability$(EXEEXT): $(test_boost_usability_OBJECTS) $(test_boost_usability_DEPENDENCIES) $(EXTRA_test_boost_usability_DEPENDENCIES) 
+	@rm -f test_boost_usability$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(test_boost_usability_OBJECTS) $(test_boost_usability_LDADD) $(LIBS)
 
-testiterablebufferset$(EXEEXT): $(testiterablebufferset_OBJECTS) $(testiterablebufferset_DEPENDENCIES) $(EXTRA_testiterablebufferset_DEPENDENCIES) 
-	@rm -f testiterablebufferset$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(testiterablebufferset_OBJECTS) $(testiterablebufferset_LDADD) $(LIBS)
+test_iterable_buffer_set$(EXEEXT): $(test_iterable_buffer_set_OBJECTS) $(test_iterable_buffer_set_DEPENDENCIES) $(EXTRA_test_iterable_buffer_set_DEPENDENCIES) 
+	@rm -f test_iterable_buffer_set$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(test_iterable_buffer_set_OBJECTS) $(test_iterable_buffer_set_LDADD) $(LIBS)
 
-testjrlalgorithm$(EXEEXT): $(testjrlalgorithm_OBJECTS) $(testjrlalgorithm_DEPENDENCIES) $(EXTRA_testjrlalgorithm_DEPENDENCIES) 
-	@rm -f testjrlalgorithm$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(testjrlalgorithm_OBJECTS) $(testjrlalgorithm_LDADD) $(LIBS)
+test_jrl_algorithm$(EXEEXT): $(test_jrl_algorithm_OBJECTS) $(test_jrl_algorithm_DEPENDENCIES) $(EXTRA_test_jrl_algorithm_DEPENDENCIES) 
+	@rm -f test_jrl_algorithm$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(test_jrl_algorithm_OBJECTS) $(test_jrl_algorithm_LDADD) $(LIBS)
 
-testjrlgeom$(EXEEXT): $(testjrlgeom_OBJECTS) $(testjrlgeom_DEPENDENCIES) $(EXTRA_testjrlgeom_DEPENDENCIES) 
-	@rm -f testjrlgeom$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(testjrlgeom_OBJECTS) $(testjrlgeom_LDADD) $(LIBS)
+test_jrl_geom$(EXEEXT): $(test_jrl_geom_OBJECTS) $(test_jrl_geom_DEPENDENCIES) $(EXTRA_test_jrl_geom_DEPENDENCIES) 
+	@rm -f test_jrl_geom$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(test_jrl_geom_OBJECTS) $(test_jrl_geom_LDADD) $(LIBS)
 
-testjrlmacro$(EXEEXT): $(testjrlmacro_OBJECTS) $(testjrlmacro_DEPENDENCIES) $(EXTRA_testjrlmacro_DEPENDENCIES) 
-	@rm -f testjrlmacro$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(testjrlmacro_OBJECTS) $(testjrlmacro_LDADD) $(LIBS)
+test_jrl_macro$(EXEEXT): $(test_jrl_macro_OBJECTS) $(test_jrl_macro_DEPENDENCIES) $(EXTRA_test_jrl_macro_DEPENDENCIES) 
+	@rm -f test_jrl_macro$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(test_jrl_macro_OBJECTS) $(test_jrl_macro_LDADD) $(LIBS)
 
-testjrlmetaprogram$(EXEEXT): $(testjrlmetaprogram_OBJECTS) $(testjrlmetaprogram_DEPENDENCIES) $(EXTRA_testjrlmetaprogram_DEPENDENCIES) 
-	@rm -f testjrlmetaprogram$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(testjrlmetaprogram_OBJECTS) $(testjrlmetaprogram_LDADD) $(LIBS)
+test_jrl_metaprogram$(EXEEXT): $(test_jrl_metaprogram_OBJECTS) $(test_jrl_metaprogram_DEPENDENCIES) $(EXTRA_test_jrl_metaprogram_DEPENDENCIES) 
+	@rm -f test_jrl_metaprogram$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(test_jrl_metaprogram_OBJECTS) $(test_jrl_metaprogram_LDADD) $(LIBS)
 
-testjrlutil$(EXEEXT): $(testjrlutil_OBJECTS) $(testjrlutil_DEPENDENCIES) $(EXTRA_testjrlutil_DEPENDENCIES) 
-	@rm -f testjrlutil$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(testjrlutil_OBJECTS) $(testjrlutil_LDADD) $(LIBS)
+test_jrl_util$(EXEEXT): $(test_jrl_util_OBJECTS) $(test_jrl_util_DEPENDENCIES) $(EXTRA_test_jrl_util_DEPENDENCIES) 
+	@rm -f test_jrl_util$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(test_jrl_util_OBJECTS) $(test_jrl_util_LDADD) $(LIBS)
 
-testlog2int$(EXEEXT): $(testlog2int_OBJECTS) $(testlog2int_DEPENDENCIES) $(EXTRA_testlog2int_DEPENDENCIES) 
-	@rm -f testlog2int$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(testlog2int_OBJECTS) $(testlog2int_LDADD) $(LIBS)
+test_log2_int$(EXEEXT): $(test_log2_int_OBJECTS) $(test_log2_int_DEPENDENCIES) $(EXTRA_test_log2_int_DEPENDENCIES) 
+	@rm -f test_log2_int$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(test_log2_int_OBJECTS) $(test_log2_int_LDADD) $(LIBS)
 
-testlogging$(EXEEXT): $(testlogging_OBJECTS) $(testlogging_DEPENDENCIES) $(EXTRA_testlogging_DEPENDENCIES) 
-	@rm -f testlogging$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(testlogging_OBJECTS) $(testlogging_LDADD) $(LIBS)
+test_logging$(EXEEXT): $(test_logging_OBJECTS) $(test_logging_DEPENDENCIES) $(EXTRA_test_logging_DEPENDENCIES) 
+	@rm -f test_logging$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(test_logging_OBJECTS) $(test_logging_LDADD) $(LIBS)
 
-teststlusability$(EXEEXT): $(teststlusability_OBJECTS) $(teststlusability_DEPENDENCIES) $(EXTRA_teststlusability_DEPENDENCIES) 
-	@rm -f teststlusability$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(teststlusability_OBJECTS) $(teststlusability_LDADD) $(LIBS)
+test_stl_usability$(EXEEXT): $(test_stl_usability_OBJECTS) $(test_stl_usability_DEPENDENCIES) $(EXTRA_test_stl_usability_DEPENDENCIES) 
+	@rm -f test_stl_usability$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(test_stl_usability_OBJECTS) $(test_stl_usability_LDADD) $(LIBS)
 
-testunitsafe$(EXEEXT): $(testunitsafe_OBJECTS) $(testunitsafe_DEPENDENCIES) $(EXTRA_testunitsafe_DEPENDENCIES) 
-	@rm -f testunitsafe$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(testunitsafe_OBJECTS) $(testunitsafe_LDADD) $(LIBS)
+test_unitsafe$(EXEEXT): $(test_unitsafe_OBJECTS) $(test_unitsafe_DEPENDENCIES) $(EXTRA_test_unitsafe_DEPENDENCIES) 
+	@rm -f test_unitsafe$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(test_unitsafe_OBJECTS) $(test_unitsafe_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -814,17 +821,17 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testboostusability.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testiterablebufferset.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testjrlalgorithm.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testjrlgeom.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testjrlmacro.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testjrlmetaprogram.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testjrlutil.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testlog2int.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testlogging.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/teststlusability.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testunitsafe.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_boost_usability.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_iterable_buffer_set.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_jrl_algorithm.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_jrl_geom.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_jrl_macro.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_jrl_metaprogram.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_jrl_util.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_log2_int.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logging.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_stl_usability.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_unitsafe.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -847,159 +854,159 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LTCXXCOMPILE) -c -o $@ $<
 
-testboostusability.o: test/testboostusability.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testboostusability.o -MD -MP -MF $(DEPDIR)/testboostusability.Tpo -c -o testboostusability.o `test -f 'test/testboostusability.cpp' || echo '$(srcdir)/'`test/testboostusability.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testboostusability.Tpo $(DEPDIR)/testboostusability.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testboostusability.cpp' object='testboostusability.o' libtool=no @AMDEPBACKSLASH@
+test_boost_usability.o: test/test_boost_usability.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_boost_usability.o -MD -MP -MF $(DEPDIR)/test_boost_usability.Tpo -c -o test_boost_usability.o `test -f 'test/test_boost_usability.cpp' || echo '$(srcdir)/'`test/test_boost_usability.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_boost_usability.Tpo $(DEPDIR)/test_boost_usability.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_boost_usability.cpp' object='test_boost_usability.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testboostusability.o `test -f 'test/testboostusability.cpp' || echo '$(srcdir)/'`test/testboostusability.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_boost_usability.o `test -f 'test/test_boost_usability.cpp' || echo '$(srcdir)/'`test/test_boost_usability.cpp
 
-testboostusability.obj: test/testboostusability.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testboostusability.obj -MD -MP -MF $(DEPDIR)/testboostusability.Tpo -c -o testboostusability.obj `if test -f 'test/testboostusability.cpp'; then $(CYGPATH_W) 'test/testboostusability.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testboostusability.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testboostusability.Tpo $(DEPDIR)/testboostusability.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testboostusability.cpp' object='testboostusability.obj' libtool=no @AMDEPBACKSLASH@
+test_boost_usability.obj: test/test_boost_usability.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_boost_usability.obj -MD -MP -MF $(DEPDIR)/test_boost_usability.Tpo -c -o test_boost_usability.obj `if test -f 'test/test_boost_usability.cpp'; then $(CYGPATH_W) 'test/test_boost_usability.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_boost_usability.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_boost_usability.Tpo $(DEPDIR)/test_boost_usability.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_boost_usability.cpp' object='test_boost_usability.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testboostusability.obj `if test -f 'test/testboostusability.cpp'; then $(CYGPATH_W) 'test/testboostusability.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testboostusability.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_boost_usability.obj `if test -f 'test/test_boost_usability.cpp'; then $(CYGPATH_W) 'test/test_boost_usability.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_boost_usability.cpp'; fi`
 
-testiterablebufferset.o: test/testiterablebufferset.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testiterablebufferset.o -MD -MP -MF $(DEPDIR)/testiterablebufferset.Tpo -c -o testiterablebufferset.o `test -f 'test/testiterablebufferset.cpp' || echo '$(srcdir)/'`test/testiterablebufferset.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testiterablebufferset.Tpo $(DEPDIR)/testiterablebufferset.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testiterablebufferset.cpp' object='testiterablebufferset.o' libtool=no @AMDEPBACKSLASH@
+test_iterable_buffer_set.o: test/test_iterable_buffer_set.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_iterable_buffer_set.o -MD -MP -MF $(DEPDIR)/test_iterable_buffer_set.Tpo -c -o test_iterable_buffer_set.o `test -f 'test/test_iterable_buffer_set.cpp' || echo '$(srcdir)/'`test/test_iterable_buffer_set.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_iterable_buffer_set.Tpo $(DEPDIR)/test_iterable_buffer_set.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_iterable_buffer_set.cpp' object='test_iterable_buffer_set.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testiterablebufferset.o `test -f 'test/testiterablebufferset.cpp' || echo '$(srcdir)/'`test/testiterablebufferset.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_iterable_buffer_set.o `test -f 'test/test_iterable_buffer_set.cpp' || echo '$(srcdir)/'`test/test_iterable_buffer_set.cpp
 
-testiterablebufferset.obj: test/testiterablebufferset.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testiterablebufferset.obj -MD -MP -MF $(DEPDIR)/testiterablebufferset.Tpo -c -o testiterablebufferset.obj `if test -f 'test/testiterablebufferset.cpp'; then $(CYGPATH_W) 'test/testiterablebufferset.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testiterablebufferset.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testiterablebufferset.Tpo $(DEPDIR)/testiterablebufferset.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testiterablebufferset.cpp' object='testiterablebufferset.obj' libtool=no @AMDEPBACKSLASH@
+test_iterable_buffer_set.obj: test/test_iterable_buffer_set.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_iterable_buffer_set.obj -MD -MP -MF $(DEPDIR)/test_iterable_buffer_set.Tpo -c -o test_iterable_buffer_set.obj `if test -f 'test/test_iterable_buffer_set.cpp'; then $(CYGPATH_W) 'test/test_iterable_buffer_set.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_iterable_buffer_set.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_iterable_buffer_set.Tpo $(DEPDIR)/test_iterable_buffer_set.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_iterable_buffer_set.cpp' object='test_iterable_buffer_set.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testiterablebufferset.obj `if test -f 'test/testiterablebufferset.cpp'; then $(CYGPATH_W) 'test/testiterablebufferset.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testiterablebufferset.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_iterable_buffer_set.obj `if test -f 'test/test_iterable_buffer_set.cpp'; then $(CYGPATH_W) 'test/test_iterable_buffer_set.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_iterable_buffer_set.cpp'; fi`
 
-testjrlalgorithm.o: test/testjrlalgorithm.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testjrlalgorithm.o -MD -MP -MF $(DEPDIR)/testjrlalgorithm.Tpo -c -o testjrlalgorithm.o `test -f 'test/testjrlalgorithm.cpp' || echo '$(srcdir)/'`test/testjrlalgorithm.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testjrlalgorithm.Tpo $(DEPDIR)/testjrlalgorithm.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testjrlalgorithm.cpp' object='testjrlalgorithm.o' libtool=no @AMDEPBACKSLASH@
+test_jrl_algorithm.o: test/test_jrl_algorithm.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_jrl_algorithm.o -MD -MP -MF $(DEPDIR)/test_jrl_algorithm.Tpo -c -o test_jrl_algorithm.o `test -f 'test/test_jrl_algorithm.cpp' || echo '$(srcdir)/'`test/test_jrl_algorithm.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_jrl_algorithm.Tpo $(DEPDIR)/test_jrl_algorithm.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_jrl_algorithm.cpp' object='test_jrl_algorithm.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testjrlalgorithm.o `test -f 'test/testjrlalgorithm.cpp' || echo '$(srcdir)/'`test/testjrlalgorithm.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_jrl_algorithm.o `test -f 'test/test_jrl_algorithm.cpp' || echo '$(srcdir)/'`test/test_jrl_algorithm.cpp
 
-testjrlalgorithm.obj: test/testjrlalgorithm.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testjrlalgorithm.obj -MD -MP -MF $(DEPDIR)/testjrlalgorithm.Tpo -c -o testjrlalgorithm.obj `if test -f 'test/testjrlalgorithm.cpp'; then $(CYGPATH_W) 'test/testjrlalgorithm.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testjrlalgorithm.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testjrlalgorithm.Tpo $(DEPDIR)/testjrlalgorithm.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testjrlalgorithm.cpp' object='testjrlalgorithm.obj' libtool=no @AMDEPBACKSLASH@
+test_jrl_algorithm.obj: test/test_jrl_algorithm.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_jrl_algorithm.obj -MD -MP -MF $(DEPDIR)/test_jrl_algorithm.Tpo -c -o test_jrl_algorithm.obj `if test -f 'test/test_jrl_algorithm.cpp'; then $(CYGPATH_W) 'test/test_jrl_algorithm.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_jrl_algorithm.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_jrl_algorithm.Tpo $(DEPDIR)/test_jrl_algorithm.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_jrl_algorithm.cpp' object='test_jrl_algorithm.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testjrlalgorithm.obj `if test -f 'test/testjrlalgorithm.cpp'; then $(CYGPATH_W) 'test/testjrlalgorithm.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testjrlalgorithm.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_jrl_algorithm.obj `if test -f 'test/test_jrl_algorithm.cpp'; then $(CYGPATH_W) 'test/test_jrl_algorithm.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_jrl_algorithm.cpp'; fi`
 
-testjrlgeom.o: test/testjrlgeom.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testjrlgeom.o -MD -MP -MF $(DEPDIR)/testjrlgeom.Tpo -c -o testjrlgeom.o `test -f 'test/testjrlgeom.cpp' || echo '$(srcdir)/'`test/testjrlgeom.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testjrlgeom.Tpo $(DEPDIR)/testjrlgeom.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testjrlgeom.cpp' object='testjrlgeom.o' libtool=no @AMDEPBACKSLASH@
+test_jrl_geom.o: test/test_jrl_geom.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_jrl_geom.o -MD -MP -MF $(DEPDIR)/test_jrl_geom.Tpo -c -o test_jrl_geom.o `test -f 'test/test_jrl_geom.cpp' || echo '$(srcdir)/'`test/test_jrl_geom.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_jrl_geom.Tpo $(DEPDIR)/test_jrl_geom.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_jrl_geom.cpp' object='test_jrl_geom.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testjrlgeom.o `test -f 'test/testjrlgeom.cpp' || echo '$(srcdir)/'`test/testjrlgeom.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_jrl_geom.o `test -f 'test/test_jrl_geom.cpp' || echo '$(srcdir)/'`test/test_jrl_geom.cpp
 
-testjrlgeom.obj: test/testjrlgeom.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testjrlgeom.obj -MD -MP -MF $(DEPDIR)/testjrlgeom.Tpo -c -o testjrlgeom.obj `if test -f 'test/testjrlgeom.cpp'; then $(CYGPATH_W) 'test/testjrlgeom.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testjrlgeom.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testjrlgeom.Tpo $(DEPDIR)/testjrlgeom.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testjrlgeom.cpp' object='testjrlgeom.obj' libtool=no @AMDEPBACKSLASH@
+test_jrl_geom.obj: test/test_jrl_geom.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_jrl_geom.obj -MD -MP -MF $(DEPDIR)/test_jrl_geom.Tpo -c -o test_jrl_geom.obj `if test -f 'test/test_jrl_geom.cpp'; then $(CYGPATH_W) 'test/test_jrl_geom.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_jrl_geom.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_jrl_geom.Tpo $(DEPDIR)/test_jrl_geom.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_jrl_geom.cpp' object='test_jrl_geom.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testjrlgeom.obj `if test -f 'test/testjrlgeom.cpp'; then $(CYGPATH_W) 'test/testjrlgeom.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testjrlgeom.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_jrl_geom.obj `if test -f 'test/test_jrl_geom.cpp'; then $(CYGPATH_W) 'test/test_jrl_geom.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_jrl_geom.cpp'; fi`
 
-testjrlmacro.o: test/testjrlmacro.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testjrlmacro.o -MD -MP -MF $(DEPDIR)/testjrlmacro.Tpo -c -o testjrlmacro.o `test -f 'test/testjrlmacro.cpp' || echo '$(srcdir)/'`test/testjrlmacro.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testjrlmacro.Tpo $(DEPDIR)/testjrlmacro.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testjrlmacro.cpp' object='testjrlmacro.o' libtool=no @AMDEPBACKSLASH@
+test_jrl_macro.o: test/test_jrl_macro.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_jrl_macro.o -MD -MP -MF $(DEPDIR)/test_jrl_macro.Tpo -c -o test_jrl_macro.o `test -f 'test/test_jrl_macro.cpp' || echo '$(srcdir)/'`test/test_jrl_macro.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_jrl_macro.Tpo $(DEPDIR)/test_jrl_macro.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_jrl_macro.cpp' object='test_jrl_macro.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testjrlmacro.o `test -f 'test/testjrlmacro.cpp' || echo '$(srcdir)/'`test/testjrlmacro.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_jrl_macro.o `test -f 'test/test_jrl_macro.cpp' || echo '$(srcdir)/'`test/test_jrl_macro.cpp
 
-testjrlmacro.obj: test/testjrlmacro.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testjrlmacro.obj -MD -MP -MF $(DEPDIR)/testjrlmacro.Tpo -c -o testjrlmacro.obj `if test -f 'test/testjrlmacro.cpp'; then $(CYGPATH_W) 'test/testjrlmacro.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testjrlmacro.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testjrlmacro.Tpo $(DEPDIR)/testjrlmacro.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testjrlmacro.cpp' object='testjrlmacro.obj' libtool=no @AMDEPBACKSLASH@
+test_jrl_macro.obj: test/test_jrl_macro.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_jrl_macro.obj -MD -MP -MF $(DEPDIR)/test_jrl_macro.Tpo -c -o test_jrl_macro.obj `if test -f 'test/test_jrl_macro.cpp'; then $(CYGPATH_W) 'test/test_jrl_macro.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_jrl_macro.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_jrl_macro.Tpo $(DEPDIR)/test_jrl_macro.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_jrl_macro.cpp' object='test_jrl_macro.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testjrlmacro.obj `if test -f 'test/testjrlmacro.cpp'; then $(CYGPATH_W) 'test/testjrlmacro.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testjrlmacro.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_jrl_macro.obj `if test -f 'test/test_jrl_macro.cpp'; then $(CYGPATH_W) 'test/test_jrl_macro.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_jrl_macro.cpp'; fi`
 
-testjrlmetaprogram.o: test/testjrlmetaprogram.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testjrlmetaprogram.o -MD -MP -MF $(DEPDIR)/testjrlmetaprogram.Tpo -c -o testjrlmetaprogram.o `test -f 'test/testjrlmetaprogram.cpp' || echo '$(srcdir)/'`test/testjrlmetaprogram.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testjrlmetaprogram.Tpo $(DEPDIR)/testjrlmetaprogram.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testjrlmetaprogram.cpp' object='testjrlmetaprogram.o' libtool=no @AMDEPBACKSLASH@
+test_jrl_metaprogram.o: test/test_jrl_metaprogram.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_jrl_metaprogram.o -MD -MP -MF $(DEPDIR)/test_jrl_metaprogram.Tpo -c -o test_jrl_metaprogram.o `test -f 'test/test_jrl_metaprogram.cpp' || echo '$(srcdir)/'`test/test_jrl_metaprogram.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_jrl_metaprogram.Tpo $(DEPDIR)/test_jrl_metaprogram.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_jrl_metaprogram.cpp' object='test_jrl_metaprogram.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testjrlmetaprogram.o `test -f 'test/testjrlmetaprogram.cpp' || echo '$(srcdir)/'`test/testjrlmetaprogram.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_jrl_metaprogram.o `test -f 'test/test_jrl_metaprogram.cpp' || echo '$(srcdir)/'`test/test_jrl_metaprogram.cpp
 
-testjrlmetaprogram.obj: test/testjrlmetaprogram.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testjrlmetaprogram.obj -MD -MP -MF $(DEPDIR)/testjrlmetaprogram.Tpo -c -o testjrlmetaprogram.obj `if test -f 'test/testjrlmetaprogram.cpp'; then $(CYGPATH_W) 'test/testjrlmetaprogram.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testjrlmetaprogram.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testjrlmetaprogram.Tpo $(DEPDIR)/testjrlmetaprogram.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testjrlmetaprogram.cpp' object='testjrlmetaprogram.obj' libtool=no @AMDEPBACKSLASH@
+test_jrl_metaprogram.obj: test/test_jrl_metaprogram.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_jrl_metaprogram.obj -MD -MP -MF $(DEPDIR)/test_jrl_metaprogram.Tpo -c -o test_jrl_metaprogram.obj `if test -f 'test/test_jrl_metaprogram.cpp'; then $(CYGPATH_W) 'test/test_jrl_metaprogram.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_jrl_metaprogram.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_jrl_metaprogram.Tpo $(DEPDIR)/test_jrl_metaprogram.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_jrl_metaprogram.cpp' object='test_jrl_metaprogram.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testjrlmetaprogram.obj `if test -f 'test/testjrlmetaprogram.cpp'; then $(CYGPATH_W) 'test/testjrlmetaprogram.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testjrlmetaprogram.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_jrl_metaprogram.obj `if test -f 'test/test_jrl_metaprogram.cpp'; then $(CYGPATH_W) 'test/test_jrl_metaprogram.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_jrl_metaprogram.cpp'; fi`
 
-testjrlutil.o: test/testjrlutil.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testjrlutil.o -MD -MP -MF $(DEPDIR)/testjrlutil.Tpo -c -o testjrlutil.o `test -f 'test/testjrlutil.cpp' || echo '$(srcdir)/'`test/testjrlutil.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testjrlutil.Tpo $(DEPDIR)/testjrlutil.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testjrlutil.cpp' object='testjrlutil.o' libtool=no @AMDEPBACKSLASH@
+test_jrl_util.o: test/test_jrl_util.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_jrl_util.o -MD -MP -MF $(DEPDIR)/test_jrl_util.Tpo -c -o test_jrl_util.o `test -f 'test/test_jrl_util.cpp' || echo '$(srcdir)/'`test/test_jrl_util.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_jrl_util.Tpo $(DEPDIR)/test_jrl_util.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_jrl_util.cpp' object='test_jrl_util.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testjrlutil.o `test -f 'test/testjrlutil.cpp' || echo '$(srcdir)/'`test/testjrlutil.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_jrl_util.o `test -f 'test/test_jrl_util.cpp' || echo '$(srcdir)/'`test/test_jrl_util.cpp
 
-testjrlutil.obj: test/testjrlutil.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testjrlutil.obj -MD -MP -MF $(DEPDIR)/testjrlutil.Tpo -c -o testjrlutil.obj `if test -f 'test/testjrlutil.cpp'; then $(CYGPATH_W) 'test/testjrlutil.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testjrlutil.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testjrlutil.Tpo $(DEPDIR)/testjrlutil.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testjrlutil.cpp' object='testjrlutil.obj' libtool=no @AMDEPBACKSLASH@
+test_jrl_util.obj: test/test_jrl_util.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_jrl_util.obj -MD -MP -MF $(DEPDIR)/test_jrl_util.Tpo -c -o test_jrl_util.obj `if test -f 'test/test_jrl_util.cpp'; then $(CYGPATH_W) 'test/test_jrl_util.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_jrl_util.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_jrl_util.Tpo $(DEPDIR)/test_jrl_util.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_jrl_util.cpp' object='test_jrl_util.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testjrlutil.obj `if test -f 'test/testjrlutil.cpp'; then $(CYGPATH_W) 'test/testjrlutil.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testjrlutil.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_jrl_util.obj `if test -f 'test/test_jrl_util.cpp'; then $(CYGPATH_W) 'test/test_jrl_util.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_jrl_util.cpp'; fi`
 
-testlog2int.o: test/testlog2int.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testlog2int.o -MD -MP -MF $(DEPDIR)/testlog2int.Tpo -c -o testlog2int.o `test -f 'test/testlog2int.cpp' || echo '$(srcdir)/'`test/testlog2int.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testlog2int.Tpo $(DEPDIR)/testlog2int.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testlog2int.cpp' object='testlog2int.o' libtool=no @AMDEPBACKSLASH@
+test_log2_int.o: test/test_log2_int.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_log2_int.o -MD -MP -MF $(DEPDIR)/test_log2_int.Tpo -c -o test_log2_int.o `test -f 'test/test_log2_int.cpp' || echo '$(srcdir)/'`test/test_log2_int.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_log2_int.Tpo $(DEPDIR)/test_log2_int.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_log2_int.cpp' object='test_log2_int.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testlog2int.o `test -f 'test/testlog2int.cpp' || echo '$(srcdir)/'`test/testlog2int.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_log2_int.o `test -f 'test/test_log2_int.cpp' || echo '$(srcdir)/'`test/test_log2_int.cpp
 
-testlog2int.obj: test/testlog2int.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testlog2int.obj -MD -MP -MF $(DEPDIR)/testlog2int.Tpo -c -o testlog2int.obj `if test -f 'test/testlog2int.cpp'; then $(CYGPATH_W) 'test/testlog2int.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testlog2int.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testlog2int.Tpo $(DEPDIR)/testlog2int.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testlog2int.cpp' object='testlog2int.obj' libtool=no @AMDEPBACKSLASH@
+test_log2_int.obj: test/test_log2_int.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_log2_int.obj -MD -MP -MF $(DEPDIR)/test_log2_int.Tpo -c -o test_log2_int.obj `if test -f 'test/test_log2_int.cpp'; then $(CYGPATH_W) 'test/test_log2_int.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_log2_int.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_log2_int.Tpo $(DEPDIR)/test_log2_int.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_log2_int.cpp' object='test_log2_int.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testlog2int.obj `if test -f 'test/testlog2int.cpp'; then $(CYGPATH_W) 'test/testlog2int.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testlog2int.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_log2_int.obj `if test -f 'test/test_log2_int.cpp'; then $(CYGPATH_W) 'test/test_log2_int.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_log2_int.cpp'; fi`
 
-testlogging.o: test/testlogging.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testlogging.o -MD -MP -MF $(DEPDIR)/testlogging.Tpo -c -o testlogging.o `test -f 'test/testlogging.cpp' || echo '$(srcdir)/'`test/testlogging.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testlogging.Tpo $(DEPDIR)/testlogging.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testlogging.cpp' object='testlogging.o' libtool=no @AMDEPBACKSLASH@
+test_logging.o: test/test_logging.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logging.o -MD -MP -MF $(DEPDIR)/test_logging.Tpo -c -o test_logging.o `test -f 'test/test_logging.cpp' || echo '$(srcdir)/'`test/test_logging.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_logging.Tpo $(DEPDIR)/test_logging.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_logging.cpp' object='test_logging.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testlogging.o `test -f 'test/testlogging.cpp' || echo '$(srcdir)/'`test/testlogging.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logging.o `test -f 'test/test_logging.cpp' || echo '$(srcdir)/'`test/test_logging.cpp
 
-testlogging.obj: test/testlogging.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testlogging.obj -MD -MP -MF $(DEPDIR)/testlogging.Tpo -c -o testlogging.obj `if test -f 'test/testlogging.cpp'; then $(CYGPATH_W) 'test/testlogging.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testlogging.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testlogging.Tpo $(DEPDIR)/testlogging.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testlogging.cpp' object='testlogging.obj' libtool=no @AMDEPBACKSLASH@
+test_logging.obj: test/test_logging.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logging.obj -MD -MP -MF $(DEPDIR)/test_logging.Tpo -c -o test_logging.obj `if test -f 'test/test_logging.cpp'; then $(CYGPATH_W) 'test/test_logging.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_logging.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_logging.Tpo $(DEPDIR)/test_logging.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_logging.cpp' object='test_logging.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testlogging.obj `if test -f 'test/testlogging.cpp'; then $(CYGPATH_W) 'test/testlogging.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testlogging.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logging.obj `if test -f 'test/test_logging.cpp'; then $(CYGPATH_W) 'test/test_logging.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_logging.cpp'; fi`
 
-teststlusability.o: test/teststlusability.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT teststlusability.o -MD -MP -MF $(DEPDIR)/teststlusability.Tpo -c -o teststlusability.o `test -f 'test/teststlusability.cpp' || echo '$(srcdir)/'`test/teststlusability.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/teststlusability.Tpo $(DEPDIR)/teststlusability.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/teststlusability.cpp' object='teststlusability.o' libtool=no @AMDEPBACKSLASH@
+test_stl_usability.o: test/test_stl_usability.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_stl_usability.o -MD -MP -MF $(DEPDIR)/test_stl_usability.Tpo -c -o test_stl_usability.o `test -f 'test/test_stl_usability.cpp' || echo '$(srcdir)/'`test/test_stl_usability.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_stl_usability.Tpo $(DEPDIR)/test_stl_usability.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_stl_usability.cpp' object='test_stl_usability.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o teststlusability.o `test -f 'test/teststlusability.cpp' || echo '$(srcdir)/'`test/teststlusability.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_stl_usability.o `test -f 'test/test_stl_usability.cpp' || echo '$(srcdir)/'`test/test_stl_usability.cpp
 
-teststlusability.obj: test/teststlusability.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT teststlusability.obj -MD -MP -MF $(DEPDIR)/teststlusability.Tpo -c -o teststlusability.obj `if test -f 'test/teststlusability.cpp'; then $(CYGPATH_W) 'test/teststlusability.cpp'; else $(CYGPATH_W) '$(srcdir)/test/teststlusability.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/teststlusability.Tpo $(DEPDIR)/teststlusability.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/teststlusability.cpp' object='teststlusability.obj' libtool=no @AMDEPBACKSLASH@
+test_stl_usability.obj: test/test_stl_usability.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_stl_usability.obj -MD -MP -MF $(DEPDIR)/test_stl_usability.Tpo -c -o test_stl_usability.obj `if test -f 'test/test_stl_usability.cpp'; then $(CYGPATH_W) 'test/test_stl_usability.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_stl_usability.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_stl_usability.Tpo $(DEPDIR)/test_stl_usability.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_stl_usability.cpp' object='test_stl_usability.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o teststlusability.obj `if test -f 'test/teststlusability.cpp'; then $(CYGPATH_W) 'test/teststlusability.cpp'; else $(CYGPATH_W) '$(srcdir)/test/teststlusability.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_stl_usability.obj `if test -f 'test/test_stl_usability.cpp'; then $(CYGPATH_W) 'test/test_stl_usability.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_stl_usability.cpp'; fi`
 
-testunitsafe.o: test/testunitsafe.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testunitsafe.o -MD -MP -MF $(DEPDIR)/testunitsafe.Tpo -c -o testunitsafe.o `test -f 'test/testunitsafe.cpp' || echo '$(srcdir)/'`test/testunitsafe.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testunitsafe.Tpo $(DEPDIR)/testunitsafe.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testunitsafe.cpp' object='testunitsafe.o' libtool=no @AMDEPBACKSLASH@
+test_unitsafe.o: test/test_unitsafe.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_unitsafe.o -MD -MP -MF $(DEPDIR)/test_unitsafe.Tpo -c -o test_unitsafe.o `test -f 'test/test_unitsafe.cpp' || echo '$(srcdir)/'`test/test_unitsafe.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_unitsafe.Tpo $(DEPDIR)/test_unitsafe.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_unitsafe.cpp' object='test_unitsafe.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testunitsafe.o `test -f 'test/testunitsafe.cpp' || echo '$(srcdir)/'`test/testunitsafe.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_unitsafe.o `test -f 'test/test_unitsafe.cpp' || echo '$(srcdir)/'`test/test_unitsafe.cpp
 
-testunitsafe.obj: test/testunitsafe.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT testunitsafe.obj -MD -MP -MF $(DEPDIR)/testunitsafe.Tpo -c -o testunitsafe.obj `if test -f 'test/testunitsafe.cpp'; then $(CYGPATH_W) 'test/testunitsafe.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testunitsafe.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testunitsafe.Tpo $(DEPDIR)/testunitsafe.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/testunitsafe.cpp' object='testunitsafe.obj' libtool=no @AMDEPBACKSLASH@
+test_unitsafe.obj: test/test_unitsafe.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_unitsafe.obj -MD -MP -MF $(DEPDIR)/test_unitsafe.Tpo -c -o test_unitsafe.obj `if test -f 'test/test_unitsafe.cpp'; then $(CYGPATH_W) 'test/test_unitsafe.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_unitsafe.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_unitsafe.Tpo $(DEPDIR)/test_unitsafe.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_unitsafe.cpp' object='test_unitsafe.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o testunitsafe.obj `if test -f 'test/testunitsafe.cpp'; then $(CYGPATH_W) 'test/testunitsafe.cpp'; else $(CYGPATH_W) '$(srcdir)/test/testunitsafe.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_unitsafe.obj `if test -f 'test/test_unitsafe.cpp'; then $(CYGPATH_W) 'test/test_unitsafe.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_unitsafe.cpp'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -1231,79 +1238,79 @@ recheck: all
 	        am__force_recheck=am--force-recheck \
 	        TEST_LOGS="$$log_list"; \
 	exit $$?
-testlog2int.log: testlog2int$(EXEEXT)
-	@p='testlog2int$(EXEEXT)'; \
-	b='testlog2int'; \
+test_log2_int.log: test_log2_int$(EXEEXT)
+	@p='test_log2_int$(EXEEXT)'; \
+	b='test_log2_int'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-testboostusability.log: testboostusability$(EXEEXT)
-	@p='testboostusability$(EXEEXT)'; \
-	b='testboostusability'; \
+test_boost_usability.log: test_boost_usability$(EXEEXT)
+	@p='test_boost_usability$(EXEEXT)'; \
+	b='test_boost_usability'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-testjrlalgorithm.log: testjrlalgorithm$(EXEEXT)
-	@p='testjrlalgorithm$(EXEEXT)'; \
-	b='testjrlalgorithm'; \
+test_jrl_algorithm.log: test_jrl_algorithm$(EXEEXT)
+	@p='test_jrl_algorithm$(EXEEXT)'; \
+	b='test_jrl_algorithm'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-testjrlgeom.log: testjrlgeom$(EXEEXT)
-	@p='testjrlgeom$(EXEEXT)'; \
-	b='testjrlgeom'; \
+test_jrl_geom.log: test_jrl_geom$(EXEEXT)
+	@p='test_jrl_geom$(EXEEXT)'; \
+	b='test_jrl_geom'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-testjrlmacro.log: testjrlmacro$(EXEEXT)
-	@p='testjrlmacro$(EXEEXT)'; \
-	b='testjrlmacro'; \
+test_jrl_macro.log: test_jrl_macro$(EXEEXT)
+	@p='test_jrl_macro$(EXEEXT)'; \
+	b='test_jrl_macro'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-testjrlmetaprogram.log: testjrlmetaprogram$(EXEEXT)
-	@p='testjrlmetaprogram$(EXEEXT)'; \
-	b='testjrlmetaprogram'; \
+test_jrl_metaprogram.log: test_jrl_metaprogram$(EXEEXT)
+	@p='test_jrl_metaprogram$(EXEEXT)'; \
+	b='test_jrl_metaprogram'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-testjrlutil.log: testjrlutil$(EXEEXT)
-	@p='testjrlutil$(EXEEXT)'; \
-	b='testjrlutil'; \
+test_jrl_util.log: test_jrl_util$(EXEEXT)
+	@p='test_jrl_util$(EXEEXT)'; \
+	b='test_jrl_util'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-testlogging.log: testlogging$(EXEEXT)
-	@p='testlogging$(EXEEXT)'; \
-	b='testlogging'; \
+test_logging.log: test_logging$(EXEEXT)
+	@p='test_logging$(EXEEXT)'; \
+	b='test_logging'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-testiterablebufferset.log: testiterablebufferset$(EXEEXT)
-	@p='testiterablebufferset$(EXEEXT)'; \
-	b='testiterablebufferset'; \
+test_iterable_buffer_set.log: test_iterable_buffer_set$(EXEEXT)
+	@p='test_iterable_buffer_set$(EXEEXT)'; \
+	b='test_iterable_buffer_set'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-teststlusability.log: teststlusability$(EXEEXT)
-	@p='teststlusability$(EXEEXT)'; \
-	b='teststlusability'; \
+test_stl_usability.log: test_stl_usability$(EXEEXT)
+	@p='test_stl_usability$(EXEEXT)'; \
+	b='test_stl_usability'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-testunitsafe.log: testunitsafe$(EXEEXT)
-	@p='testunitsafe$(EXEEXT)'; \
-	b='testunitsafe'; \
+test_unitsafe.log: test_unitsafe$(EXEEXT)
+	@p='test_unitsafe$(EXEEXT)'; \
+	b='test_unitsafe'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
