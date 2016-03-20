@@ -109,6 +109,13 @@
     throw ExceptionType(what.str());		\
   } while(0)
 
+#define THROW_ON_FAIL(predicate, ExceptionType, ...)	\
+  do {							\
+    if (!(predicate)) {					\
+      THROW_EXCEPTION(ExceptionType, __VA_ARGS__);	\
+    }							\
+  } while (0)
+
 /**
  * Helper macro for wrapping the behavior of calling a system
  * function, checking the return code against a known error value and
@@ -123,7 +130,7 @@
  */
 #define CALL_SYSTEM_FUNC(func, errVal, errMsg)		\
   do {							\
-    if (errVal == func) {				\
+    if (errVal == (func)) {				\
       THROW_SYSTEM_ERROR(errMsg);			\
     }							\
   } while (0)
