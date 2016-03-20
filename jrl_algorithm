@@ -10,14 +10,14 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -114,15 +114,37 @@ template<typename _Container, typename _OutputIterator>
 inline _OutputIterator
 move_all(_Container &__src, _OutputIterator __tgt)
 {
-  // \TODO
-  // for (typename _Container::iterator entry = std::begin(__src);
-  //      entry != std::end(__src); ++entry) {
-  //   *__tgt = std::move(*entry);
   for (auto &entry : __src) {
     *__tgt = std::move(entry);
     ++__tgt;
   }
   return __tgt;
+}
+
+/**
+ * As per binary operator version of transform, but with a ternary
+ * operator.
+ *
+ * @todo can this be done for n-ary operator using a variadic
+ * template?
+ */
+template<typename _Container1, typename _Container2, typename _Container3,
+	 typename _OutputIterator, typename _TernaryOperator>
+inline _OutputIterator
+transform(const _Container1 &__container1, const _Container2 &__container2,
+	  const _Container3 &__container3, _OutputIterator __result,
+	  _TernaryOperator __ternary_op)
+{
+  using C1Iter = _Container1::iterator;
+  using C2Iter = _Container2::iterator;
+  using C3Iter = _Container3::iterator;
+  C1Iter c1 = __container1.begin();
+  C2Iter c2 = __container2.begin();
+  C3Iter c3 = __container3.begin();
+  for (; __container1.end() != c1; ++c1, ++c2, ++c3, ++__result) {
+    *__result = __ternary_op(*c1, *c2, *c3);
+  }
+  return __result;
 }
 
 } // namespace algorithm
