@@ -44,7 +44,7 @@
 #include <catch.hpp>
 
 using namespace std;
-using namespace jrl;
+using namespace jrl::util::boost_usability;
 
 using IVec = vector<int>;
 
