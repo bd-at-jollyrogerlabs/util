@@ -37,6 +37,8 @@
 #if !defined(OSTREAM_INNERATOR_GUARD)
 #define OSTREAM_INNERATOR_GUARD
 
+#include <sstream>
+
 namespace jrl
 {
 
