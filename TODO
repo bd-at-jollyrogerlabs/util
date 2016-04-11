@@ -38,6 +38,7 @@ Allow users to choose some other implementation such as Boost logging?
 This opens a big can of worms, requiring the addition of an admin
 server.  Should obviously be controlled by conditional compilation.
 Investigate extant solutions to this problem.
+** Use static buffers to allow logging in low memory conditions
 * additions
 ** Add iterable_buffer_set
 * project level modifications
