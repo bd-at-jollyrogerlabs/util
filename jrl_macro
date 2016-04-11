@@ -37,6 +37,9 @@
 #if !defined(JRL_MACRO_GUARD)
 #define JRL_MACRO_GUARD
 
+#include <stdexcept>
+#include <sstream>
+
 /**
  * Replacement for assert() which will also abort the program during
  * release builds.
@@ -105,7 +108,8 @@
 #define THROW_EXCEPTION(ExceptionType, ...)	\
   do {						\
     std::ostringstream what;			\
-    what << __VA_ARGS__;			\
+    what << __VA_ARGS__ << " on line " << __LINE__ \
+	 << " of file " << __FILE__;			   \
     throw ExceptionType(what.str());		\
   } while(0)
 
