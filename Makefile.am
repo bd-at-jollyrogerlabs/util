@@ -65,6 +65,7 @@ include_HEADERS = \
 	jrl_macro \
 	jrl_metaprogram \
 	jrl_util \
+	stack_allocator \
 	stl_usability/algorithm_usability \
 	stl_usability/misc_usability \
 	stl_usability/ostream_innerator \
@@ -80,6 +81,7 @@ bin_PROGRAMS = \
 	test_jrl_util \
 	test_logging \
 	test_iterable_buffer_set \
+	test_stack_allocator \
 	test_stl_usability \
 	test_unitsafe
 
@@ -93,6 +95,7 @@ TESTS = \
 	test_jrl_util \
 	test_logging \
 	test_iterable_buffer_set \
+	test_stack_allocator \
 	test_stl_usability \
 	test_unitsafe
 
@@ -125,6 +128,9 @@ test_iterable_buffer_set_SOURCES = \
 
 test_stl_usability_SOURCES = \
 	test/test_stl_usability.cpp
+
+test_stack_allocator_SOURCES = \
+	test/test_stack_allocator.cpp
 
 test_unitsafe_SOURCES = \
 	test/test_unitsafe.cpp

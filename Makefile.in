@@ -114,13 +114,15 @@ bin_PROGRAMS = test_log2_int$(EXEEXT) test_boost_usability$(EXEEXT) \
 	test_jrl_algorithm$(EXEEXT) test_jrl_geom$(EXEEXT) \
 	test_jrl_macro$(EXEEXT) test_jrl_metaprogram$(EXEEXT) \
 	test_jrl_util$(EXEEXT) test_logging$(EXEEXT) \
-	test_iterable_buffer_set$(EXEEXT) test_stl_usability$(EXEEXT) \
+	test_iterable_buffer_set$(EXEEXT) \
+	test_stack_allocator$(EXEEXT) test_stl_usability$(EXEEXT) \
 	test_unitsafe$(EXEEXT)
 TESTS = test_log2_int$(EXEEXT) test_boost_usability$(EXEEXT) \
 	test_jrl_algorithm$(EXEEXT) test_jrl_geom$(EXEEXT) \
 	test_jrl_macro$(EXEEXT) test_jrl_metaprogram$(EXEEXT) \
 	test_jrl_util$(EXEEXT) test_logging$(EXEEXT) \
-	test_iterable_buffer_set$(EXEEXT) test_stl_usability$(EXEEXT) \
+	test_iterable_buffer_set$(EXEEXT) \
+	test_stack_allocator$(EXEEXT) test_stl_usability$(EXEEXT) \
 	test_unitsafe$(EXEEXT)
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
@@ -176,6 +178,9 @@ test_log2_int_LDADD = $(LDADD)
 am_test_logging_OBJECTS = test_logging.$(OBJEXT)
 test_logging_OBJECTS = $(am_test_logging_OBJECTS)
 test_logging_LDADD = $(LDADD)
+am_test_stack_allocator_OBJECTS = test_stack_allocator.$(OBJEXT)
+test_stack_allocator_OBJECTS = $(am_test_stack_allocator_OBJECTS)
+test_stack_allocator_LDADD = $(LDADD)
 am_test_stl_usability_OBJECTS = test_stl_usability.$(OBJEXT)
 test_stl_usability_OBJECTS = $(am_test_stl_usability_OBJECTS)
 test_stl_usability_LDADD = $(LDADD)
@@ -221,15 +226,15 @@ SOURCES = $(test_boost_usability_SOURCES) \
 	$(test_jrl_algorithm_SOURCES) $(test_jrl_geom_SOURCES) \
 	$(test_jrl_macro_SOURCES) $(test_jrl_metaprogram_SOURCES) \
 	$(test_jrl_util_SOURCES) $(test_log2_int_SOURCES) \
-	$(test_logging_SOURCES) $(test_stl_usability_SOURCES) \
-	$(test_unitsafe_SOURCES)
+	$(test_logging_SOURCES) $(test_stack_allocator_SOURCES) \
+	$(test_stl_usability_SOURCES) $(test_unitsafe_SOURCES)
 DIST_SOURCES = $(test_boost_usability_SOURCES) \
 	$(test_iterable_buffer_set_SOURCES) \
 	$(test_jrl_algorithm_SOURCES) $(test_jrl_geom_SOURCES) \
 	$(test_jrl_macro_SOURCES) $(test_jrl_metaprogram_SOURCES) \
 	$(test_jrl_util_SOURCES) $(test_log2_int_SOURCES) \
-	$(test_logging_SOURCES) $(test_stl_usability_SOURCES) \
-	$(test_unitsafe_SOURCES)
+	$(test_logging_SOURCES) $(test_stack_allocator_SOURCES) \
+	$(test_stl_usability_SOURCES) $(test_unitsafe_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -629,6 +634,7 @@ include_HEADERS = \
 	jrl_macro \
 	jrl_metaprogram \
 	jrl_util \
+	stack_allocator \
 	stl_usability/algorithm_usability \
 	stl_usability/misc_usability \
 	stl_usability/ostream_innerator \
@@ -663,6 +669,9 @@ test_iterable_buffer_set_SOURCES = \
 
 test_stl_usability_SOURCES = \
 	test/test_stl_usability.cpp
+
+test_stack_allocator_SOURCES = \
+	test/test_stack_allocator.cpp
 
 test_unitsafe_SOURCES = \
 	test/test_unitsafe.cpp
@@ -807,6 +816,10 @@ test_logging$(EXEEXT): $(test_logging_OBJECTS) $(test_logging_DEPENDENCIES) $(EX
 	@rm -f test_logging$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(test_logging_OBJECTS) $(test_logging_LDADD) $(LIBS)
 
+test_stack_allocator$(EXEEXT): $(test_stack_allocator_OBJECTS) $(test_stack_allocator_DEPENDENCIES) $(EXTRA_test_stack_allocator_DEPENDENCIES) 
+	@rm -f test_stack_allocator$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(test_stack_allocator_OBJECTS) $(test_stack_allocator_LDADD) $(LIBS)
+
 test_stl_usability$(EXEEXT): $(test_stl_usability_OBJECTS) $(test_stl_usability_DEPENDENCIES) $(EXTRA_test_stl_usability_DEPENDENCIES) 
 	@rm -f test_stl_usability$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(test_stl_usability_OBJECTS) $(test_stl_usability_LDADD) $(LIBS)
@@ -830,6 +843,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_jrl_util.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_log2_int.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logging.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_stack_allocator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_stl_usability.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_unitsafe.Po@am__quote@
 
@@ -979,6 +993,20 @@ test_logging.obj: test/test_logging.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_logging.cpp' object='test_logging.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logging.obj `if test -f 'test/test_logging.cpp'; then $(CYGPATH_W) 'test/test_logging.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_logging.cpp'; fi`
+
+test_stack_allocator.o: test/test_stack_allocator.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_stack_allocator.o -MD -MP -MF $(DEPDIR)/test_stack_allocator.Tpo -c -o test_stack_allocator.o `test -f 'test/test_stack_allocator.cpp' || echo '$(srcdir)/'`test/test_stack_allocator.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_stack_allocator.Tpo $(DEPDIR)/test_stack_allocator.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_stack_allocator.cpp' object='test_stack_allocator.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_stack_allocator.o `test -f 'test/test_stack_allocator.cpp' || echo '$(srcdir)/'`test/test_stack_allocator.cpp
+
+test_stack_allocator.obj: test/test_stack_allocator.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_stack_allocator.obj -MD -MP -MF $(DEPDIR)/test_stack_allocator.Tpo -c -o test_stack_allocator.obj `if test -f 'test/test_stack_allocator.cpp'; then $(CYGPATH_W) 'test/test_stack_allocator.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_stack_allocator.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_stack_allocator.Tpo $(DEPDIR)/test_stack_allocator.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_stack_allocator.cpp' object='test_stack_allocator.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_stack_allocator.obj `if test -f 'test/test_stack_allocator.cpp'; then $(CYGPATH_W) 'test/test_stack_allocator.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_stack_allocator.cpp'; fi`
 
 test_stl_usability.o: test/test_stl_usability.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_stl_usability.o -MD -MP -MF $(DEPDIR)/test_stl_usability.Tpo -c -o test_stl_usability.o `test -f 'test/test_stl_usability.cpp' || echo '$(srcdir)/'`test/test_stl_usability.cpp
@@ -1297,6 +1325,13 @@ test_logging.log: test_logging$(EXEEXT)
 test_iterable_buffer_set.log: test_iterable_buffer_set$(EXEEXT)
 	@p='test_iterable_buffer_set$(EXEEXT)'; \
 	b='test_iterable_buffer_set'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_stack_allocator.log: test_stack_allocator$(EXEEXT)
+	@p='test_stack_allocator$(EXEEXT)'; \
+	b='test_stack_allocator'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
