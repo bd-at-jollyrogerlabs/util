@@ -135,9 +135,9 @@ transform(const _Container1 &__container1, const _Container2 &__container2,
 	  const _Container3 &__container3, _OutputIterator __result,
 	  _TernaryOperator __ternary_op)
 {
-  using C1Iter = _Container1::iterator;
-  using C2Iter = _Container2::iterator;
-  using C3Iter = _Container3::iterator;
+  using C1Iter = typename _Container1::iterator;
+  using C2Iter = typename _Container2::iterator;
+  using C3Iter = typename _Container3::iterator;
   C1Iter c1 = __container1.begin();
   C2Iter c2 = __container2.begin();
   C3Iter c3 = __container3.begin();
