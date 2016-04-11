@@ -1,6 +1,6 @@
 /** -*- mode: c++-mode -*-
  *
- * testlog2int.cpp 
+ * test_log2_int.cpp 
  *
  * Copyright (C) 2014 Brian Davis
  * All Rights Reserved

@@ -1,6 +1,6 @@
 /** -*- mode: c++ -*-
  *
- * testlogging.cpp
+ * test_logging.cpp
  *
  * Test cases for logging code.
  *

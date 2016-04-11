@@ -1,6 +1,6 @@
 /** -*- mode: c++-mode -*-
  *
- * testjrlutil.cpp 
+ * test_jrl_util.cpp 
  *
  * Copyright (C) 2014 Brian Davis
  * All Rights Reserved

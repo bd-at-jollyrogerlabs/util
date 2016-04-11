@@ -1,8 +1,8 @@
 /** -*- mode: c++ -*-
  *
- * testmacro.cpp
+ * test_jrl_macro.cpp
  *
- * Test cases for stl_macro code.
+ * Test cases for jrl_macro code.
  *
  * Copyright (C) 2016 Brian Davis
  * All Rights Reserved

@@ -1,6 +1,6 @@
 /** -*- mode: c++-mode -*-
  *
- * testjrlalgorithm.cpp 
+ * test_jrl_algorithm.cpp 
  *
  * Copyright (C) 2014 Brian Davis
  * All Rights Reserved

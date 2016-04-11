@@ -1,8 +1,8 @@
 /** -*- mode: c++ -*-
  *
- * testmetaprogram.cpp
+ * test_jrl_metaprogram.cpp
  *
- * Test cases for stl_metaprogram code.
+ * Test cases for jrl_metaprogram code.
  *
  * Copyright (C) 2016 Brian Davis
  * All Rights Reserved

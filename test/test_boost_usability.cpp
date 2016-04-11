@@ -1,6 +1,6 @@
 /** -*- mode: c++ -*-
  *
- * testboostusability.cpp 
+ * test_boost_usability.cpp 
  *
  * Copyright (C) 2015 Brian Davis
  * All Rights Reserved

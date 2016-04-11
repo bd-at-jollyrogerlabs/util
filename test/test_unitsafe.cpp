@@ -1,6 +1,6 @@
 /** -*- mode: c++ -*-
  *
- * testunitsafe.cpp
+ * test_unitsafe.cpp
  *
  * Test cases for unitsafe code.
  *

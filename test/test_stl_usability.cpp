@@ -1,6 +1,6 @@
 /** -*- mode: c++ -*-
  *
- * teststlusability.cpp
+ * test_stl_usability.cpp
  *
  * Test cases for stl_usability code.
  *
