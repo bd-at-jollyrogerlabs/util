@@ -139,4 +139,27 @@
     }							\
   } while (0)
 
+
+#define DEFAULT_CONSTRUCTABLE(Class)		\
+  Class() = default
+
+#define DEFAULT_VIRTUAL_DESTRUCTABLE(Class)	\
+  virtual ~Class() = default
+
+#define DEFAULT_COPYABLE(Class)			\
+  Class(const Class &src) = default;		\
+  Class& operator=(const Class &rhs) = default
+
+#define NON_COPYABLE(Class)			\
+  Class(const Class &src) = delete;		\
+  Class& operator=(const Class &rhs) = delete
+
+#define DEFAULT_MOVEABLE(Class)			\
+  Class(Class &&src) = default;			\
+  Class& operator=(Class &&rhs) = default
+
+#define NON_MOVEABLE(Class)			\
+  Class(Class &&src) = delete;			\
+  Class& operator=(Class &&rhs) = delete
+
 #endif // JRL_MACRO_GUARD
