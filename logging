@@ -39,9 +39,7 @@
 #if !defined(LOGGING_GUARD)
 #define LOGGING_GUARD 1
 
-#ifndef UNITSAFE_GUARD
-#error The 'unitsafe' include file is required before the 'logging' include file
-#endif // #ifndef UNITSAFE_GUARD
+#include "unitsafe"
 
 #define LOG_STREAM std::cerr
 
