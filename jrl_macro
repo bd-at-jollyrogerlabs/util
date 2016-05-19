@@ -140,11 +140,13 @@
   } while (0)
 
 
-#define DEFAULT_CONSTRUCTABLE(Class)		\
-  Class() = default
+#define DEFAULT_CONSTRUCTABLE(Class) Class() = default
 
-#define DEFAULT_VIRTUAL_DESTRUCTABLE(Class)	\
-  virtual ~Class() = default
+#define NON_DEFAULT_CONSTRUCTABLE(Class) Class() = delete
+
+#define DEFAULT_DESTRUCTABLE(Class) ~Class() = default
+
+#define DEFAULT_VIRTUAL_DESTRUCTABLE(Class) virtual ~Class() = default
 
 #define DEFAULT_COPYABLE(Class)			\
   Class(const Class &src) = default;		\
