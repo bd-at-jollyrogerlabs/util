@@ -6,18 +6,18 @@
  *
  * Copyright (C) 2014 Brian Davis
  * All Rights Reserved
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -29,9 +29,9 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * Author: Brian Davis <bd@jollyrogerlabs.com>
- * 
+ *
  */
 
 #if !defined(JRL_MACRO_GUARD)
@@ -139,7 +139,36 @@
     }							\
   } while (0)
 
+/**
+ * Helper macro for wrapping the behavior of calling a system
+ * function, restarting it if it was interrupted by a signal, or
+ * throwing an appropriate exception if an error is detected.
+ */
+#define CALL_INTERRUPTABLE_SYSTEM_FUNC(func, errMsg)    \
+   do {                                                 \
+      do {                                              \
+         const int rc = (func);                         \
+         if (-1 == rc) {                                \
+            if (EINTR != errno) {                       \
+               THROW_SYSTEM_ERROR(errMsg);              \
+            }                                           \
+         }                                              \
+         else {                                         \
+            break;                                      \
+         }                                              \
+      } while (1);					\
+   } while (0)
 
+/**
+ * Helper macro to call a system function that is "standard" in the
+ * sense that it returns -1 to indicate error.
+ */
+#define CALL_STANDARD_SYSTEM_FUNC(func, errMsg) CALL_SYSTEM_FUNC(func, -1, errMsg)
+
+/**
+ * Helper macros for defining C++11/14 class construct/copy/move
+ * behaviors.
+ */
 #define DEFAULT_CONSTRUCTABLE(Class) Class() = default
 
 #define NON_DEFAULT_CONSTRUCTABLE(Class) Class() = delete
