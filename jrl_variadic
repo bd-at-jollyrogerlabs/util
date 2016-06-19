@@ -1,0 +1,60 @@
+/** -*- mode: c++ -*-
+ *
+ * jrl_variadic
+ *
+ * Useful utility classes and functions related to variadic template
+ * metaprogramming.
+ *
+ * Copyright (C) 2014 Brian Davis
+ * All Rights Reserved
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Author: Brian Davis <bd@jollyrogerlabs.com>
+ *
+ */
+
+#if !defined(JRL_VARIADIC_GUARD)
+#define JRL_UTIL_GUARD 1
+
+/**
+ * Helper variadic class template that simply counts the number of
+ * type parameters in its parameter pack.
+ */
+template<typename... __ParameterPack>
+struct param_pack_counter;
+
+template<typename __First, typename... __Rest>
+struct param_pack_counter
+{
+  static const unsigned value = 1 + param_pack_counter<__Rest...>::value;
+};
+
+template <>
+struct param_pack_counter
+{
+  static const unsigned value = 0;
+};
+
+#endif // if !defined(JRL_VARIADIC_GUARD)
