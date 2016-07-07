@@ -105,18 +105,18 @@
 /**
  * Helper macro for simplifying the use of exceptions.
  */
-#define THROW_EXCEPTION(ExceptionType, ...)	\
-  do {						\
-    std::ostringstream what;			\
-    what << __VA_ARGS__ << " on line " << __LINE__ \
-	 << " of file " << __FILE__;			   \
-    throw ExceptionType(what.str());		\
+// @todo use basename of filename
+#define THROW_EXCEPTION(ExceptionType, msg)				\
+  do {									\
+    std::ostringstream what;						\
+    what << "'" << msg << "' on line " << __LINE__ << " of file " << __FILE__; \
+    throw ExceptionType(what.str());					\
   } while(0)
 
-#define THROW_ON_FAIL(predicate, ExceptionType, ...)	\
+#define THROW_ON_FAIL(predicate, ExceptionType, msg)	\
   do {							\
     if (!(predicate)) {					\
-      THROW_EXCEPTION(ExceptionType, __VA_ARGS__);	\
+      THROW_EXCEPTION(ExceptionType, msg);		\
     }							\
   } while (0)
 
@@ -139,36 +139,7 @@
     }							\
   } while (0)
 
-/**
- * Helper macro for wrapping the behavior of calling a system
- * function, restarting it if it was interrupted by a signal, or
- * throwing an appropriate exception if an error is detected.
- */
-#define CALL_INTERRUPTABLE_SYSTEM_FUNC(func, errMsg)    \
-   do {                                                 \
-      do {                                              \
-         const int rc = (func);                         \
-         if (-1 == rc) {                                \
-            if (EINTR != errno) {                       \
-               THROW_SYSTEM_ERROR(errMsg);              \
-            }                                           \
-         }                                              \
-         else {                                         \
-            break;                                      \
-         }                                              \
-      } while (1);					\
-   } while (0)
 
-/**
- * Helper macro to call a system function that is "standard" in the
- * sense that it returns -1 to indicate error.
- */
-#define CALL_STANDARD_SYSTEM_FUNC(func, errMsg) CALL_SYSTEM_FUNC(func, -1, errMsg)
-
-/**
- * Helper macros for defining C++11/14 class construct/copy/move
- * behaviors.
- */
 #define DEFAULT_CONSTRUCTABLE(Class) Class() = default
 
 #define NON_DEFAULT_CONSTRUCTABLE(Class) Class() = delete

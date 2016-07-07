@@ -8,14 +8,14 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -49,11 +49,12 @@ namespace jrl
 namespace logging_hidden
 {
   enum {
-    DEBUG_LEVEL_FLAG = 1,
-    INFO_LEVEL_FLAG = 1 << 1,
-    WARN_LEVEL_FLAG = 1 << 2,
-    ERROR_LEVEL_FLAG = 1 << 3,
-    FATAL_LEVEL_FLAG = 1 << 4
+    TRACE_LEVEL_FLAG = 1,
+    DEBUG_LEVEL_FLAG = 1 << 1,
+    INFO_LEVEL_FLAG = 1 << 2,
+    WARN_LEVEL_FLAG = 1 << 3,
+    ERROR_LEVEL_FLAG = 1 << 4,
+    FATAL_LEVEL_FLAG = 1 << 5
   };
 } // namespace logging_hidden
 
@@ -62,63 +63,84 @@ MAKE_UNITSAFE(LogLevelFlags, uint8_t);
 #define ENABLE_LOG_LEVEL_BUILDER(NEW_LEVEL)				\
   do {									\
     BASE_TYPE(jrl::LogLevelFlags) flags = BASE_CAST(logLevelFlags_g);	\
-    flags |= static_cast<BASE_TYPE(jrl::LogLevelFlags)>(jrl::logging_hidden:: NEW_LEVEL ## _LEVEL_FLAG); \
+    flags |= static_cast<BASE_TYPE(jrl::LogLevelFlags)>(jrl::logging_hidden::NEW_LEVEL ## _LEVEL_FLAG); \
     logLevelFlags_g = jrl::LogLevelFlags(flags);			\
   } while (0)
 
+#define DISABLE_LOG_LEVEL_BUILDER(NEW_LEVEL)				\
+  do {									\
+    BASE_TYPE(jrl::LogLevelFlags) flags = BASE_CAST(logLevelFlags_g);	\
+    flags &= ~(static_cast<BASE_TYPE(jrl::LogLevelFlags)>(jrl::logging_hidden::NEW_LEVEL ## _LEVEL_FLAG)); \
+    logLevelFlags_g = jrl::LogLevelFlags(flags);			\
+  } while (0)
+
+#define ENABLE_TRACE ENABLE_LOG_LEVEL_BUILDER(TRACE)
 #define ENABLE_DEBUG ENABLE_LOG_LEVEL_BUILDER(DEBUG)
 #define ENABLE_INFO ENABLE_LOG_LEVEL_BUILDER(INFO)
 #define ENABLE_WARN ENABLE_LOG_LEVEL_BUILDER(WARN)
 #define ENABLE_ERROR ENABLE_LOG_LEVEL_BUILDER(ERROR)
 #define ENABLE_FATAL ENABLE_LOG_LEVEL_BUILDER(FATAL)
 
+#define DISABLE_TRACE DISABLE_LOG_LEVEL_BUILDER(TRACE)
+#define DISABLE_DEBUG DISABLE_LOG_LEVEL_BUILDER(DEBUG)
+#define DISABLE_INFO DISABLE_LOG_LEVEL_BUILDER(INFO)
+#define DISABLE_WARN DISABLE_LOG_LEVEL_BUILDER(WARN)
+#define DISABLE_ERROR DISABLE_LOG_LEVEL_BUILDER(ERROR)
+#define DISABLE_FATAL DISABLE_LOG_LEVEL_BUILDER(FATAL)
 
-#define DEBUG(...)							\
+#define TRACE(msg)							\
   do {									\
-    if (BASE_CAST(logLevelFlags_g) & jrl::logging_hidden::DEBUG_LEVEL_FLAG) { \
-      LOG_STREAM << "DEBUG: " << __VA_ARGS__ << std::endl;		\
+    if (BASE_CAST(logLevelFlags_g) & jrl::logging_hidden::TRACE_LEVEL_FLAG) { \
+      LOG_STREAM << "TRACE: " << msg << std::endl;			\
     }									\
   } while (0)
 
-#define INFO(...)						\
-  do {								\
+#define DEBUG(msg)							\
+  do {									\
+    if (BASE_CAST(logLevelFlags_g) & jrl::logging_hidden::DEBUG_LEVEL_FLAG) { \
+      LOG_STREAM << "DEBUG: " << msg << std::endl;			\
+    }									\
+  } while (0)
+
+#define INFO(msg)							\
+  do {									\
     if (BASE_CAST(logLevelFlags_g) & jrl::logging_hidden::INFO_LEVEL_FLAG) { \
-      LOG_STREAM << "INFO: " << __VA_ARGS__ << std::endl;	\
-    }								\
+      LOG_STREAM << "INFO: " << msg << std::endl;			\
+    }									\
   } while (0)
 
-#define WARN(...)						\
-  do {								\
+#define WARN(msg)							\
+  do {									\
     if (BASE_CAST(logLevelFlags_g) & jrl::logging_hidden::WARN_LEVEL_FLAG) { \
-      LOG_STREAM << "WARN: " << __VA_ARGS__ << std::endl;	\
-    }								\
+      LOG_STREAM << "WARN: " << msg << std::endl;			\
+    }									\
   } while (0)
 
-#define ERROR(...)						\
-  do {								\
+#define ERROR(msg)							\
+  do {									\
     if (BASE_CAST(logLevelFlags_g) & jrl::logging_hidden::ERROR_LEVEL_FLAG) { \
-      LOG_STREAM << "ERROR: " << __VA_ARGS__ << std::endl;	\
-    }								\
+      LOG_STREAM << "ERROR: " << msg << std::endl;			\
+    }									\
   } while (0)
 
-#define FATAL(...)						\
-  do {								\
+#define FATAL(msg)							\
+  do {									\
     if (BASE_CAST(logLevelFlags_g) & jrl::logging_hidden::FATAL_LEVEL_FLAG) { \
-      LOG_STREAM << "FATAL: " << __VA_ARGS__ << std::endl;	\
-    }								\
+      LOG_STREAM << "FATAL: " << msg << std::endl;			\
+    }									\
   } while (0)
 
 } // namespace jrl
 
-// NOTE: enables all levels other than DEBUG by default
+// NOTE: enables all levels other than TRACE and DEBUG by default
 #define USE_LOGGING				\
-namespace					\
+  namespace					\
 {						\
   jrl::LogLevelFlags logLevelFlags_g =		\
-    jrl::logging_hidden::INFO_LEVEL_FLAG |		\
-    jrl::logging_hidden::WARN_LEVEL_FLAG |		\
+    jrl::logging_hidden::INFO_LEVEL_FLAG |	\
+    jrl::logging_hidden::WARN_LEVEL_FLAG |	\
     jrl::logging_hidden::ERROR_LEVEL_FLAG |	\
-    jrl::logging_hidden::FATAL_LEVEL_FLAG;		\
+    jrl::logging_hidden::FATAL_LEVEL_FLAG;	\
 }
 
 #endif // LOGGING_GUARD

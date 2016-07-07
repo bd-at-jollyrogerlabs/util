@@ -38,8 +38,9 @@
 #if !defined(JRL_UTIL_GUARD)
 #define JRL_UTIL_GUARD 1
 
-// \TODO move utilities that require bitset to a separate file
+// @todo move utilities that require bitset to a separate file
 #include <bitset>
+#include <limits>
 
 namespace jrl
 {
@@ -82,7 +83,7 @@ struct bool_return : public std::tuple<__BaseType, bool>
  */
 template<typename ArgType>
 typename std::enable_if<std::is_unsigned<ArgType>::value, std::bitset<sizeof(ArgType) * 8>>::type
-asBinary(const ArgType arg)
+as_binary(const ArgType arg)
 {
   return std::bitset<sizeof(ArgType) * 8>(arg);
 }
@@ -91,6 +92,8 @@ asBinary(const ArgType arg)
  * Template metaprogram that produces a bit mask with a number of bits
  * set and then shifted to the left by a specified number of
  * positions at static time.
+ *
+ * @todo C++98 style, should be replaced by make_bit_mask?
  */
 template <unsigned SetBitCount, unsigned LeftShiftCount = 0>
 class BitMaskStatic
@@ -146,11 +149,56 @@ public:
   }
 };
 
+template <typename ValueType, unsigned SetBitCount, unsigned LeftShiftCount = 0>
+class BitMaskStatic_experimental
+{
+  template<unsigned Mask, unsigned Counter>
+  class Compute
+  {
+  public:
+    enum { result = Mask | Compute<(Mask << 1), Counter - 1>::result };
+  };
+
+  // Base case: (0 == Counter) --> done counting
+  template<unsigned Mask>
+  class Compute<Mask, 0>
+  {
+  public:
+    enum { result = 0 };
+  };
+
+public:
+  static const ValueType value =
+    (static_cast<ValueType>(Compute<1, SetBitCount>::result)) << LeftShiftCount;
+};
+
+/**
+ * Function that produces a bit mask with a number of bits set and
+ * then shifted to the left by a specified number of positions.
+ *
+ * @todo use static assert to force the result type to be unsigned
+ * numeric?
+ */
+template<typename ResultType>
+constexpr ResultType
+make_bit_mask(const unsigned bitCount,
+	      const unsigned leftShiftCount = 0)
+{
+  ResultType result = 0;
+  ResultType mask = (bitCount > 0) ? 1 : 0;
+  for (unsigned counter = 0; counter < bitCount; ++counter) {
+    result |= mask;
+    mask <<= 1;
+  }
+  result <<= leftShiftCount;
+  return result;
+}
+
 #if defined(USE_TIMESPEC_WRAP)
 /**
  * Object wrapped around timespec.
  *
- * \TODO use the standard C library versions and mark this as
+ * @todo use the standard C library versions and mark this as
  * deprecated
  */
 class TimeSpecWrap

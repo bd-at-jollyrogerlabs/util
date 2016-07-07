@@ -1,5 +1,106 @@
 -*- Mode: Outline -*-
 
+* hash_table
+** rehash
+*** static time configurable load factor threshold
+*** copy-on-write/read-copy-update
+** allocator policy
+** iterators
+*** non-const
+*** const
+*** begin()
+**** non-const
+**** const
+*** end()
+**** non-const
+**** const
+*** cbegin()
+*** cend()
+** basics
+*** standard interface
+**** empty()
+**** max_size() ??
+**** emplace()
+**** emplace_hint() ??
+**** insert()
+NOTE: argument is value_type
+***** non-const ref
+seems to be universal ref in standard impl
+***** const ref
+***** with hint
+***** range
+***** initializer list
+**** erase()
+***** non-const position iterator
+***** const position iterator
+***** key
+***** range
+**** clear()
+**** swap()
+**** hash_function()
+returns the hash function object
+**** key_eq()
+returns the key comparison object
+**** find()
+***** non-const ref
+***** const ref
+**** count()
+makes the most sense for multi-table, 0 or 1 for normal
+**** equal_range()
+makes the most sense for multi-table, 0 or 1 entries in the result for
+normal
+***** non-const key ref
+***** const key ref
+**** operator[]
+***** non-const key ref
+***** const key ref
+**** at()
+***** non-const key ref
+***** const key ref
+**** bucket_count()
+**** max_bucket_count()
+**** bucket_size()
+number of entries in bucket (with index argument)
+**** bucket()
+bucket index of element (with key argument)
+**** load_factor()
+**** max_load_factor()
+***** no-argument version returns
+***** float argument version sets
+**** rehash()
+size_t argument, set the number of buckets to argument or greater and
+rehash
+**** reserve()
+size_t argument, prepare the map to accept the number of elements
+given by the argument
+**** public type aliases
+*** questionable interface functions
+**** local_iterator + const_local_iterator versions of begin(), cbegin(), end(), cend()
+*** constructors
+**** copy
+***** with allocator ??
+**** move
+***** with allocator ??
+**** copy range
+**** initializer list
+*** assignment operator
+**** copy
+**** move
+** testing
+*** performance testing
+** multi-threading policy
+*** not-thread-safe
+*** global reader/writer lock
+*** per-bucket reader/writer lock
+** ordered iterator traversal for trivial hash
+*** requires special iterator + sorting of buckets
+** other policies ??
+*** cache hash value with element to reduce cost of equality test
+* jrl_variadic
+** testing
+*** find a way to add tests for cases that should not compile
+**** extraneous policies
+**** conflicting policies for the same behavior
 * jrl_util
 ** DONE - Convert to C++14
 ** Move utilities that require bitset to a separate file
@@ -32,6 +133,7 @@ Possibly log_base2_int
 ** Log2IntStatic: allow types other than unsigned for Argument
 * logging
 ** Convert to C++14
+** allow switching of log stream
 ** Possibly incorporate ideas from log_wrap
 Allow users to choose some other implementation such as Boost logging?
 ** Add admin control support
