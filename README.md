@@ -22,6 +22,7 @@ hash_table<size_t, string, trivial_hash_policy, power_of_two_length_table_style>
 
 // hash table that never rehashes (thus avoiding the expense of the calculation)
 hash_table<size_t, string, no_rehash_policy> no_rehash;
+```
 
 ###Other Stuff
 - unitsafe: eliminate implicit conversion for better safety.
