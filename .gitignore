@@ -13,14 +13,11 @@ vgcore.*
 autom4te.cache
 autoscan.log
 compile
-config.guess
 config.log
 config.status
 configure.scan
 config.h
-depcomp
 libtool
-ltmain.sh
 Makefile
 missing
 stamp-h1
@@ -28,11 +25,13 @@ test-driver
 
 test_boost_usability
 test_iterable_buffer_set
+test_hash_table
 test_jrl_algorithm
 test_jrl_geom
 test_jrl_macro
 test_jrl_metaprogram
 test_jrl_util
+test_jrl_variadic
 test_log2_int
 test_logging
 test_stl_usability
