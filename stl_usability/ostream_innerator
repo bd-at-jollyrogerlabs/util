@@ -10,14 +10,14 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -34,8 +34,8 @@
  *
  */
 
-#if !defined(OSTREAM_INNERATOR_GUARD)
-#define OSTREAM_INNERATOR_GUARD
+#if !defined(STL_USABILITY_OSTREAM_INNERATOR_GUARD)
+#define STL_USABILITY_OSTREAM_INNERATOR_GUARD
 
 #include <sstream>
 
@@ -167,7 +167,7 @@ private:
   const char_type* delimiter_;
   bool innerate_;
   bool first_;
-  
+
 };
 
 } // namespace stl_usability
@@ -176,4 +176,4 @@ private:
 
 } // namespace jrl
 
-#endif // if !defined(OSTREAM_INNERATOR_GUARD)
+#endif // STL_USABILITY_OSTREAM_INNERATOR_GUARD

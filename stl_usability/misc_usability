@@ -35,8 +35,8 @@
  *
  */
 
-#if !defined(STL_USABILITY_GUARD)
-#define STL_USABILITY_GUARD
+#if !defined(STL_USABILITY_MISC_USABILITY_GUARD)
+#define STL_USABILITY_MISC_USABILITY_GUARD
 
 namespace jrl
 {
@@ -84,4 +84,4 @@ enum {
 
 } // namespace jrl
 
-#endif // STL_USABILITY_GUARD
+#endif // STL_USABILITY_MISC_USABILITY_GUARD
