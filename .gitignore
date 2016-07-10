@@ -16,7 +16,6 @@ compile
 config.guess
 config.log
 config.status
-config.sub
 configure.scan
 config.h
 depcomp
