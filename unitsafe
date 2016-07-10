@@ -42,8 +42,6 @@
 #include <type_traits>
 #include <cmath>
 
-// #ifdef USE_UNITSAFE
-
 namespace jrl
 {
 
@@ -255,10 +253,10 @@ tanf(const typename jrl::UnitSafeWrapper<_BaseType, _TypeTag> val)
   return ::tanf(BASE_CAST(val));
 }
 
-// \TODO add other standard math functions
+// @todo add other standard math functions
 
 #if defined(USE_EXPERIMENTAL_UNITSAFE_STREAM_OPERATOR)
-// \TODO experimental, not sure if this will ever work...
+// @todo experimental, not sure if this will ever work...
 /**
  * Override of operator<< for types derived from UnitSafeWrapper.
  *
@@ -274,20 +272,5 @@ operator<<(std::ostream &strm, const jrl::UnitSafeWrapper<_BaseType, _TypeTag>& 
 }
 #endif // #if defined(USE_EXPERIMENTAL_UNITSAFE_STREAM_OPERATOR)
 } // empty namespace
-
-#else
-
-namespace jrl
-{
-
-#define MAKE_UNITSAFE(UnitSafeType, BaseType, TypeTag) using UnitSafeType = BaseType
-
-#define BASE_CAST(val) val
-
-#define BASE_TYPE(Type) Type
-
-}
-
-// #endif // USE_UNITSAFE
 
 #endif // UNITSAFE_GUARD
