@@ -20,7 +20,6 @@ config.sub
 configure.scan
 config.h
 depcomp
-install-sh
 libtool
 ltmain.sh
 Makefile
