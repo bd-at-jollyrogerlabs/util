@@ -96,18 +96,22 @@ given by the argument
 *** requires special iterator + sorting of buckets
 ** other policies ??
 *** cache hash value with element to reduce cost of equality test
-* jrl_variadic
-** testing
-*** find a way to add tests for cases that should not compile
-**** extraneous policies
-**** conflicting policies for the same behavior
-* jrl_util
-** DONE - Convert to C++14
-** Move utilities that require bitset to a separate file
-** Eliminate TimeSpecWrap
-Need to convert libbatch to some benchmarking library.
-** DONE - Move all macro definitions to jrl_macro
-** DONE Use enable_if + type_traits to constrain the template arguments for asBinary
+* iterable_buffer_set
+** Use of std::string...
+presents issues of object lifetime and ownership which require extra
+research regarding risk.  Possibly better to make a copy or eliminate
+these altogether.
+** object ownership
+needs careful review, especially the case where the type is used to
+store raw data from a socket.
+** crazy idea: template the constructor
+have specialization for const ref that will enforce non-modification
+** libaio + scatter/gather
+think about how to integrate with libaio and scatter/gather I/O.  A
+template is probably in order.
+** use uint8_t instead of char?
+** support array view
+** performance testing
 * jrl_algorithm
 ** DONE - Convert to C++14
 ** Apply patches to nondestructive_insert
@@ -116,15 +120,22 @@ See @todo comments in the function definition.
 ** Get rid of magic number constants
 Move to enum in internal namespace, seems like #define followed by
 #undef will not work...
-* unitsafe
-** Change name to jrl_unitsafe?
-** Use type_traits to restrict use to base types
-Only numeric types?
-** Fix handling of type tags
-*** mostly works now, but need to figure out how to handle operator<< correctly
-See USE_EXPERIMENTAL_UNITSAFE_STREAM_OPERATOR
-
-Works in test code but not pcbfixturing.
+** add branch prediction hints
+** add stack trace generation
+configurable?
+** add NDEBUG wrapper?
+* jrl_util
+** DONE - Convert to C++14
+** Move utilities that require bitset to a separate file
+** Eliminate TimeSpecWrap
+Need to convert libbatch to some benchmarking library.
+** DONE - Move all macro definitions to jrl_macro
+** DONE Use enable_if + type_traits to constrain the template arguments for asBinary
+* jrl_variadic
+** testing
+*** find a way to add tests for cases that should not compile
+**** extraneous policies
+**** conflicting policies for the same behavior
 * log2int
 ** Convert to C++14
 ** Change name to jrl_log_base2
@@ -141,10 +152,18 @@ This opens a big can of worms, requiring the addition of an admin
 server.  Should obviously be controlled by conditional compilation.
 Investigate extant solutions to this problem.
 ** Use static buffers to allow logging in low memory conditions
+* unitsafe
+** Change name to jrl_unitsafe?
+** Use type_traits to restrict use to base types
+Only numeric types?
+** Fix handling of type tags
+*** mostly works now, but need to figure out how to handle operator<< correctly
+See USE_EXPERIMENTAL_UNITSAFE_STREAM_OPERATOR
+
+Works in test code but not pcbfixturing.
 * additions
-** Add iterable_buffer_set
 * project level modifications
-** Move all test code to a separate directory
+** DONE - Move all test code to a separate directory
 ** Convert to C++14
 log2int
 logging
