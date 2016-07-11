@@ -42,7 +42,7 @@
 #include <catch.hpp>
 
 using namespace std;
-using namespace jrl::util;
+using namespace jrl;
 
 #define DO_TEST(Type, construction, result)	\
   do {						\

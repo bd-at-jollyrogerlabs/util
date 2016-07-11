@@ -45,9 +45,6 @@
 namespace jrl
 {
 
-namespace util
-{
-
 /**
  * Wrapper for the insert result idiom for std::map where a result is
  * a 2-tuple with the first element giving a value and the second
@@ -322,8 +319,6 @@ private:
   clockid_t clockId_;
 };
 #endif
-
-} // namespace util
 
 } // namespace jrl
 

@@ -48,7 +48,7 @@
 #include <catch.hpp>
 
 using namespace std;
-using namespace jrl::util::stl_usability;
+using namespace jrl;
 
 using IntVector = vector<int>;
 using Iterator = IntVector::iterator;
@@ -184,8 +184,8 @@ struct Moveable
 
 TEST_CASE("move_all", "[move_all]")
 {
-  using jrl::util::stl_usability::back_emplacer;
-  using jrl::util::algorithm::move_all;
+  using jrl::back_emplacer;
+  using jrl::move_all;
   {
     vector<Moveable> src(2);
     REQUIRE(2 == src.size());

@@ -41,12 +41,6 @@
 namespace jrl
 {
 
-namespace util
-{
-
-namespace stl_usability
-{
-
 enum {
   /*
    * Enums to be used for accessing the key from a value_type object
@@ -76,11 +70,6 @@ enum {
   ENTRY = 0,
   INSERT_RESULT = 1
 };
-
-
-} // namespace stl_usability
-
-} // namespace util
 
 } // namespace jrl
 

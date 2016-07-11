@@ -43,15 +43,7 @@
 namespace jrl
 {
 
-namespace util
-{
-
-namespace algorithm
-{
-
-namespace jutil = jrl::util;
-
-namespace detail
+namespace algo_private
 {
 
 /**
@@ -63,7 +55,7 @@ null_extender(_Container &__container, const size_t sz)
 {
 }
 
-} // namespace detail
+} // namespace algo_private
 
 /**
  * @brief Insert a value at the end of a container only if it does not yet
@@ -84,12 +76,13 @@ null_extender(_Container &__container, const size_t sz)
  */
 template<typename _Container, typename _Extender =
 	 std::function<void(_Container &, const size_t)>>
-jutil::bool_return<typename _Container::size_type>
+jrl::bool_return<typename _Container::size_type>
 nondestructive_insert(_Container &__container,
 		      const typename _Container::value_type &__val,
-		      _Extender __extender = detail::null_extender<_Container>)
+		      _Extender __extender =
+		      algo_private::null_extender<_Container>)
 {
-  using result_type = jrl::util::bool_return<typename _Container::size_type>;
+  using result_type = jrl::bool_return<typename _Container::size_type>;
   // @todo fix the following statement
   // static_assert(std::is_member_function_pointer<typename _Container::push_back>::value,
   // 		"_Container type parameter must be a class supporting a "
@@ -146,10 +139,6 @@ transform(const _Container1 &__container1, const _Container2 &__container2,
   }
   return __result;
 }
-
-} // namespace algorithm
-
-} // namespace util
 
 } // namespace jrl
 

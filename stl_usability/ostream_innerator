@@ -42,12 +42,6 @@
 namespace jrl
 {
 
-namespace util
-{
-
-namespace stl_usability
-{
-
 /**
  * ostream_iterator with correct behavior for delimiters.
  *
@@ -169,10 +163,6 @@ private:
   bool first_;
 
 };
-
-} // namespace stl_usability
-
-} // namespace util
 
 } // namespace jrl
 

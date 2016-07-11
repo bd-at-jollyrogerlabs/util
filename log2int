@@ -40,9 +40,6 @@
 namespace jrl
 {
 
-namespace util
-{
-
 /**
  * Integer portion of base 2 logarithm of the argument, calculated
  * statically; equivalent to static_cast<unsigned>(floor(log2(Argument))).
@@ -124,33 +121,6 @@ log2int(_UnsignedType arg)
   return highestSetBit;
 }
 
-// /**
-//  * log2int calculated using inner class recursive static member
-//  * function; used to prototype the design of Log2IntStatic.
-//  */
-// template<typename _UnsignedType>
-// _UnsignedType
-// log2intRecursive(_UnsignedType arg)
-// {
-//   class Inner
-//   {
-//   public:
-//     static _UnsignedType
-//     calc(const _UnsignedType count,
-// 	 const _UnsignedType mask,
-// 	 const _UnsignedType arg)
-//     {
-//       if (mask & arg) {
-// 	return count;
-//       }
-//       return calc(count - 1, mask >> 1, arg);
-//     }
-//   };
-//   const _UnsignedType max = ((8 * sizeof(arg)) - 1);
-//   return Inner::calc(max, 1 << max, arg);
-// }
+} // namespace jrl
 
-}
-
-}
 #endif // !defined(LOG2INT_GUARD)

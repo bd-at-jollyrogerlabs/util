@@ -42,15 +42,6 @@
 namespace jrl
 {
 
-namespace util
-{
-
-namespace stl_usability
-{
-
-
-
-
 /**
  * Helper function for the case where an element should only be
  * inserted if not already present; this function should be called
@@ -348,10 +339,6 @@ PAIRWISE_BINARY_OP_OUT(transform, OUT_ITER)
 #undef CONST_ITER
 #undef OUT_ITER
 #undef OP_OR_OUT
-
-} // namespace algorithm_usability
-
-} // namespace util
 
 } // namespace jrl
 
