@@ -11,14 +11,14 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -44,12 +44,6 @@
 namespace jrl
 {
 
-namespace util
-{
-
-namespace boost_usability
-{
-
 /**
  * Variadic version of make_zip_iterator
  */
@@ -62,7 +56,7 @@ auto make_zip_iterator(const T &... containers) ->
   return boost::make_iterator_range(zip_begin, zip_end);
 }
 
-// \TODO create a separate test case to document this
+// @todo create a separate test case to document this
 // partial example of use
 //  vector<int> a;
 //  double b[];
@@ -213,10 +207,6 @@ transform_streams(const _Container1 &__c1,
   }
   return __res;
 }
-
-} // namespace boost_usability
-
-} // namespace util
 
 } // namespace jrl
 
