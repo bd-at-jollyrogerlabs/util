@@ -51,119 +51,54 @@ namespace jrl
 template<typename _BaseType, typename _TypeTag>
 class UnitSafeWrapper
 {
+  static_assert(std::is_fundamental<_BaseType>::value,
+		"UnitSafeWrapper is only usable with fundamental types");
 public:
-  using base_type = _BaseType;
-  // constexpr static const unsigned type_tag = _TypeTag;
+  using type = _BaseType;
 
   UnitSafeWrapper()
     : value_()
   {
   }
 
-  UnitSafeWrapper(const _BaseType value)
+  // NOTE: UnitSafeWrapper is designed for fundamental types
+  UnitSafeWrapper(_BaseType value)
     : value_(value)
   {
   }
 
   UnitSafeWrapper &
-  operator=(const UnitSafeWrapper &rhs)
+  operator=(UnitSafeWrapper rhs)
   {
-    if (&rhs == this) {
-      return *this;
+    if (&rhs != this) {
+      value_ = rhs.value_;
     }
-    value_ = rhs.value_;
     return *this;
   }
 
-  bool
-  operator==(const UnitSafeWrapper &rhs) const
-  {
-    return value_ == rhs.value_;
+#define MAKE_COMPOUND_OPERATOR(op)		\
+  inline UnitSafeWrapper &			\
+  operator op(const UnitSafeWrapper &rhs)	\
+  {						\
+    value_ op rhs.value_;			\
+    return *this;				\
   }
 
-  bool
-  operator!=(const UnitSafeWrapper &rhs) const
-  {
-    return !(*this == rhs);
-  }
+  MAKE_COMPOUND_OPERATOR(+=)
 
-  bool
-  operator<(const UnitSafeWrapper &rhs) const
-  {
-    return value_ < rhs.value_;
-  }
+  MAKE_COMPOUND_OPERATOR(-=)
 
-  bool
-  operator>(const UnitSafeWrapper &rhs) const
-  {
-    return value_ > rhs.value_;
-  }
+  MAKE_COMPOUND_OPERATOR(*=)
 
-  bool
-  operator<=(const UnitSafeWrapper &rhs) const
-  {
-    return value_ <= rhs.value_;
-  }
+  MAKE_COMPOUND_OPERATOR(/=)
 
-  bool
-  operator>=(const UnitSafeWrapper &rhs) const
-  {
-    return value_ >= rhs.value_;
-  }
+  MAKE_COMPOUND_OPERATOR(%=)
 
-  UnitSafeWrapper
-  operator+(const UnitSafeWrapper &rhs) const
-  {
-    return value_ + rhs.value_;
-  }
+  MAKE_COMPOUND_OPERATOR(|=)
 
-  UnitSafeWrapper
-  operator-(const UnitSafeWrapper &rhs) const
-  {
-    return value_ - rhs.value_;
-  }
+  MAKE_COMPOUND_OPERATOR(&=)
 
-  UnitSafeWrapper
-  operator-() const
-  {
-    return -value_;
-  }
-
-  UnitSafeWrapper
-  operator*(const UnitSafeWrapper &rhs) const
-  {
-    return value_ * rhs.value_;
-  }
-
-  UnitSafeWrapper
-  operator/(const UnitSafeWrapper &rhs) const
-  {
-    return value_ / rhs.value_;
-  }
-
-  UnitSafeWrapper
-  operator+=(const UnitSafeWrapper &rhs) const
-  {
-    return value_ = value_ + rhs.value_;
-  }
-
-  UnitSafeWrapper
-  operator-=(const UnitSafeWrapper &rhs) const
-  {
-    return value_ = value_ - rhs.value_;
-  }
-
-  UnitSafeWrapper
-  operator*=(const UnitSafeWrapper &rhs) const
-  {
-    return value_ = value_ * rhs.value_;
-  }
-
-  UnitSafeWrapper
-  operator/=(const UnitSafeWrapper &rhs) const
-  {
-    return value_ = value_ / rhs.value_;
-  }
+  MAKE_COMPOUND_OPERATOR(^=)
 
   explicit
   operator _BaseType() const
@@ -174,6 +109,65 @@ public:
 private:
   _BaseType value_;
 };
+
+// binary comparison operators
+
+#define MAKE_COMPARISON_OPERATOR(op)					\
+  template<typename _BaseType, typename _TypeTag>			\
+  inline bool								\
+  operator op(const UnitSafeWrapper<_BaseType, _TypeTag> &lhs,		\
+	      const UnitSafeWrapper<_BaseType, _TypeTag> &rhs)		\
+  {									\
+    return base_cast(lhs) op base_cast(rhs);				\
+  }
+
+MAKE_COMPARISON_OPERATOR(==)
+
+MAKE_COMPARISON_OPERATOR(!=)
+
+MAKE_COMPARISON_OPERATOR(<)
+
+MAKE_COMPARISON_OPERATOR(<=)
+
+MAKE_COMPARISON_OPERATOR(>)
+
+MAKE_COMPARISON_OPERATOR(>=)
+
+#undef MAKE_COMPARISON_OPERATOR
+
+#define MAKE_OPERATOR(binOp, compoundOp)				\
+  template<typename _BaseType, typename _TypeTag>			\
+  inline UnitSafeWrapper<_BaseType, _TypeTag>				\
+  operator binOp(const UnitSafeWrapper<_BaseType, _TypeTag> &lhs,	\
+		 const UnitSafeWrapper<_BaseType, _TypeTag> &rhs)	\
+  {									\
+    using WrappedType = UnitSafeWrapper<_BaseType, _TypeTag>;		\
+    WrappedType result(lhs);						\
+    result compoundOp rhs;						\
+    return result;							\
+  }
+
+// binary arithmetic operators
+
+MAKE_OPERATOR(+, +=)
+
+MAKE_OPERATOR(-, -=)
+
+MAKE_OPERATOR(*, *=)
+
+MAKE_OPERATOR(/, /=)
+
+MAKE_OPERATOR(%, %=)
+
+// binary bitwise operators
+
+MAKE_OPERATOR(|, |=)
+
+MAKE_OPERATOR(&, &=)
+
+MAKE_OPERATOR(^, ^=)
+
+#undef MAKE_OPERATOR
 
 /**
  * Helper macro which creates a new safe type that wraps a base type.
@@ -202,21 +196,19 @@ accessibility:								\
 #define MAKE_PUBLIC_UNITSAFE(UnitSafeType, BaseType)		\
   MAKE_CONTAINED_UNITSAFE(UnitSafeType, BaseType, public)
 
-/**
- * Helper macro that uses some type system magic to simplify the
- * casting of a safe type constructed from UnitSafeWrapper to the base
- * type which can be used in operations with other types.
- *
- * NOTE: this will also cast away a reference modifier on the type of
- * the argument value.
- */
-#define BASE_CAST(val)							\
-  static_cast<typename std::remove_reference<decltype(val)>::type::base_type>(val)
-
-#define BASE_TYPE(Type) Type::base_type
+// @todo do something smart with type_traits to avoid creation of a
+// temporary?
+template<typename _UnitSafeType>
+inline typename _UnitSafeType::type
+base_cast(_UnitSafeType arg)
+{
+  return typename _UnitSafeType::type(arg);
+}
 
 } // namespace jrl
 
+// @todo change these to overloads in namespace std or maybe leave
+// them in namespace jrl and let ADL take over?
 namespace
 {
 // Various helper template functions defined inline in an empty
@@ -227,30 +219,30 @@ namespace
  * sqrt
  */
 template<typename _BaseType, typename _TypeTag>
-inline typename jrl::UnitSafeWrapper<_BaseType, _TypeTag>::base_type
+inline typename jrl::UnitSafeWrapper<_BaseType, _TypeTag>::type
 sqrt(const typename jrl::UnitSafeWrapper<_BaseType, _TypeTag> val)
 {
-  return ::sqrt(BASE_CAST(val));
+  return ::sqrt(base_cast(val));
 }
 
 /**
  * tan
  */
 template<typename _BaseType, typename _TypeTag>
-inline typename jrl::UnitSafeWrapper<_BaseType, _TypeTag>::base_type
+inline typename jrl::UnitSafeWrapper<_BaseType, _TypeTag>::type
 tan(const typename jrl::UnitSafeWrapper<_BaseType, _TypeTag> val)
 {
-  return ::tan(BASE_CAST(val));
+  return ::tan(base_cast(val));
 }
 
 /**
  * tanf
  */
 template<typename _BaseType, typename _TypeTag>
-inline typename jrl::UnitSafeWrapper<_BaseType, _TypeTag>::base_type
+inline typename jrl::UnitSafeWrapper<_BaseType, _TypeTag>::type
 tanf(const typename jrl::UnitSafeWrapper<_BaseType, _TypeTag> val)
 {
-  return ::tanf(BASE_CAST(val));
+  return ::tanf(base_cast(val));
 }
 
 // @todo add other standard math functions
@@ -267,7 +259,7 @@ template<typename _BaseType, typename _TypeTag>
 inline std::ostream &
 operator<<(std::ostream &strm, const jrl::UnitSafeWrapper<_BaseType, _TypeTag>& val)
 {
-  strm << static_cast<typename jrl::UnitSafeWrapper<_BaseType, _TypeTag>::base_type>(val);
+  strm << static_cast<typename jrl::UnitSafeWrapper<_BaseType, _TypeTag>::type>(val);
   return strm;
 }
 #endif // #if defined(USE_EXPERIMENTAL_UNITSAFE_STREAM_OPERATOR)

@@ -115,5 +115,6 @@ TEST_CASE("square root", "[sqrt]")
 {
   const Foo foo4(4);
   const Foo foo2(sqrt(foo4));
-  REQUIRE(2.0 == BASE_CAST(foo2));
+  // @todo: OLD CODE REQUIRE(2.0 == BASE_CAST(foo2));
+  REQUIRE(2.0 == base_cast(foo2));
 }

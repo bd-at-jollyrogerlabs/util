@@ -62,14 +62,15 @@ MAKE_UNITSAFE(LogLevelFlags, uint8_t);
 
 #define ENABLE_LOG_LEVEL_BUILDER(NEW_LEVEL)				\
   do {									\
-    BASE_TYPE(jrl::LogLevelFlags) flags = BASE_CAST(logLevelFlags_g);	\
-    flags |= static_cast<BASE_TYPE(jrl::LogLevelFlags)>(jrl::logging_hidden::NEW_LEVEL ## _LEVEL_FLAG); \
-    logLevelFlags_g = jrl::LogLevelFlags(flags);			\
+    using namespace jrl;						\
+    LogLevelFlags::type flags = base_cast(logLevelFlags_g);		\
+    flags |= static_cast<LogLevelFlags::type>(logging_hidden::NEW_LEVEL ## _LEVEL_FLAG); \
+    logLevelFlags_g = LogLevelFlags(flags);				\
   } while (0)
 
 #define DISABLE_LOG_LEVEL_BUILDER(NEW_LEVEL)				\
   do {									\
-    BASE_TYPE(jrl::LogLevelFlags) flags = BASE_CAST(logLevelFlags_g);	\
+    BASE_TYPE(jrl::LogLevelFlags) flags = base_cast(logLevelFlags_g);	\
     flags &= ~(static_cast<BASE_TYPE(jrl::LogLevelFlags)>(jrl::logging_hidden::NEW_LEVEL ## _LEVEL_FLAG)); \
     logLevelFlags_g = jrl::LogLevelFlags(flags);			\
   } while (0)
@@ -90,42 +91,42 @@ MAKE_UNITSAFE(LogLevelFlags, uint8_t);
 
 #define TRACE(msg)							\
   do {									\
-    if (BASE_CAST(logLevelFlags_g) & jrl::logging_hidden::TRACE_LEVEL_FLAG) { \
+    if (base_cast(logLevelFlags_g) & jrl::logging_hidden::TRACE_LEVEL_FLAG) { \
       LOG_STREAM << "TRACE: " << msg << std::endl;			\
     }									\
   } while (0)
 
 #define DEBUG(msg)							\
   do {									\
-    if (BASE_CAST(logLevelFlags_g) & jrl::logging_hidden::DEBUG_LEVEL_FLAG) { \
+    if (base_cast(logLevelFlags_g) & jrl::logging_hidden::DEBUG_LEVEL_FLAG) { \
       LOG_STREAM << "DEBUG: " << msg << std::endl;			\
     }									\
   } while (0)
 
 #define INFO(msg)							\
   do {									\
-    if (BASE_CAST(logLevelFlags_g) & jrl::logging_hidden::INFO_LEVEL_FLAG) { \
+    if (base_cast(logLevelFlags_g) & jrl::logging_hidden::INFO_LEVEL_FLAG) { \
       LOG_STREAM << "INFO: " << msg << std::endl;			\
     }									\
   } while (0)
 
 #define WARN(msg)							\
   do {									\
-    if (BASE_CAST(logLevelFlags_g) & jrl::logging_hidden::WARN_LEVEL_FLAG) { \
+    if (base_cast(logLevelFlags_g) & jrl::logging_hidden::WARN_LEVEL_FLAG) { \
       LOG_STREAM << "WARN: " << msg << std::endl;			\
     }									\
   } while (0)
 
 #define ERROR(msg)							\
   do {									\
-    if (BASE_CAST(logLevelFlags_g) & jrl::logging_hidden::ERROR_LEVEL_FLAG) { \
+    if (base_cast(logLevelFlags_g) & jrl::logging_hidden::ERROR_LEVEL_FLAG) { \
       LOG_STREAM << "ERROR: " << msg << std::endl;			\
     }									\
   } while (0)
 
 #define FATAL(msg)							\
   do {									\
-    if (BASE_CAST(logLevelFlags_g) & jrl::logging_hidden::FATAL_LEVEL_FLAG) { \
+    if (base_cast(logLevelFlags_g) & jrl::logging_hidden::FATAL_LEVEL_FLAG) { \
       LOG_STREAM << "FATAL: " << msg << std::endl;			\
     }									\
   } while (0)
