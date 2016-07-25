@@ -70,17 +70,17 @@ struct custom_hash_function_policy_tag {};
 
 struct rehash_threshold_policy_tag {};
 
-template<typename _KeyType, typename _FunctionPointerType>
+template<typename KeyType, typename FunctionPointerType>
 struct free_function_hash : public custom_hash_function_policy_tag
 {
   size_t
-  operator()(_KeyType __key) const
+  operator()(KeyType key) const
   {
-    return function_(__key);
+    return function_(key);
   }
 
 protected:
-  _FunctionPointerType function_;
+  FunctionPointerType function_;
 };
 
 /**
@@ -89,13 +89,15 @@ protected:
  */
 struct trivial_hash_policy
 {
-  template<typename _KeyType>
+  template<typename KeyType>
   struct rebind
   {
+    using type = rebind<KeyType>;
+
     size_t
-    operator()(_KeyType __key) const noexcept
+    operator()(KeyType key) const noexcept
     {
-      return static_cast<size_t>(__key);
+      return static_cast<size_t>(key);
     }
   };
 };
@@ -197,13 +199,13 @@ size_t power_of_two_length_table_style::INITIAL_BUCKET_COUNT = 128;
 
 // rehash policies
 
-template<typename _Derived>
+template<typename Derived>
 struct load_factor_custom_threshold : public rehash_threshold_policy_tag
 {
   static bool
   needs_rehash(size_t buckets, size_t entries)
   {
-    return (static_cast<float>(entries) / static_cast<float>(buckets)) > _Derived::get_threshold();
+    return (static_cast<float>(entries) / static_cast<float>(buckets)) > Derived::get_threshold();
   }
 };
 
@@ -221,7 +223,7 @@ struct default_load_factor_threshold_policy
  * policy: rehash the table when the ratio of the number of entries to
  * the number of buckets exceeds a threshold
  */
-template<uint32_t _LoadFactor>
+template<uint32_t LoadFactor>
 struct rehash_default_load_factor_threshold_policy_new
 {
   static_assert((sizeof(uint32_t) == sizeof(float)),
@@ -237,8 +239,8 @@ private:
   static const float threshold_;
 };
 
-template<uint32_t _LoadFactor>
-const float rehash_default_load_factor_threshold_policy_new<_LoadFactor>::threshold_ = 1.5;
+template<uint32_t LoadFactor>
+const float rehash_default_load_factor_threshold_policy_new<LoadFactor>::threshold_ = 1.5;
 
 /**
  * policy: never rehash the table
@@ -255,18 +257,18 @@ struct no_rehash_policy
 }
 
 
-namespace hash_table_private
+namespace detail
 {
 using namespace hash_table_policies;
 
 // hash function policy
 
-TAGGED_POLICY_BINDER_TYPE_1_ARG(hash_function_policy_binder, std::hash<_KeyType>,
-				_KeyType, custom_hash_function_policy_tag);
+TAGGED_POLICY_BINDER_TYPE_1_ARG(hash_function_policy_binder, std::hash<KeyType>,
+				KeyType, custom_hash_function_policy_tag);
 
 ADD_POLICY_CHOICE_1_ARG(hash_function_policy_binder,
 			hash_table_policies::trivial_hash_policy,
-			_KeyType);
+			KeyType);
 
 // table length style policy
 
@@ -287,31 +289,31 @@ ADD_POLICY_CHOICE(rehash_policy_binder,
 
 }
 
-template<typename _KeyType, typename _ValueType, typename... _Policies>
+template<typename KeyType, typename ValueType, typename... Policies>
 class hash_table
 {
 public:
-  using key_type = _KeyType;
-  using value_type = _ValueType;
+  using key_type = KeyType;
+  using value_type = ValueType;
   using mapped_type = std::pair<key_type, value_type>;
 
 private:
   // policy configurations
   using hash_function_policy =
-    typename hash_table_private::hash_function_policy_binder<_KeyType, _Policies...>::type;
+    typename detail::hash_function_policy_binder<KeyType, Policies...>::type;
 
   using table_style_policy =
-    typename hash_table_private::table_style_policy_binder<_Policies...>::type;
+    typename detail::table_style_policy_binder<Policies...>::type;
 
   using rehash_policy =
-    typename hash_table_private::rehash_policy_binder<_Policies...>::type;
+    typename detail::rehash_policy_binder<Policies...>::type;
 
   // policy configuration check: the length of the policy template
   // pack must equal the number of matched policies.
-  static_assert((jrl::param_pack_counter<_Policies...>::value ==
-		 jrl::bound_policy_counter<hash_table_private::hash_function_policy_binder<_KeyType, _Policies...>,
-		                           hash_table_private::table_style_policy_binder<_Policies...>,
-		                           hash_table_private::rehash_policy_binder<_Policies...>
+  static_assert((jrl::param_pack_counter<Policies...>::value ==
+		 jrl::bound_policy_counter<detail::hash_function_policy_binder<KeyType, Policies...>,
+		                           detail::table_style_policy_binder<Policies...>,
+		                           detail::rehash_policy_binder<Policies...>
 		                          >::value),
 		"extraneous type specified in hash_table policies");
 
@@ -340,7 +342,7 @@ public:
    * value associated with the same key
    */
   void
-  insert(const _KeyType &key, const _ValueType &value)
+  insert(const KeyType &key, const ValueType &value)
   {
     auto search_result = find_entry(key);
     auto entry = search_result.first;
@@ -363,8 +365,8 @@ public:
   /**
    * get a copy of the value associated with a key, if any
    */
-  std::experimental::optional<_ValueType>
-  get(const _KeyType &key)
+  std::experimental::optional<ValueType>
+  get(const KeyType &key)
   {
     auto search_result = find_entry(key);
     auto entry = search_result.first;
@@ -376,7 +378,7 @@ public:
 
 private:
 
-  using bucket_allocator_type = std::allocator<_ValueType>;
+  using bucket_allocator_type = std::allocator<ValueType>;
   using bucket_type = std::vector<mapped_type, bucket_allocator_type>;
   using bucket_iterator = typename bucket_type::iterator;
   using table_allocator_type = std::allocator<bucket_type>;
@@ -389,7 +391,7 @@ private:
    * shared code for finding an entry in a table
    */
   table_search_result
-  find_entry(const _KeyType &key)
+  find_entry(const KeyType &key)
   {
     const size_t idx = table_style_.hash_to_bucket(hasher_(key));
     bucket_type &bucket(table_.at(idx));

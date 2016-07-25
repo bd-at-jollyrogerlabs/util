@@ -50,7 +50,7 @@ namespace jrl
  */
 #define POLICY_BINDER_TYPE(PolicyBinderType, DefaultPolicyType)		\
 /* declaration */							\
-template<typename... _Policies>					        \
+template<typename... Policies>					        \
 struct PolicyBinderType;						\
 /* default */								\
 template<>								\
@@ -60,14 +60,14 @@ struct PolicyBinderType<>						\
   static const unsigned is_non_default = 0;				\
 };									\
 /* not bound */							        \
-template<typename _First, typename... _Rest>				\
-struct PolicyBinderType<_First, _Rest...>				\
+template<typename First, typename... Rest>				\
+struct PolicyBinderType<First, Rest...>				\
 {									\
   /* use the previously bound policy */					\
-  using type = typename PolicyBinderType<_Rest...>::type;		\
+  using type = typename PolicyBinderType<Rest...>::type;		\
   /* use the previously set match count */				\
   static const unsigned is_non_default =				\
-    PolicyBinderType<_Rest...>::is_non_default;				\
+    PolicyBinderType<Rest...>::is_non_default;				\
 }
 
 /**
@@ -76,7 +76,7 @@ struct PolicyBinderType<_First, _Rest...>				\
  */
 #define TAGGED_POLICY_BINDER_TYPE(PolicyBinderType, DefaultPolicyType, TagType)	\
 /* declaration */							\
-template<typename... _Policies>					        \
+template<typename... Policies>					        \
 struct PolicyBinderType;						\
 /* default */								\
 template<>								\
@@ -86,22 +86,22 @@ struct PolicyBinderType<>						\
   static const unsigned is_non_default = 0;				\
 };									\
 /* not bound */							        \
-template<typename _First, typename... _Rest>				\
-struct PolicyBinderType<_First, _Rest...>				\
+template<typename First, typename... Rest>				\
+struct PolicyBinderType<First, Rest...>				        \
 {									\
 private:								\
-  using remainder = typename PolicyBinderType<_Rest...>::type;		\
+  using remainder = typename PolicyBinderType<Rest...>::type;		\
   static const unsigned remainder_is_non_default =			\
-    PolicyBinderType<_Rest...>::is_non_default;				\
+    PolicyBinderType<Rest...>::is_non_default;				\
   static const bool is_tagged =						\
-    std::is_base_of<TagType, _First>::value;				\
+    std::is_base_of<TagType, First>::value;				\
   /* only one match is allowed per policy */				\
   static_assert(!is_tagged || 0 == remainder_is_non_default,		\
 		"some policy was previously matched for " #PolicyBinderType \
 		" when " #TagType " was encountered");			\
 public:								        \
   /* use the previously bound policy unless the tag matches */		\
-  using type = typename std::conditional<is_tagged, _First, remainder>::type; \
+  using type = typename std::conditional<is_tagged, First, remainder>::type; \
   /* use the previously set match count */				\
   static const unsigned is_non_default =				\
     is_tagged ? 1 : remainder_is_non_default;				\
@@ -112,11 +112,11 @@ public:								        \
  * the desired policy binder type.
  */
 #define ADD_POLICY_CHOICE(PolicyBinderType, SpecializationType)		\
-template<typename... _Rest>						\
-struct PolicyBinderType<SpecializationType, _Rest...>			\
+template<typename... Rest>						\
+struct PolicyBinderType<SpecializationType, Rest...>			\
 {									\
   /* only one match is allowed per policy */				\
-  static_assert(0 == PolicyBinderType<_Rest...>::is_non_default,	\
+  static_assert(0 == PolicyBinderType<Rest...>::is_non_default,		\
 		"some policy was previously matched for " #PolicyBinderType \
 		" when " #SpecializationType " was encountered");	\
   using type = SpecializationType;					\
@@ -131,7 +131,7 @@ struct PolicyBinderType<SpecializationType, _Rest...>			\
  */
 #define POLICY_BINDER_TYPE_1_ARG(PolicyBinderType, DefaultPolicyType, TypeParameter1) \
 /* declaration */							\
-template<typename TypeParameter1, typename... _Policies>		\
+template<typename TypeParameter1, typename... Policies>		        \
 struct PolicyBinderType;						\
 /* default */								\
 template<typename TypeParameter1>					\
@@ -142,14 +142,14 @@ struct PolicyBinderType<TypeParameter1>				        \
 };									\
 /* induction case: the current first entry in the parameter pack is */  \
 /* not a known policy type so it can be skipped */			\
-template<typename TypeParameter1, typename _First, typename... _Rest>	\
-struct PolicyBinderType<TypeParameter1, _First, _Rest...>		\
+template<typename TypeParameter1, typename First, typename... Rest>	\
+struct PolicyBinderType<TypeParameter1, First, Rest...>		        \
 {									\
   /* use the previously bound policy */					\
-  using type = typename PolicyBinderType<TypeParameter1, _Rest...>::type; \
+  using type = typename PolicyBinderType<TypeParameter1, Rest...>::type; \
   /* use the previously set match count */				\
   static const unsigned is_non_default =				\
-    PolicyBinderType<TypeParameter1, _Rest...>::is_non_default;		\
+    PolicyBinderType<TypeParameter1, Rest...>::is_non_default;		\
 }
 
 /**
@@ -157,15 +157,15 @@ struct PolicyBinderType<TypeParameter1, _First, _Rest...>		\
  * to the desired policy binder type.
  */
 #define ADD_POLICY_CHOICE_1_ARG(PolicyBinderType, SpecializationType, TypeParameter1) \
-template<typename TypeParameter1, typename... _Rest>			\
-struct PolicyBinderType<TypeParameter1, SpecializationType, _Rest...>   \
+template<typename TypeParameter1, typename... Rest>			\
+struct PolicyBinderType<TypeParameter1, SpecializationType, Rest...>    \
 {									\
   /* only one match is allowed per policy */				\
-  static_assert(0 == PolicyBinderType<TypeParameter1, _Rest...>::is_non_default, \
+  static_assert(0 == PolicyBinderType<TypeParameter1, Rest...>::is_non_default, \
 		"some policy was previously matched for " #PolicyBinderType \
 		" when " #SpecializationType " was encountered");	\
   /* use rebind technique to extract a properly parameterized type */	\
-  using type = SpecializationType::rebind<TypeParameter1>;		\
+  using type = typename SpecializationType::rebind<TypeParameter1>::type; \
   /* set the match count to 1 to indicate that a non-default policy */	\
   /* has been selected from the policy parameter pack */		\
   static const unsigned is_non_default = 1;				\
@@ -178,7 +178,7 @@ struct PolicyBinderType<TypeParameter1, SpecializationType, _Rest...>   \
  */
 #define TAGGED_POLICY_BINDER_TYPE_1_ARG(PolicyBinderType, DefaultPolicyType, TypeParameter1, TagType) \
 /* declaration */							\
-template<typename TypeParameter1, typename... _Policies>		\
+template<typename TypeParameter1, typename... Policies>		        \
 struct PolicyBinderType;						\
 /* default */								\
 template<typename TypeParameter1>					\
@@ -189,22 +189,22 @@ struct PolicyBinderType<TypeParameter1>				        \
 };									\
 /* induction case: the current first entry in the parameter pack is */  \
 /* not a known policy type so it can be skipped */			\
-template<typename TypeParameter1, typename _First, typename... _Rest>	\
-struct PolicyBinderType<TypeParameter1, _First, _Rest...>		\
+template<typename TypeParameter1, typename First, typename... Rest>	\
+struct PolicyBinderType<TypeParameter1, First, Rest...>		        \
 {									\
 private:								\
-  using remainder = typename PolicyBinderType<TypeParameter1, _Rest...>::type; \
+  using remainder = typename PolicyBinderType<TypeParameter1, Rest...>::type; \
   static const unsigned remainder_is_non_default =			\
-    PolicyBinderType<TypeParameter1, _Rest...>::is_non_default;		\
+    PolicyBinderType<TypeParameter1, Rest...>::is_non_default;		\
   static const bool is_tagged =						\
-    std::is_base_of<TagType, _First>::value;				\
+    std::is_base_of<TagType, First>::value;				\
   /* only one match is allowed per policy */				\
   static_assert(!is_tagged || 0 == remainder_is_non_default,		\
 		"some policy was previously matched for " #PolicyBinderType \
 		" when " #TagType " was encountered");			\
 public:								        \
   /* use the previously bound policy unless the tag matches */		\
-  using type = typename std::conditional<is_tagged, _First, remainder>::type; \
+  using type = typename std::conditional<is_tagged, First, remainder>::type; \
   /* use the previously set match count */				\
   static const unsigned is_non_default =				\
     is_tagged ? 1 : remainder_is_non_default;				\
@@ -217,13 +217,13 @@ public:								        \
  * Helper variadic class template that simply counts the number of
  * type parameters in its parameter pack.
  */
-template<typename... __ParameterPack>
+template<typename... ParameterPack>
 struct param_pack_counter;
 
-template<typename __First, typename... __Rest>
-struct param_pack_counter<__First, __Rest...>
+template<typename First, typename... Rest>
+struct param_pack_counter<First, Rest...>
 {
-  static const unsigned value = 1 + param_pack_counter<__Rest...>::value;
+  static const unsigned value = 1 + param_pack_counter<Rest...>::value;
 };
 
 template <>
@@ -236,14 +236,14 @@ struct param_pack_counter<>
  * Helper variadic class template that counts the number of
  * non-default bindings made over a set of policy binders.
  */
-template<typename... __PolicyBinders>
+template<typename... PolicyBinders>
 struct bound_policy_counter;
 
-template<typename __First, typename... __Rest>
-struct bound_policy_counter<__First, __Rest...>
+template<typename First, typename... Rest>
+struct bound_policy_counter<First, Rest...>
 {
   static const unsigned value =
-    __First::is_non_default + bound_policy_counter<__Rest...>::value;
+    First::is_non_default + bound_policy_counter<Rest...>::value;
 };
 
 template <>
