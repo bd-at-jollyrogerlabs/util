@@ -1,22 +1,75 @@
 -*- Mode: Outline -*-
 
-* hash_table
-** rehash
-*** static time configurable load factor threshold
-*** copy-on-write/read-copy-update
-** allocator policy
-** iterators
-*** non-const
-*** const
-*** begin()
-**** non-const
-**** const
-*** end()
-**** non-const
-**** const
-*** cbegin()
-*** cend()
+* hash_map/hash_set
+NOTE: hash_map should be derived from hash_set with value_type =
+pair<key, value>
+** create a separate hash_table_base class that will be used as the basis of all final classes
+** key extraction
+** policies
+*** common policies between open addressing and bucket table
+**** hash function
+***** std::hash (default)
+***** trivial
+***** custom
+needs research to determine if it makes sense to handle the case of a
+free function differently
+**** table length/hash value remap
+***** prime length + modulus remap (default)
+***** power of two length + mask remap
+***** custom?
+NOTE: it is vital that remap covers the space of table entries; this
+property is guaranteed for modulus in all length styles, but not for
+mask
+**** rehash
+***** static time configurable load factor threshold (default)
+***** no rehash
+***** custom?
+**** allocator
+***** std::allocator (default)
+***** non-static
+needs research
+***** custom
+**** critical section safety
+***** none (default)
+***** copy-on-write/read-copy-update
+use the atomic pointer swap trick; always suitable for rehash, but not
+suitable for add/update/delete
+***** table reader/writer lock
+covers all cases and probably most suitable for open addressing table
+*** bucket table policies
+**** bucket_container
+choice of container policy may interact with choice of critical
+section safety
+***** vector (default)
+***** list
+***** cursor list
+***** intrusive list
+***** custom
+**** critical section safety
+***** none (default)
+***** bucket reader/writer lock
+only appropriate for bucket table, requires table lock or COW/RCU for
+rehash
+***** lock-free list?
+needs research
+*** open addressing table policies
+**** probing
+***** linear (default)
+***** quadratic
+***** double hash
+***** custom
 ** basics
+*** iterators
+**** non-const
+**** const
+**** begin()
+***** non-const
+***** const
+**** end()
+***** non-const
+***** const
+**** cbegin()
+**** cend()
 *** standard interface
 **** empty()
 **** max_size() ??
@@ -122,6 +175,7 @@ Move to enum in internal namespace, seems like #define followed by
 #undef will not work...
 ** add branch prediction hints
 ** add stack trace generation
+should also demangle function names
 configurable?
 ** add NDEBUG wrapper?
 * jrl_util
