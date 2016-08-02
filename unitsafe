@@ -54,6 +54,8 @@ class UnitSafeWrapper
   static_assert(std::is_fundamental<_BaseType>::value,
 		"UnitSafeWrapper is only usable with fundamental types");
 public:
+  // @todo 'type' may be too confusing, maybe base_type?  or
+  // underlying_type, which may actually be reserved in C++14
   using type = _BaseType;
 
   UnitSafeWrapper()
@@ -169,32 +171,13 @@ MAKE_OPERATOR(^, ^=)
 
 #undef MAKE_OPERATOR
 
-/**
- * Helper macro which creates a new safe type that wraps a base type.
- *
- * NOTE: this macro cannot be used create a publicly accessible type
- * in a class, use MAKE_PUBLIC_UNITSAFE instead.
- */
-#define MAKE_UNITSAFE(UnitSafeType, BaseType)				\
-  namespace unitsafetag { struct UnitSafeType ## TAG {}; }		\
-  using UnitSafeType = UnitSafeWrapper<BaseType, unitsafetag::UnitSafeType ## TAG>
-
-/**
- * Helper macro which creates a new safe type that wraps a base type
- * and exists within an enclosing class.
- */
-#define MAKE_CONTAINED_UNITSAFE(UnitSafeType, BaseType, accessibility)	\
-private:								\
-  struct UnitSafeType ## TAG {};					\
-accessibility:								\
-  using UnitSafeType = UnitSafeWrapper<BaseType, UnitSafeType ## TAG>
-
-/**
- * Helper macro which creates a new safe type that wraps a base type
- * and is publicly accessible from within its enclosing class.
- */
-#define MAKE_PUBLIC_UNITSAFE(UnitSafeType, BaseType)		\
-  MAKE_CONTAINED_UNITSAFE(UnitSafeType, BaseType, public)
+template<typename _BaseType, typename _TypeTag>
+inline std::ostream &
+operator<<(std::ostream &strm, const UnitSafeWrapper<_BaseType, _TypeTag>& val)
+{
+  strm << static_cast<typename UnitSafeWrapper<_BaseType, _TypeTag>::type>(val);
+  return strm;
+}
 
 // @todo do something smart with type_traits to avoid creation of a
 // temporary?
@@ -204,13 +187,6 @@ base_cast(_UnitSafeType arg)
 {
   return typename _UnitSafeType::type(arg);
 }
-
-} // namespace jrl
-
-// @todo change these to overloads in namespace std or maybe leave
-// them in namespace jrl and let ADL take over?
-namespace
-{
 // Various helper template functions defined inline in an empty
 // namespace to (hopefully) avoid the problem of multiply-defined
 // symbols while making life easier.
@@ -247,22 +223,91 @@ tanf(const typename jrl::UnitSafeWrapper<_BaseType, _TypeTag> val)
 
 // @todo add other standard math functions
 
-#if defined(USE_EXPERIMENTAL_UNITSAFE_STREAM_OPERATOR)
-// @todo experimental, not sure if this will ever work...
+} // namespace jrl
+
 /**
- * Override of operator<< for types derived from UnitSafeWrapper.
+ * Helper macro which creates a new safe type that wraps a base type.
  *
- * NOTE: this is defined inline in text of the target translation unit
- * to (hopefully) avoid the problem of multiply defined symbols.
+ * NOTE: this macro cannot be used create a publicly accessible type
+ * in a class, use MAKE_PUBLIC_UNITSAFE instead.
  */
-template<typename _BaseType, typename _TypeTag>
-inline std::ostream &
-operator<<(std::ostream &strm, const jrl::UnitSafeWrapper<_BaseType, _TypeTag>& val)
-{
-  strm << static_cast<typename jrl::UnitSafeWrapper<_BaseType, _TypeTag>::type>(val);
-  return strm;
-}
-#endif // #if defined(USE_EXPERIMENTAL_UNITSAFE_STREAM_OPERATOR)
-} // empty namespace
+#define MAKE_UNITSAFE(UnitSafeType, BaseType)				\
+  namespace __unitsafetag { struct UnitSafeType ## TAG {}; }		\
+  using UnitSafeType = jrl::UnitSafeWrapper<BaseType, __unitsafetag::UnitSafeType ## TAG>
+
+/**
+ * Helper macro which creates a new safe type that wraps a base type
+ * and exists within an enclosing class.
+ */
+#define MAKE_CONTAINED_UNITSAFE(UnitSafeType, BaseType, accessibility)	\
+private:								\
+  struct UnitSafeType ## TAG {};					\
+accessibility:								\
+ using UnitSafeType = jrl::UnitSafeWrapper<BaseType, UnitSafeType ## TAG>
+
+/**
+ * Helper macro which creates a new safe type that wraps a base type
+ * and is publicly accessible from within its enclosing class.
+ */
+#define MAKE_PUBLIC_UNITSAFE(UnitSafeType, BaseType)		\
+  MAKE_CONTAINED_UNITSAFE(UnitSafeType, BaseType, public)
+
+// @todo change these to overloads in namespace std or maybe leave
+// them in namespace jrl and let ADL take over?
+// @todo: OLD CODE namespace
+// @todo: OLD CODE {
+// @todo: OLD CODE // Various helper template functions defined inline in an empty
+// @todo: OLD CODE // namespace to (hopefully) avoid the problem of multiply-defined
+// @todo: OLD CODE // symbols while making life easier.
+
+// @todo: OLD CODE /**
+// @todo: OLD CODE  * sqrt
+// @todo: OLD CODE  */
+// @todo: OLD CODE template<typename _BaseType, typename _TypeTag>
+// @todo: OLD CODE inline typename jrl::UnitSafeWrapper<_BaseType, _TypeTag>::type
+// @todo: OLD CODE sqrt(const typename jrl::UnitSafeWrapper<_BaseType, _TypeTag> val)
+// @todo: OLD CODE {
+// @todo: OLD CODE   return ::sqrt(base_cast(val));
+// @todo: OLD CODE }
+
+// @todo: OLD CODE /**
+// @todo: OLD CODE  * tan
+// @todo: OLD CODE  */
+// @todo: OLD CODE template<typename _BaseType, typename _TypeTag>
+// @todo: OLD CODE inline typename jrl::UnitSafeWrapper<_BaseType, _TypeTag>::type
+// @todo: OLD CODE tan(const typename jrl::UnitSafeWrapper<_BaseType, _TypeTag> val)
+// @todo: OLD CODE {
+// @todo: OLD CODE   return ::tan(base_cast(val));
+// @todo: OLD CODE }
+
+// @todo: OLD CODE /**
+// @todo: OLD CODE  * tanf
+// @todo: OLD CODE  */
+// @todo: OLD CODE template<typename _BaseType, typename _TypeTag>
+// @todo: OLD CODE inline typename jrl::UnitSafeWrapper<_BaseType, _TypeTag>::type
+// @todo: OLD CODE tanf(const typename jrl::UnitSafeWrapper<_BaseType, _TypeTag> val)
+// @todo: OLD CODE {
+// @todo: OLD CODE   return ::tanf(base_cast(val));
+// @todo: OLD CODE }
+
+// @todo: OLD CODE // @todo add other standard math functions
+
+// @todo: OLD CODE #if defined(USE_EXPERIMENTAL_UNITSAFE_STREAM_OPERATOR)
+// @todo: OLD CODE // @todo experimental, not sure if this will ever work...
+// @todo: OLD CODE /**
+// @todo: OLD CODE  * Override of operator<< for types derived from UnitSafeWrapper.
+// @todo: OLD CODE  *
+// @todo: OLD CODE  * NOTE: this is defined inline in text of the target translation unit
+// @todo: OLD CODE  * to (hopefully) avoid the problem of multiply defined symbols.
+// @todo: OLD CODE  */
+// @todo: OLD CODE template<typename _BaseType, typename _TypeTag>
+// @todo: OLD CODE inline std::ostream &
+// @todo: OLD CODE operator<<(std::ostream &strm, const jrl::UnitSafeWrapper<_BaseType, _TypeTag>& val)
+// @todo: OLD CODE {
+// @todo: OLD CODE   strm << static_cast<typename jrl::UnitSafeWrapper<_BaseType, _TypeTag>::type>(val);
+// @todo: OLD CODE   return strm;
+// @todo: OLD CODE }
+// @todo: OLD CODE #endif // #if defined(USE_EXPERIMENTAL_UNITSAFE_STREAM_OPERATOR)
+// @todo: OLD CODE } // empty namespace
 
 #endif // UNITSAFE_GUARD
