@@ -1,4 +1,7 @@
-.PHONY: all
+.PHONY: all check
 
 all:
-	$(MAKE) -C ..
+	$(MAKE) -C .. $(MAKECMDGOALS)
+
+check:
+	$(MAKE) -C .. $(MAKECMDGOALS)
