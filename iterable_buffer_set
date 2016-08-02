@@ -72,17 +72,6 @@ public:
     fragments_.emplace_back(Fragment(rawData, sz));
   }
 
-  // @todo: OLD CODE iterable_buffer_set(const std::string &str)
-  // @todo: OLD CODE {
-  // @todo: OLD CODE   // @todo error checking code, see TODO list
-  // @todo: OLD CODE   if (str.empty()) {
-  // @todo: OLD CODE     THROW_EXCEPTION(std::runtime_error, "iterable_buffer_set constructor "
-  // @todo: OLD CODE 		      "called with empty std::string");
-  // @todo: OLD CODE   }
-  // @todo: OLD CODE   // @todo make copy?  see TODO list
-  // @todo: OLD CODE   fragments_.emplace_back(Fragment(str.c_str(), str.size()));
-  // @todo: OLD CODE }
-
   /**
    * Class to control iteration over individual elements of the buffer
    * set.
@@ -92,53 +81,8 @@ public:
 					    CharArrayElemType>
   {
   public:
-    /**
-     * copy constructor
-     */
-    IteratorImpl(const IteratorImpl &src)
-      : fragments_(src.fragments_), fragPos_(src.fragPos_), idx_(src.idx_)
-    {
-    }
-
-    /**
-     * move constructor
-     */
-    IteratorImpl(IteratorImpl &&src)
-      : fragments_(src.fragments_), fragPos_(src.fragPos_), idx_(src.idx_)
-    {
-      src.fragPos_ = src.fragments_.end();
-      src.idx_ = 0;
-    }
-
-    /**
-     * copy assignment operator
-     */
-    IteratorImpl &
-    operator=(const IteratorImpl &rhs)
-    {
-      if (*this != rhs) {
-	fragments_ = rhs.fragments_;
-	fragPos_ = rhs.fragPos_;
-	idx_ = rhs.idx_;
-      }
-      return *this;
-    }
-
-    /**
-     * move assignment operator
-     */
-    IteratorImpl &
-    operator=(IteratorImpl &&rhs)
-    {
-      if (*this != rhs) {
-	fragments_ = rhs.fragments_;
-	fragPos_ = rhs.fragPos_;
-	idx_ = rhs.idx_;
-	rhs.fragPos_ = rhs.fragments_.end();
-	rhs.idx_ = 0;
-      }
-      return *this;
-    }
+    DEFAULT_COPYABLE(IteratorImpl);
+    DEFAULT_MOVEABLE(IteratorImpl);
 
     CharArrayElemType &
     operator*()
@@ -379,21 +323,6 @@ public:
     return iterator(fragments_, insertPos, 0);
   }
 
-  // @todo: OLD CODE /**
-  // @todo: OLD CODE  * Insert a new fragment before a given position in the buffer set.
-  // @todo: OLD CODE  *
-  // @todo: OLD CODE  * @parameter pos - [in] position before which to insert the new
-  // @todo: OLD CODE  *                  fragment.
-  // @todo: OLD CODE  * @parameter str - [in] pointer to new string fragment.
-  // @todo: OLD CODE  * @return an iterator that references the inserted fragment.
-  // @todo: OLD CODE  */
-  // @todo: OLD CODE inline iterator
-  // @todo: OLD CODE insert(const iterator &pos,
-  // @todo: OLD CODE 	 const std::string &str)
-  // @todo: OLD CODE {
-  // @todo: OLD CODE   return insert(pos, str.c_str(), str.size());
-  // @todo: OLD CODE }
-
   /**
    * Insert a new fragment at the end of the buffer set.
    *
@@ -407,17 +336,6 @@ public:
   {
     return fragments_.push_back(Fragment(raw, sz));
   }
-
-  // @todo: OLD CODE /**
-  // @todo: OLD CODE  * Insert a new fragment at the end of the buffer set.
-  // @todo: OLD CODE  *
-  // @todo: OLD CODE  * @parameter str - [in] pointer to new string fragment.
-  // @todo: OLD CODE  */
-  // @todo: OLD CODE void
-  // @todo: OLD CODE push_back(const std::string &str)
-  // @todo: OLD CODE {
-  // @todo: OLD CODE   return fragments_.push_back(Fragment(str.c_str(), str.size()));
-  // @todo: OLD CODE }
 
 private:
 
