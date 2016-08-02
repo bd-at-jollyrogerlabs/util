@@ -1,0 +1,800 @@
+/** -*- mode: c++ -*-
+ *
+ * hash_set
+ *
+ * Highly configurable hash set implementation with an interface that
+ *  is compatible with std::unordered_set.
+ *
+ * Copyright (C) 2015 Brian Davis
+ * All Rights Reserved
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Limited copying permission is given solely
+ * for self-educational purpose.
+ *
+ * Author: Brian Davis <bd@jollyrogerlabs.com>
+ *
+ */
+
+#if !defined(JRL_UTIL_HASH_SET_GUARD)
+#define JRL_UTIL_HASH_SET_GUARD 1
+
+#include <cassert>
+
+#include <experimental/optional>
+#include <functional>
+#include <list>
+#include <vector>
+
+#include <boost/iterator.hpp>
+#include <boost/iterator/iterator_facade.hpp>
+
+#include "jrl_macro"
+#include "jrl_metaprogram"
+#include "jrl_variadic"
+
+namespace jrl
+{
+
+// ********** policy tags **********
+
+struct custom_key_extractor_policy_tag {};
+
+struct custom_allocator_policy_tag {};
+
+struct custom_hash_function_policy_tag {};
+
+struct custom_rehash_threshold_policy_tag {};
+
+struct custom_bucket_container_policy_tag {};
+
+// ********** policy implementation classes **********
+
+// ***** key extractor policies *****
+
+/**
+ * policy: key type is the same as value type
+ * (e.g. hash_set<std::string>)
+ */
+struct default_key_extractor_policy
+{
+  template<typename ValueType>
+  struct rebind
+  {
+    using key_type = ValueType;
+
+    static const key_type &
+    get_key(const ValueType &arg) noexcept
+    {
+      return arg;
+    }
+  };
+};
+
+// ***** allocator policies *****
+
+/**
+ * policy: allocate containers using std::allocator
+ */
+struct std_allocator_policy
+{
+  template<typename ValueType, template<typename...> class ContainerType>
+  struct rebind
+  {
+    using type = ContainerType<ValueType, std::allocator<ValueType>>;
+  };
+};
+
+// ***** hash function policies *****
+
+/**
+ * policy: calculate the hash value using std::hash
+ */
+struct default_hash_policy
+{
+  template<typename KeyType, typename SizeType>
+  struct rebind
+  {
+    SizeType
+    operator()(const KeyType &key) const noexcept
+    {
+      return hasher_(key);
+    }
+
+  private:
+    static std::hash<KeyType> hasher_;
+  };
+};
+
+/**
+ * policy: allow a free function (subprogram) for calculating hash
+ * values.
+ */
+struct free_function_hash_policy : public custom_hash_function_policy_tag
+{
+  template<typename KeyType, typename SizeType>
+  struct rebind
+  {
+    SizeType
+    operator()(const KeyType &key) const noexcept
+    {
+      return apply(key);
+    }
+  };
+};
+
+/**
+ * policy: no hash calculation, the key value is passed through
+ * unchanged.
+ */
+struct trivial_hash_policy
+{
+  template<typename KeyType, typename SizeType>
+  struct rebind
+  {
+    using type = rebind<KeyType, SizeType>;
+
+    SizeType
+    operator()(const KeyType &key) const noexcept
+    {
+      return static_cast<size_t>(key);
+    }
+  };
+};
+
+// ***** table length style policies *****
+
+/**
+ * policy: table length is a prime number and hash values are mapped
+ * to buckets using modulus (AKA operator%)
+ */
+struct prime_length_table_style
+{
+  template<typename SizeType>
+  struct rebind
+  {
+    rebind()
+      : idx_(INITIAL_BUCKET_COUNT_IDX)
+    {
+    }
+
+    static SizeType
+    initial_bucket_count()
+    {
+      return primes(INITIAL_BUCKET_COUNT_IDX);
+    }
+
+    SizeType
+    hash_to_bucket(const SizeType hash) const noexcept
+    {
+      return hash % primes(idx_);
+    }
+
+    SizeType
+    grow()
+    {
+      ++idx_;
+      return primes(idx_);
+    }
+
+  private:
+
+    static SizeType
+    primes(const SizeType idx)
+    {
+      static const std::vector<SizeType> PRIMES{
+	17, 29, 37, 53, 67, 79, 97, 131, 193, 257, 389, 521, 769,
+	1031, 1543, 2053, 3079, 6151, 12289, 24593, 49157, 98317,
+	196613, 393241, 786433, 1572869, 3145739, 6291469,
+	12582917, 25165843, 50331653, 100663319, 201326611,
+	402653189, 805306457, 1610612741, 3221225473, 4294967291
+      };
+      return PRIMES[idx];
+    }
+
+  static const SizeType INITIAL_BUCKET_COUNT_IDX = 7;
+
+  SizeType idx_;
+  };
+};
+
+/**
+ * policy: table length is a power of two and hash values are mapped
+ * to buckets by masking away higher order bits
+ */
+struct power_of_two_length_table_style
+{
+  template<typename SizeType>
+  struct rebind
+  {
+    rebind()
+      : count_(INITIAL_BUCKET_COUNT),
+	mask_(INITIAL_BUCKET_COUNT - 1)
+    {
+    }
+
+    static SizeType
+    initial_bucket_count()
+    {
+      return INITIAL_BUCKET_COUNT;
+    }
+
+    SizeType
+    hash_to_bucket(const SizeType hash) const noexcept
+    {
+      return hash & mask_;
+    }
+
+    SizeType
+    grow()
+    {
+      count_ <<= 1;
+      mask_ <<= 1;
+      mask_ |= 1;
+      return count_;
+      assert(mask_ == (count_ - 1));
+    }
+
+  private:
+    static const SizeType INITIAL_BUCKET_COUNT = 128;
+
+    SizeType count_;
+    SizeType mask_;
+  };
+};
+
+// ***** rehash policies *****
+
+/**
+ * policy: calculate the load factor and compare it to a threshold in
+ * order to determine if the table should be rehashed
+ */
+template<typename Derived>
+struct load_factor_rehash
+{
+  static bool
+  needs_rehash(const float load_factor)
+  {
+    return load_factor > Derived::get_threshold();
+  }
+};
+
+/**
+ * default policy for load_factor_rehash: rehash when the load factor
+ * exceeds 1.5
+ */
+struct default_load_factor_rehash_threshold_policy
+  : public load_factor_rehash<default_load_factor_rehash_threshold_policy>
+{
+  constexpr static float get_threshold() { return 1.5; }
+};
+
+/**
+ * policy: never rehash the table
+ */
+struct no_rehash_policy
+{
+  static bool
+  needs_rehash(const float load_factor)
+  {
+    return false;
+  }
+};
+
+// ***** bucket container policies *****
+
+/**
+ * policy: bucket container is std::vector
+ */
+struct std_vector_bucket_container_policy
+{
+  template <typename ValueType, typename AllocTypePolicy>
+  struct rebind
+  {
+    // rebind via allocator policy
+    using type = typename AllocTypePolicy::template rebind<ValueType, std::vector>::type;
+  };
+};
+
+/**
+ * policy: bucket container is std::list
+ */
+struct std_list_bucket_container_policy
+{
+  template <typename ValueType, typename AllocTypePolicy>
+  struct rebind
+  {
+    // rebind via allocator policy
+    using type = typename AllocTypePolicy::template rebind<ValueType, std::list>::type;
+  };
+};
+
+namespace detail
+{
+
+// ********** policy binder definitions **********
+
+// ***** key extractor policy  binder *****
+
+TAGGED_POLICY_BINDER_TYPE(key_extractor_policy_binder,
+			  default_key_extractor_policy,
+			  custom_key_extractor_policy_tag);
+
+// ***** allocator policy binder *****
+
+TAGGED_POLICY_BINDER_TYPE(allocator_type_policy_binder,
+			  std_allocator_policy,
+			  custom_allocator_policy_tag);
+
+// @todo add custom allocator policy choice
+
+// ***** hash function policy binder *****
+
+TAGGED_POLICY_BINDER_TYPE(hash_function_policy_binder, default_hash_policy,
+			  custom_hash_function_policy_tag);
+
+ADD_POLICY_CHOICE(hash_function_policy_binder, trivial_hash_policy);
+
+// ***** table length style policy binder *****
+
+POLICY_BINDER_TYPE(table_style_policy_binder,
+		   prime_length_table_style);
+
+ADD_POLICY_CHOICE(table_style_policy_binder,
+		  power_of_two_length_table_style);
+
+// ***** rehash policy binder *****
+
+TAGGED_POLICY_BINDER_TYPE(rehash_policy_binder,
+			  default_load_factor_rehash_threshold_policy,
+			  custom_rehash_threshold_policy_tag);
+
+ADD_POLICY_CHOICE(rehash_policy_binder,
+		  no_rehash_policy);
+
+// ***** container type policy binder *****
+
+TAGGED_POLICY_BINDER_TYPE(bucket_container_type_policy_binder,
+			  std_vector_bucket_container_policy,
+			  custom_bucket_container_policy_tag);
+
+ADD_POLICY_CHOICE(bucket_container_type_policy_binder,
+		  std_list_bucket_container_policy);
+
+// @todo add custom container policy choice
+
+} // namespace detail
+
+/**
+ * Policy-based hash_set container.
+ *
+ * @todo full documentation of available policies
+ */
+template<typename ValueType,
+	 typename... Policies>
+class hash_set
+{
+  // policy configurations
+  using KeyExtractorPolicy =
+    typename detail::key_extractor_policy_binder<Policies...>::type;
+  using AllocatorPolicy =
+    typename detail::allocator_type_policy_binder<Policies...>::type;
+  using HashFunctionPolicy =
+    typename detail::hash_function_policy_binder<Policies...>::type;
+  using TableStylePolicy =
+    typename detail::table_style_policy_binder<Policies...>::type;
+  using RehashPolicy =
+    typename detail::rehash_policy_binder<Policies...>::type;
+  using BucketContainerTypePolicy =
+    typename detail::bucket_container_type_policy_binder<Policies...>::type;
+
+  // policy configuration check: the length of the policy template
+  // pack must equal the number of matched policies.
+  static_assert((jrl::param_pack_counter<Policies...>::value ==
+		 jrl::bound_policy_counter<detail::key_extractor_policy_binder<Policies...>,
+		                           detail::allocator_type_policy_binder<Policies...>,
+		                           detail::hash_function_policy_binder<Policies...>,
+		                           detail::table_style_policy_binder<Policies...>,
+		                           detail::rehash_policy_binder<Policies...>,
+		                           detail::bucket_container_type_policy_binder<Policies...>
+		                          >::value),
+		"extraneous type specified in hash_table policies");
+
+  // rebind parameterized policies
+  using BucketType =
+    typename BucketContainerTypePolicy::template rebind<ValueType,
+							AllocatorPolicy>::type;
+  using TableType =
+    typename AllocatorPolicy::template rebind<BucketType, std::vector>::type;
+  using Extractor =
+    typename KeyExtractorPolicy::template rebind<ValueType>;
+  using TableStyle =
+    typename TableStylePolicy::template rebind<typename TableType::size_type>;
+  using Hasher =
+    typename HashFunctionPolicy::template rebind<typename Extractor::key_type,
+						 typename TableType::size_type>;
+
+public:
+  using key_type = typename Extractor::key_type;
+  using value_type = ValueType;
+  using size_type = typename TableType::size_type;
+
+  // @todo iterator will be different (modified TableIterator) for
+  // open addressing
+  template<bool IsConst>
+  class IteratorImpl
+    : public boost::iterator_facade<IteratorImpl<IsConst>,
+				    ValueType,
+				    std::forward_iterator_tag>
+  {
+    // type used for the table pointer that is stored in the iterator
+    using ItrTableType = SELECTIVE_CONST(IsConst, TableType);
+    using TableIterator =
+      typename std::conditional<IsConst,
+				typename TableType::const_iterator,
+				typename TableType::iterator>::type;
+    using BucketIterator =
+      typename std::conditional<IsConst,
+				typename BucketType::const_iterator,
+				typename BucketType::iterator>::type;
+  public:
+    DEFAULT_CONSTRUCTABLE(IteratorImpl);
+    DEFAULT_COPYABLE(IteratorImpl);
+    DEFAULT_MOVEABLE(IteratorImpl);
+
+    explicit IteratorImpl(ItrTableType *table)
+      : table_(table), tblItr_(table->begin()),
+      	bktItr_(std::begin(*tblItr_))
+    {
+      if (tblItr_->empty()) {
+	// call increment to find the first valid bucket
+	increment();
+      }
+    }
+
+    IteratorImpl(ItrTableType *table, size_type tblIdx, BucketIterator &&bktItr)
+      : table_(table), tblItr_(table_->begin() + tblIdx), bktItr_(std::move(bktItr))
+    {
+    }
+
+  private:
+    friend class boost::iterator_core_access;
+    using Type = IteratorImpl<IsConst>;
+
+#   define SANITY_CHECK()					\
+    do {							\
+      assert((nullptr == table_) ||				\
+	     (table_->end() != tblItr_) ||			\
+	     (std::end(*tblItr_) != bktItr_));			\
+    } while(0)
+
+    void
+    increment()
+    {
+      SANITY_CHECK();
+      // if the bucket index can be incremented by 1 and remain lower
+      // than the bucket size then the next entry is in the current
+      // bucket, increment the index and return
+      if (std::end(*tblItr_) != bktItr_) {
+	BucketIterator cpy(bktItr_);
+	++cpy;
+	if (std::end(*tblItr_) != cpy) {
+	  ++bktItr_;
+	  return;
+	}
+      }
+      // skip over empty buckets
+      do {
+	++tblItr_;
+      } while ((table_->end() != tblItr_) && tblItr_->empty());
+      // check for end of iteration
+      if (tblItr_ != table_->end()) {
+	// current bucket contains the next valid entry
+	bktItr_ = std::begin(*tblItr_);
+	return;
+      }
+      // no valid entries remaining
+      *this = Type();
+    }
+
+    bool
+    equal(const Type &that) const
+    {
+      SANITY_CHECK();
+      return (table_ == that.table_) &&
+	(tblItr_ == that.tblItr_) &&
+	(bktItr_ == that.bktItr_);
+    }
+
+    ValueType &
+    dereference() const
+    {
+      return *bktItr_;
+    }
+
+#   undef SANITY_CHECK
+
+    ItrTableType *table_;
+    TableIterator tblItr_;
+    BucketIterator bktItr_;
+  };
+
+  using iterator = IteratorImpl<false>;
+  using const_iterator = IteratorImpl<true>;
+
+  hash_set()
+    : table_(TableStyle::initial_bucket_count(), BucketType()), entry_count_(0)
+  {
+  }
+
+  DEFAULT_COPYABLE(hash_set);
+  DEFAULT_MOVEABLE(hash_set);
+  DEFAULT_DESTRUCTABLE(hash_set);
+
+  bool
+  empty() const noexcept
+  {
+    return 0 == entry_count_;
+  }
+
+  size_type
+  size() const noexcept
+  {
+    return entry_count_;
+  }
+
+  size_type
+  buckets() const
+  {
+    return table_.size();
+  }
+
+  iterator
+  begin()
+  {
+    return iterator(&table_);
+  }
+
+  const_iterator
+  begin() const
+  {
+    return const_iterator(&table_);
+  }
+
+  iterator
+  end()
+  {
+    return iterator();
+  }
+
+  const_iterator
+  end() const
+  {
+    return const_iterator();
+  }
+
+  const_iterator
+  cbegin() const
+  {
+    return const_iterator(&table_);
+  }
+
+  const_iterator
+  cend() const
+  {
+    return const_iterator();
+  }
+
+  inline iterator
+  find(const ValueType &value)
+  {
+    return find_internal<false>(this, value);
+  }
+
+  inline const_iterator
+  find(const ValueType &value) const
+  {
+    return find_internal<true>(this, value);
+  }
+
+  size_type
+  count(const ValueType &value) const
+  {
+    // @todo not suitable for multi set/map
+    auto entry = find(value);
+    if (end() == entry) {
+      return 0;
+    }
+    return 1;
+  }
+
+  // template<typename... Args>
+  // std::pair<iterator, bool>
+  // emplace(Args &&... args)
+  // {
+  //   // @todo
+  // }
+
+  // template<typename... Args>
+  // iterator
+  // emplace_hint(const_iterator pos, Args &&... args)
+  // {
+  //   // @todo
+  // }
+
+  /**
+   * insert a (key, value) pair into the map, overwriting any previous
+   * value associated with the same key
+   */
+  std::pair<iterator, bool>
+  insert(const ValueType &value)
+  {
+    size_type idx = bucket(value);
+    {
+      const auto &key = Extractor::get_key(value);
+      BucketType &bucket(table_.at(idx));
+      const auto entry = find_if(std::begin(bucket), std::end(bucket),
+				 [key](const auto &entry) {
+				   return (key == Extractor::get_key(entry));
+				 });
+      if (std::end(bucket) != entry) {
+	// entry already exists
+	return std::make_pair(iterator(), false);
+      }
+    }
+    // entry does not yet exist, insert it
+    UNUSED const size_type new_size = entry_count_ + 1;
+    bool is_rehashed = false;
+    // rehash, if necessary
+    // @todo modify rehash policy so this while loop isn't necessary
+    while (RehashPolicy::needs_rehash(load_factor())) {
+      rehash();
+      is_rehashed = true;
+    }
+    if (is_rehashed) {
+      idx = bucket(value);
+    }
+    BucketType &bucket(table_.at(idx));
+    auto itr = bucket.insert(std::end(bucket), value);
+    ++entry_count_;
+    return std::make_pair(iterator(&table_, idx, std::move(itr)), true);
+  }
+
+  // iterator
+  // erase(const_iterator pos)
+  // {
+  //   // @todo
+  // }
+
+  // void
+  // clear() // @todo noexcept??
+  // {
+  //   // @todo
+  // }
+
+  void
+  swap(hash_set &tgt)
+  {
+    table_.swap(tgt.table_);
+    std::swap(entry_count_, tgt.entry_count_);
+    std::swap(hasher_, tgt.hasher_);
+    std::swap(table_style_, tgt.table_style_);
+  }
+
+  size_type
+  bucket_count()
+  {
+    return table_.size();
+  }
+
+  size_type
+  bucket_size(size_type idx) const
+  {
+    return table_[idx].size();
+  }
+
+  size_type
+  bucket(const ValueType &value) const
+  {
+    return table_style_.hash_to_bucket(hasher_(Extractor::get_key(value)));
+  }
+
+  float
+  load_factor() const noexcept
+  {
+    return static_cast<float>(entry_count_) / static_cast<float>(table_.size());
+  }
+
+  // float
+  // max_load_factor() const noexcept
+  // {
+  //   // @todo ??
+  // }
+
+  // void
+  // rehash(size_type new_bucket_count)
+  // {
+  //   // @todo ??
+  // }
+
+private:
+  using BucketIterator = typename BucketType::iterator;
+  using BucketConstIterator = typename BucketType::const_iterator;
+  using TableIterator = typename TableType::iterator;
+  using TableConstIterator = typename TableType::const_iterator;
+  using TableSearchResult =
+    std::pair<std::experimental::optional<BucketIterator>, size_type>;
+  using HashSetType = hash_set<ValueType, Policies...>;
+
+  template<bool IsConst>
+  static typename std::conditional<IsConst, const_iterator, iterator>::type
+  find_internal(SELECTIVE_CONST(IsConst, HashSetType) *obj, const ValueType &value)
+  {
+    using TItr = typename std::conditional<IsConst, const_iterator, iterator>::type;
+    const auto &key = Extractor::get_key(value);
+    size_type idx = obj->bucket(value);
+    SELECTIVE_CONST(IsConst, TableType) *table(&obj->table_);
+    decltype(auto) bucket(table->at(idx));
+    decltype(auto) entry = find_if(std::begin(bucket), std::end(bucket),
+				   [key](const auto &entry) {
+				     return (key == Extractor::get_key(entry));
+				   });
+    if (std::end(bucket) == entry) {
+      return TItr();
+    }
+    return TItr(table, idx, std::move(entry));
+  }
+
+  /**
+   * increase the number of table entries to the next size and then
+   * rehash all current elements.
+   */
+  void
+  rehash()
+  {
+    TableType temp_copy(table_);
+    const size_type new_bucket_count = table_style_.grow();
+    table_ = TableType(new_bucket_count, BucketType());
+    UNUSED const size_type old_entry_count = entry_count_;
+    // NOTE: reset the entry count to 0 since it will be updated
+    // automatically by calls to insert()
+    entry_count_ = 0;
+    for (auto bucket : temp_copy) {
+      for (auto entry : bucket) {
+	insert(entry);
+      }
+    }
+    assert(old_entry_count == entry_count_);
+  }
+
+  TableType table_;
+  size_type entry_count_;
+  Hasher hasher_;
+  TableStyle table_style_;
+};
+
+} // namespace jrl
+
+#endif // JRL_UTIL_HASH_SET_GUARD

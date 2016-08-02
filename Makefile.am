@@ -74,6 +74,7 @@ include_HEADERS = \
 bin_PROGRAMS = \
 	test_log2_int \
 	test_boost_usability \
+	test_hash_set \
 	test_hash_table \
 	test_jrl_algorithm \
 	test_jrl_geom \
@@ -89,6 +90,7 @@ bin_PROGRAMS = \
 TESTS = \
 	test_log2_int \
 	test_boost_usability \
+	test_hash_set \
 	test_hash_table \
 	test_jrl_algorithm \
 	test_jrl_geom \
@@ -106,6 +108,9 @@ test_log2_int_SOURCES = \
 
 test_boost_usability_SOURCES = \
 	test/test_boost_usability.cpp
+
+test_hash_set_SOURCES = \
+	test/test_hash_set.cpp
 
 test_hash_table_SOURCES = \
 	test/test_hash_table.cpp

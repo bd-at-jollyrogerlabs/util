@@ -111,19 +111,19 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = test_log2_int$(EXEEXT) test_boost_usability$(EXEEXT) \
-	test_hash_table$(EXEEXT) test_jrl_algorithm$(EXEEXT) \
-	test_jrl_geom$(EXEEXT) test_jrl_macro$(EXEEXT) \
-	test_jrl_metaprogram$(EXEEXT) test_jrl_util$(EXEEXT) \
-	test_jrl_variadic$(EXEEXT) test_logging$(EXEEXT) \
-	test_iterable_buffer_set$(EXEEXT) test_stl_usability$(EXEEXT) \
-	test_unitsafe$(EXEEXT)
+	test_hash_set$(EXEEXT) test_hash_table$(EXEEXT) \
+	test_jrl_algorithm$(EXEEXT) test_jrl_geom$(EXEEXT) \
+	test_jrl_macro$(EXEEXT) test_jrl_metaprogram$(EXEEXT) \
+	test_jrl_util$(EXEEXT) test_jrl_variadic$(EXEEXT) \
+	test_logging$(EXEEXT) test_iterable_buffer_set$(EXEEXT) \
+	test_stl_usability$(EXEEXT) test_unitsafe$(EXEEXT)
 TESTS = test_log2_int$(EXEEXT) test_boost_usability$(EXEEXT) \
-	test_hash_table$(EXEEXT) test_jrl_algorithm$(EXEEXT) \
-	test_jrl_geom$(EXEEXT) test_jrl_macro$(EXEEXT) \
-	test_jrl_metaprogram$(EXEEXT) test_jrl_util$(EXEEXT) \
-	test_jrl_variadic$(EXEEXT) test_logging$(EXEEXT) \
-	test_iterable_buffer_set$(EXEEXT) test_stl_usability$(EXEEXT) \
-	test_unitsafe$(EXEEXT)
+	test_hash_set$(EXEEXT) test_hash_table$(EXEEXT) \
+	test_jrl_algorithm$(EXEEXT) test_jrl_geom$(EXEEXT) \
+	test_jrl_macro$(EXEEXT) test_jrl_metaprogram$(EXEEXT) \
+	test_jrl_util$(EXEEXT) test_jrl_variadic$(EXEEXT) \
+	test_logging$(EXEEXT) test_iterable_buffer_set$(EXEEXT) \
+	test_stl_usability$(EXEEXT) test_unitsafe$(EXEEXT)
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
@@ -152,6 +152,9 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+am_test_hash_set_OBJECTS = test_hash_set.$(OBJEXT)
+test_hash_set_OBJECTS = $(am_test_hash_set_OBJECTS)
+test_hash_set_LDADD = $(LDADD)
 am_test_hash_table_OBJECTS = test_hash_table.$(OBJEXT)
 test_hash_table_OBJECTS = $(am_test_hash_table_OBJECTS)
 test_hash_table_LDADD = $(LDADD)
@@ -224,15 +227,16 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(test_boost_usability_SOURCES) $(test_hash_table_SOURCES) \
-	$(test_iterable_buffer_set_SOURCES) \
+SOURCES = $(test_boost_usability_SOURCES) $(test_hash_set_SOURCES) \
+	$(test_hash_table_SOURCES) $(test_iterable_buffer_set_SOURCES) \
 	$(test_jrl_algorithm_SOURCES) $(test_jrl_geom_SOURCES) \
 	$(test_jrl_macro_SOURCES) $(test_jrl_metaprogram_SOURCES) \
 	$(test_jrl_util_SOURCES) $(test_jrl_variadic_SOURCES) \
 	$(test_log2_int_SOURCES) $(test_logging_SOURCES) \
 	$(test_stl_usability_SOURCES) $(test_unitsafe_SOURCES)
 DIST_SOURCES = $(test_boost_usability_SOURCES) \
-	$(test_hash_table_SOURCES) $(test_iterable_buffer_set_SOURCES) \
+	$(test_hash_set_SOURCES) $(test_hash_table_SOURCES) \
+	$(test_iterable_buffer_set_SOURCES) \
 	$(test_jrl_algorithm_SOURCES) $(test_jrl_geom_SOURCES) \
 	$(test_jrl_macro_SOURCES) $(test_jrl_metaprogram_SOURCES) \
 	$(test_jrl_util_SOURCES) $(test_jrl_variadic_SOURCES) \
@@ -649,6 +653,9 @@ test_log2_int_SOURCES = \
 test_boost_usability_SOURCES = \
 	test/test_boost_usability.cpp
 
+test_hash_set_SOURCES = \
+	test/test_hash_set.cpp
+
 test_hash_table_SOURCES = \
 	test/test_hash_table.cpp
 
@@ -790,6 +797,10 @@ test_boost_usability$(EXEEXT): $(test_boost_usability_OBJECTS) $(test_boost_usab
 	@rm -f test_boost_usability$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(test_boost_usability_OBJECTS) $(test_boost_usability_LDADD) $(LIBS)
 
+test_hash_set$(EXEEXT): $(test_hash_set_OBJECTS) $(test_hash_set_DEPENDENCIES) $(EXTRA_test_hash_set_DEPENDENCIES) 
+	@rm -f test_hash_set$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(test_hash_set_OBJECTS) $(test_hash_set_LDADD) $(LIBS)
+
 test_hash_table$(EXEEXT): $(test_hash_table_OBJECTS) $(test_hash_table_DEPENDENCIES) $(EXTRA_test_hash_table_DEPENDENCIES) 
 	@rm -f test_hash_table$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(test_hash_table_OBJECTS) $(test_hash_table_LDADD) $(LIBS)
@@ -845,6 +856,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_boost_usability.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_hash_set.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_hash_table.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_iterable_buffer_set.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_jrl_algorithm.Po@am__quote@
@@ -892,6 +904,20 @@ test_boost_usability.obj: test/test_boost_usability.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_boost_usability.cpp' object='test_boost_usability.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_boost_usability.obj `if test -f 'test/test_boost_usability.cpp'; then $(CYGPATH_W) 'test/test_boost_usability.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_boost_usability.cpp'; fi`
+
+test_hash_set.o: test/test_hash_set.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_hash_set.o -MD -MP -MF $(DEPDIR)/test_hash_set.Tpo -c -o test_hash_set.o `test -f 'test/test_hash_set.cpp' || echo '$(srcdir)/'`test/test_hash_set.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_hash_set.Tpo $(DEPDIR)/test_hash_set.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_hash_set.cpp' object='test_hash_set.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_hash_set.o `test -f 'test/test_hash_set.cpp' || echo '$(srcdir)/'`test/test_hash_set.cpp
+
+test_hash_set.obj: test/test_hash_set.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_hash_set.obj -MD -MP -MF $(DEPDIR)/test_hash_set.Tpo -c -o test_hash_set.obj `if test -f 'test/test_hash_set.cpp'; then $(CYGPATH_W) 'test/test_hash_set.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_hash_set.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_hash_set.Tpo $(DEPDIR)/test_hash_set.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_hash_set.cpp' object='test_hash_set.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_hash_set.obj `if test -f 'test/test_hash_set.cpp'; then $(CYGPATH_W) 'test/test_hash_set.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_hash_set.cpp'; fi`
 
 test_hash_table.o: test/test_hash_table.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_hash_table.o -MD -MP -MF $(DEPDIR)/test_hash_table.Tpo -c -o test_hash_table.o `test -f 'test/test_hash_table.cpp' || echo '$(srcdir)/'`test/test_hash_table.cpp
@@ -1301,6 +1327,13 @@ test_log2_int.log: test_log2_int$(EXEEXT)
 test_boost_usability.log: test_boost_usability$(EXEEXT)
 	@p='test_boost_usability$(EXEEXT)'; \
 	b='test_boost_usability'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_hash_set.log: test_hash_set$(EXEEXT)
+	@p='test_hash_set$(EXEEXT)'; \
+	b='test_hash_set'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
