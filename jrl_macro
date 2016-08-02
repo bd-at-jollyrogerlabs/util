@@ -63,6 +63,11 @@
   } while(0)
 #endif
 
+/**
+ * Macro that allows local variables to be marked as potentially
+ * unused in the code (i.e. related to a call to assert()) so that
+ * extraneous compiler warnings can be avoided.
+ */
 #define UNUSED __attribute__((unused))
 
 /**
