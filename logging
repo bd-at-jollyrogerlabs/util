@@ -2,6 +2,8 @@
  *
  * logging
  *
+ * Yet another logging interface.
+ *
  * Copyright (C) 2015 Brian Davis
  * All Rights Reserved
  *
@@ -36,8 +38,8 @@
  */
 
 
-#if !defined(LOGGING_GUARD)
-#define LOGGING_GUARD 1
+#if !defined(JRL_UTIL_LOGGING_GUARD)
+#define JRL_UTIL_LOGGING_GUARD 1
 
 #include "unitsafe"
 
@@ -145,4 +147,4 @@ namespace					\
     jrl::detail::FATAL_LEVEL_FLAG;		\
 }
 
-#endif // LOGGING_GUARD
+#endif // JRL_UTIL_LOGGING_GUARD
