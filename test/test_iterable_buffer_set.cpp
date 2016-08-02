@@ -252,4 +252,12 @@ TEST_CASE("const_iterator test", "[const_iterator]")
   }
 }
 
+// @todo test copy construction
+
+// @todo test copy assignment
+
+// @todo test move construction
+
+// @todo test move assignment
+
 #undef BACK_INSERT_TEST
