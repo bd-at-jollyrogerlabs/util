@@ -75,7 +75,6 @@ bin_PROGRAMS = \
 	test_log2_int \
 	test_boost_usability \
 	test_hash_set \
-	test_hash_table \
 	test_jrl_algorithm \
 	test_jrl_geom \
 	test_jrl_macro \
@@ -91,7 +90,6 @@ TESTS = \
 	test_log2_int \
 	test_boost_usability \
 	test_hash_set \
-	test_hash_table \
 	test_jrl_algorithm \
 	test_jrl_geom \
 	test_jrl_macro \
@@ -111,9 +109,6 @@ test_boost_usability_SOURCES = \
 
 test_hash_set_SOURCES = \
 	test/test_hash_set.cpp
-
-test_hash_table_SOURCES = \
-	test/test_hash_table.cpp
 
 test_jrl_algorithm_SOURCES = \
 	test/test_jrl_algorithm.cpp
