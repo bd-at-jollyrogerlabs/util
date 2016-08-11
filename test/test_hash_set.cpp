@@ -66,24 +66,93 @@ TEST_CASE("empty set tests", "[hash_set]")
   empty_set_tests<StrHashSet>();
 }
 
-template <typename SetType>
+template<typename SetType>
 void
-insert_find_count_tests(const typename SetType::value_type &val)
+insert_find_count_tests(const typename SetType::value_type &val1,
+			const typename SetType::value_type &val2)
 {
   SetType st;
-  const auto result = st.insert(val);
+  const auto result = st.insert(val1);
   REQUIRE(result.second);
-  const auto entry = st.find(val);
-  REQUIRE(st.end() != entry);
-  REQUIRE(!st.empty());
-  REQUIRE(1 == st.size());
-  REQUIRE(st.count(val));
+  {
+    const auto entry = st.find(val1);
+    REQUIRE(st.end() != entry);
+    REQUIRE(!st.empty());
+    REQUIRE(1 == st.size());
+    REQUIRE(st.count(val1));
+  }
+  {
+    const auto entry = st.find(val2);
+    REQUIRE(st.end() == entry);
+    REQUIRE(0 == st.count(val2));
+  }
 }
 
 TEST_CASE("insert and find tests", "[hash_set]")
 {
-  insert_find_count_tests<IntHashSet>(0);
-  insert_find_count_tests<StrHashSet>("zero");
+  insert_find_count_tests<IntHashSet>(0, 1);
+  insert_find_count_tests<StrHashSet>("zero", "one");
+}
+
+template<typename ContainedType>
+void
+iteration_tests(const vector<ContainedType> &vec)
+{
+  hash_set<ContainedType> st;
+  for (const auto &entry : vec) {
+    const auto result = st.insert(entry);
+    REQUIRE(result.second);
+  }
+  REQUIRE(vec.size() == st.size());
+  for (const auto &entry : st) {
+    REQUIRE(vec.end() != find(begin(vec), end(vec), entry));
+  }
+}
+
+using IntVec = vector<int>;
+using StrVec = vector<string>;
+
+TEST_CASE("iteration tests", "[hash_set]")
+{
+  iteration_tests(IntVec{0, 1, 2, 3, 4});
+  iteration_tests(StrVec{"zero", "one", "two", "three", "four"});
+}
+
+/**
+ * Simple hash calculation function for strings used to test
+ * free_function_hash_policy.
+ */
+size_t
+test_string_hash_function(const string &key) noexcept
+{
+  THROW_ON_FAIL(key.size() <= sizeof(size_t), runtime_error,
+		"weird_string_hash_function received a key [" << key
+		<< "] that was larger than the limit of " << sizeof(size_t));
+  size_t result = 0;
+  for (size_t idx = 0; (idx < key.size()) && (idx <= sizeof(result)); ++idx) {
+    result += static_cast<size_t>(key[idx]);
+    result <<= 1;
+  }
+  return result;
+}
+
+/**
+ * Hash function policy class for test_string_hash_function.
+ */
+struct test_string_hash_function_policy
+  : public free_function_hash_policy<test_string_hash_function_policy>
+{
+  static inline size_t
+  hash(const string &key) noexcept
+  {
+    return test_string_hash_function(key);
+  }
+};
+
+TEST_CASE("insert and find tests for custom hash function", "[hash_set]")
+{
+  using DemoHashSet = hash_set<string, test_string_hash_function_policy>;
+  insert_find_count_tests<DemoHashSet>("zero", "one");
 }
 
 /**
@@ -91,6 +160,11 @@ TEST_CASE("insert and find tests", "[hash_set]")
  */
 struct TestType
 {
+  TestType(const int i, const string &s)
+    : i_val(i), s_val(s)
+  {
+  }
+
   TestType(const TestType &src)
   {
     ++copy_construct_count;
@@ -127,6 +201,18 @@ struct TestType
     return *this;
   }
 
+  void
+  get(int &i) const noexcept
+  {
+    i = i_val;
+  }
+
+  void
+  get(string &s) const noexcept
+  {
+    s = s_val;
+  }
+
   static void
   clear()
   {
@@ -150,31 +236,79 @@ unsigned TestType::copy_assign_count = 0;
 unsigned TestType::move_construct_count = 0;
 unsigned TestType::move_assign_count = 0;
 
-struct IntKey : public custom_key_extractor_policy_tag
+struct IntKey : public key_extractor_policy_tag
 {
-  using key_type = int;
-  static const key_type &
-  get_key(const TestType &arg) noexcept
+  template<typename ValueType>
+  struct rebind
   {
-    return arg.i_val;
-  }
+    static_assert(is_same<ValueType, TestType>::value,
+		  "IntKey policy selected for hash_set that did not contain "
+		  "entries of type 'TestType'");
+
+    using key_type = int;
+
+    static const key_type &
+    get_key(const TestType &arg) noexcept
+    {
+      return arg.i_val;
+    }
+  };
 };
 
-struct StrKey : public custom_key_extractor_policy_tag
+struct StrKey : public key_extractor_policy_tag
 {
-  using key_type = string;
-  static const key_type &
-  get_key(const TestType &arg) noexcept
+  template<typename ValueType>
+  struct rebind
   {
-    return arg.s_val;
-  }
+    static_assert(is_same<ValueType, TestType>::value,
+		  "StrKey policy selected for hash_set that did not contain "
+		  "entries of type 'TestType'");
+
+    using key_type = string;
+
+    static const key_type &
+    get_key(const TestType &arg) noexcept
+    {
+      return arg.s_val;
+    }
+  };
 };
 
-// @todo: OLD CODE TEST_CASE("hash set insert and find", "[hash_set]")
-// @todo: OLD CODE {
-// @todo: OLD CODE   using nsmespace jrl;
-// @todo: OLD CODE   TestType::clear();
-// @todo: OLD CODE }
+template<typename KeyRetrievalType>
+void
+key_retrieval_tests(const vector<TestType> &vec)
+{
+  using HashSet = hash_set<TestType, KeyRetrievalType>;
+  using ReboundExtractorType = typename KeyRetrievalType::template rebind<TestType>;
+  using KeyType = typename ReboundExtractorType::key_type;
+  using OtherType = typename conditional<is_same<KeyType, string>::value, string, int>::type;
+  HashSet st;
+  for (const auto &entry : vec) {
+    const auto result = st.insert(entry);
+    REQUIRE(result.second);
+  }
+  REQUIRE(vec.size() == TestType::copy_construct_count);
+  REQUIRE(0 == TestType::copy_assign_count);
+  REQUIRE(0 == TestType::move_construct_count);
+  REQUIRE(0 == TestType::move_assign_count);
+  for (const auto &value : vec) {
+    const auto entry = st.find(value);
+    REQUIRE(st.end() != entry);
+    OtherType other1, other2;
+    entry->get(other1);
+    value.get(other2);
+    REQUIRE(other1 == other2);
+  }
+}
+
+TEST_CASE("key retrieval", "[hash_set]")
+{
+  vector<TestType> vec{ {0, "zero"}, {1, "one"}, {2, "two"}, {3, "three"} };
+  TestType::clear();
+  key_retrieval_tests<IntKey>(vec);
+  TestType::clear();
+  key_retrieval_tests<StrKey>(vec);
+}
 
 // @todo test that swap produces the correct results for hasher_ and table_style_
 
