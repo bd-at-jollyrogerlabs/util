@@ -53,7 +53,6 @@
 
 #include "jrl_macro"
 #include "jrl_metaprogram"
-#include "jrl_variadic"
 
 namespace jrl
 {
@@ -437,13 +436,13 @@ class hash_set
   // policy configuration check: the length of the policy template
   // pack must equal the number of matched policies.
   static_assert((jrl::param_pack_counter<Policies...>::value ==
-		 jrl::bound_policy_counter<detail::key_extractor_policy_binder<Policies...>,
-		                           detail::allocator_type_policy_binder<Policies...>,
-		                           detail::hash_function_policy_binder<Policies...>,
-		                           detail::table_style_policy_binder<Policies...>,
-		                           detail::rehash_policy_binder<Policies...>,
-		                           detail::bucket_container_type_policy_binder<Policies...>
-		                          >::value),
+		 jrl::matched_policy_counter<detail::key_extractor_policy_binder<Policies...>,
+		                             detail::allocator_type_policy_binder<Policies...>,
+		                             detail::hash_function_policy_binder<Policies...>,
+		                             detail::table_style_policy_binder<Policies...>,
+		                             detail::rehash_policy_binder<Policies...>,
+		                             detail::bucket_container_type_policy_binder<Policies...>
+		                            >::value),
 		"extraneous type specified in hash_table policies");
 
   // rebind parameterized policies
