@@ -114,16 +114,14 @@ bin_PROGRAMS = test_log2_int$(EXEEXT) test_boost_usability$(EXEEXT) \
 	test_hash_set$(EXEEXT) test_jrl_algorithm$(EXEEXT) \
 	test_jrl_geom$(EXEEXT) test_jrl_macro$(EXEEXT) \
 	test_jrl_metaprogram$(EXEEXT) test_jrl_util$(EXEEXT) \
-	test_jrl_variadic$(EXEEXT) test_logging$(EXEEXT) \
-	test_iterable_buffer_set$(EXEEXT) test_stl_usability$(EXEEXT) \
-	test_unitsafe$(EXEEXT)
+	test_logging$(EXEEXT) test_iterable_buffer_set$(EXEEXT) \
+	test_stl_usability$(EXEEXT) test_unitsafe$(EXEEXT)
 TESTS = test_log2_int$(EXEEXT) test_boost_usability$(EXEEXT) \
 	test_hash_set$(EXEEXT) test_jrl_algorithm$(EXEEXT) \
 	test_jrl_geom$(EXEEXT) test_jrl_macro$(EXEEXT) \
 	test_jrl_metaprogram$(EXEEXT) test_jrl_util$(EXEEXT) \
-	test_jrl_variadic$(EXEEXT) test_logging$(EXEEXT) \
-	test_iterable_buffer_set$(EXEEXT) test_stl_usability$(EXEEXT) \
-	test_unitsafe$(EXEEXT)
+	test_logging$(EXEEXT) test_iterable_buffer_set$(EXEEXT) \
+	test_stl_usability$(EXEEXT) test_unitsafe$(EXEEXT)
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
@@ -175,9 +173,6 @@ test_jrl_metaprogram_LDADD = $(LDADD)
 am_test_jrl_util_OBJECTS = test_jrl_util.$(OBJEXT)
 test_jrl_util_OBJECTS = $(am_test_jrl_util_OBJECTS)
 test_jrl_util_LDADD = $(LDADD)
-am_test_jrl_variadic_OBJECTS = test_jrl_variadic.$(OBJEXT)
-test_jrl_variadic_OBJECTS = $(am_test_jrl_variadic_OBJECTS)
-test_jrl_variadic_LDADD = $(LDADD)
 am_test_log2_int_OBJECTS = test_log2_int.$(OBJEXT)
 test_log2_int_OBJECTS = $(am_test_log2_int_OBJECTS)
 test_log2_int_LDADD = $(LDADD)
@@ -228,16 +223,16 @@ SOURCES = $(test_boost_usability_SOURCES) $(test_hash_set_SOURCES) \
 	$(test_iterable_buffer_set_SOURCES) \
 	$(test_jrl_algorithm_SOURCES) $(test_jrl_geom_SOURCES) \
 	$(test_jrl_macro_SOURCES) $(test_jrl_metaprogram_SOURCES) \
-	$(test_jrl_util_SOURCES) $(test_jrl_variadic_SOURCES) \
-	$(test_log2_int_SOURCES) $(test_logging_SOURCES) \
-	$(test_stl_usability_SOURCES) $(test_unitsafe_SOURCES)
+	$(test_jrl_util_SOURCES) $(test_log2_int_SOURCES) \
+	$(test_logging_SOURCES) $(test_stl_usability_SOURCES) \
+	$(test_unitsafe_SOURCES)
 DIST_SOURCES = $(test_boost_usability_SOURCES) \
 	$(test_hash_set_SOURCES) $(test_iterable_buffer_set_SOURCES) \
 	$(test_jrl_algorithm_SOURCES) $(test_jrl_geom_SOURCES) \
 	$(test_jrl_macro_SOURCES) $(test_jrl_metaprogram_SOURCES) \
-	$(test_jrl_util_SOURCES) $(test_jrl_variadic_SOURCES) \
-	$(test_log2_int_SOURCES) $(test_logging_SOURCES) \
-	$(test_stl_usability_SOURCES) $(test_unitsafe_SOURCES)
+	$(test_jrl_util_SOURCES) $(test_log2_int_SOURCES) \
+	$(test_logging_SOURCES) $(test_stl_usability_SOURCES) \
+	$(test_unitsafe_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -643,8 +638,6 @@ include_HEADERS = \
 	stl_usability/ostream_innerator \
 	unitsafe
 
-
-#	test_hash_table
 test_log2_int_SOURCES = \
 	test/test_log2_int.cpp
 
@@ -654,9 +647,6 @@ test_boost_usability_SOURCES = \
 test_hash_set_SOURCES = \
 	test/test_hash_set.cpp
 
-
-#test_hash_table_SOURCES = \
-#	test/test_hash_table.cpp
 test_jrl_algorithm_SOURCES = \
 	test/test_jrl_algorithm.cpp
 
@@ -671,9 +661,6 @@ test_jrl_metaprogram_SOURCES = \
 
 test_jrl_util_SOURCES = \
 	test/test_jrl_util.cpp
-
-test_jrl_variadic_SOURCES = \
-	test/test_jrl_variadic.cpp
 
 test_logging_SOURCES = \
 	test/test_logging.cpp
@@ -823,10 +810,6 @@ test_jrl_util$(EXEEXT): $(test_jrl_util_OBJECTS) $(test_jrl_util_DEPENDENCIES) $
 	@rm -f test_jrl_util$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(test_jrl_util_OBJECTS) $(test_jrl_util_LDADD) $(LIBS)
 
-test_jrl_variadic$(EXEEXT): $(test_jrl_variadic_OBJECTS) $(test_jrl_variadic_DEPENDENCIES) $(EXTRA_test_jrl_variadic_DEPENDENCIES) 
-	@rm -f test_jrl_variadic$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(test_jrl_variadic_OBJECTS) $(test_jrl_variadic_LDADD) $(LIBS)
-
 test_log2_int$(EXEEXT): $(test_log2_int_OBJECTS) $(test_log2_int_DEPENDENCIES) $(EXTRA_test_log2_int_DEPENDENCIES) 
 	@rm -f test_log2_int$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(test_log2_int_OBJECTS) $(test_log2_int_LDADD) $(LIBS)
@@ -857,7 +840,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_jrl_macro.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_jrl_metaprogram.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_jrl_util.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_jrl_variadic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_log2_int.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logging.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_stl_usability.Po@am__quote@
@@ -995,20 +977,6 @@ test_jrl_util.obj: test/test_jrl_util.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_jrl_util.cpp' object='test_jrl_util.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_jrl_util.obj `if test -f 'test/test_jrl_util.cpp'; then $(CYGPATH_W) 'test/test_jrl_util.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_jrl_util.cpp'; fi`
-
-test_jrl_variadic.o: test/test_jrl_variadic.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_jrl_variadic.o -MD -MP -MF $(DEPDIR)/test_jrl_variadic.Tpo -c -o test_jrl_variadic.o `test -f 'test/test_jrl_variadic.cpp' || echo '$(srcdir)/'`test/test_jrl_variadic.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_jrl_variadic.Tpo $(DEPDIR)/test_jrl_variadic.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_jrl_variadic.cpp' object='test_jrl_variadic.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_jrl_variadic.o `test -f 'test/test_jrl_variadic.cpp' || echo '$(srcdir)/'`test/test_jrl_variadic.cpp
-
-test_jrl_variadic.obj: test/test_jrl_variadic.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_jrl_variadic.obj -MD -MP -MF $(DEPDIR)/test_jrl_variadic.Tpo -c -o test_jrl_variadic.obj `if test -f 'test/test_jrl_variadic.cpp'; then $(CYGPATH_W) 'test/test_jrl_variadic.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_jrl_variadic.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_jrl_variadic.Tpo $(DEPDIR)/test_jrl_variadic.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_jrl_variadic.cpp' object='test_jrl_variadic.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_jrl_variadic.obj `if test -f 'test/test_jrl_variadic.cpp'; then $(CYGPATH_W) 'test/test_jrl_variadic.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_jrl_variadic.cpp'; fi`
 
 test_log2_int.o: test/test_log2_int.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_log2_int.o -MD -MP -MF $(DEPDIR)/test_log2_int.Tpo -c -o test_log2_int.o `test -f 'test/test_log2_int.cpp' || echo '$(srcdir)/'`test/test_log2_int.cpp
@@ -1348,13 +1316,6 @@ test_jrl_metaprogram.log: test_jrl_metaprogram$(EXEEXT)
 test_jrl_util.log: test_jrl_util$(EXEEXT)
 	@p='test_jrl_util$(EXEEXT)'; \
 	b='test_jrl_util'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_jrl_variadic.log: test_jrl_variadic$(EXEEXT)
-	@p='test_jrl_variadic$(EXEEXT)'; \
-	b='test_jrl_variadic'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \

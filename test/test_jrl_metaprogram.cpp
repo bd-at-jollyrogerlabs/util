@@ -45,6 +45,10 @@
 #include <catch.hpp>
 
 using namespace std;
+using namespace jrl;
+
+
+// test cases for SELECTIVE_CONST
 
 struct Inner {};
 
@@ -72,4 +76,38 @@ TEST_CASE("SELECTIVE_CONST", "[SELECTIVE_CONST]")
   REQUIRE(!is_const<decltype(nci.inner)>::value);
   REQUIRE(is_const<decltype(ci.array)>::value);
   REQUIRE(!is_const<decltype(nci.array)>::value);
+}
+
+
+// test cases for variadic policy support
+
+template<typename... ParameterPack>
+struct variadic_test
+{
+  static unsigned
+  count()
+  {
+    return counter_type::value;
+  }
+
+private:
+  using counter_type = param_pack_counter<ParameterPack...>;
+};
+
+TEST_CASE("Test parameter pack counting", "[param_pack_counter]")
+{
+  {
+    using Count0 = variadic_test<>;
+    REQUIRE(0 == Count0::count());
+  }
+
+  {
+    using Count1 = variadic_test<int>;
+    REQUIRE(1 == Count1::count());
+  }
+
+  {
+    using Count2 = variadic_test<int, double>;
+    REQUIRE(2 == Count2::count());
+  }
 }

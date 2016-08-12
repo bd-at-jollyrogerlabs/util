@@ -80,7 +80,6 @@ bin_PROGRAMS = \
 	test_jrl_macro \
 	test_jrl_metaprogram \
 	test_jrl_util \
-	test_jrl_variadic \
 	test_logging \
 	test_iterable_buffer_set \
 	test_stl_usability \
@@ -95,7 +94,6 @@ TESTS = \
 	test_jrl_macro \
 	test_jrl_metaprogram \
 	test_jrl_util \
-	test_jrl_variadic \
 	test_logging \
 	test_iterable_buffer_set \
 	test_stl_usability \
@@ -124,9 +122,6 @@ test_jrl_metaprogram_SOURCES = \
 
 test_jrl_util_SOURCES = \
 	test/test_jrl_util.cpp
-
-test_jrl_variadic_SOURCES = \
-	test/test_jrl_variadic.cpp
 
 test_logging_SOURCES = \
 	test/test_logging.cpp

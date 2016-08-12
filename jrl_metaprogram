@@ -37,15 +37,91 @@
 #if !defined(JRL_METAPROGRAM_GUARD)
 #define JRL_METAPROGRAM_GUARD 1
 
-namespace jrl
-{
-
-} // namespace jrl
-
 /**
  * Selectively const-ify a type based on a compile time boolean.
  */
 #define SELECTIVE_CONST(IsConst, BaseType) \
   typename std::conditional<IsConst, const BaseType, BaseType>::type
+
+/**
+ * Define the body of a policy binder type that can detect subclasses
+ * of a tag type in a parameter pack.
+ */
+#define DEFINE_POLICY_BINDER(PolicyBinderType, DefaultPolicyType, TagType) \
+/* declaration */							\
+template<typename... Policies>					        \
+struct PolicyBinderType;						\
+/* base */								\
+template<>								\
+struct PolicyBinderType<>						\
+{									\
+  using type = DefaultPolicyType;					\
+  static const unsigned is_non_default = 0;				\
+};									\
+/* induction */							        \
+template<typename First, typename... Rest>				\
+struct PolicyBinderType<First, Rest...>				        \
+{									\
+private:								\
+  using remainder = typename PolicyBinderType<Rest...>::type;		\
+  static const unsigned remainder_is_non_default =			\
+    PolicyBinderType<Rest...>::is_non_default;				\
+  static const bool is_tagged =						\
+    std::is_base_of<TagType, First>::value;				\
+  /* only one match is allowed per policy */				\
+  static_assert(!is_tagged || (0 == remainder_is_non_default),		\
+		"some policy was previously matched for " #PolicyBinderType \
+		" when " #TagType " was encountered");			\
+public:								        \
+  /* use the previously bound policy unless the tag matches */		\
+  using type = typename std::conditional<is_tagged, First, remainder>::type; \
+  /* use the previously set match count */				\
+  static const unsigned is_non_default =				\
+    is_tagged ? 1 : remainder_is_non_default;				\
+}
+
+namespace jrl
+{
+
+/**
+ * Helper variadic class template that simply counts the number of
+ * type parameters in its parameter pack.
+ */
+template<typename... ParameterPack>
+struct param_pack_counter;
+
+template<typename First, typename... Rest>
+struct param_pack_counter<First, Rest...>
+{
+  static const unsigned value = 1 + param_pack_counter<Rest...>::value;
+};
+
+template <>
+struct param_pack_counter<>
+{
+  static const unsigned value = 0;
+};
+
+/**
+ * Helper variadic class template that counts the number of
+ * non-default bindings made over a set of policy binders.
+ */
+template<typename... PolicyBinders>
+struct matched_policy_counter;
+
+template<typename First, typename... Rest>
+struct matched_policy_counter<First, Rest...>
+{
+  static const unsigned value =
+    First::is_non_default + matched_policy_counter<Rest...>::value;
+};
+
+template <>
+struct matched_policy_counter<>
+{
+  static const unsigned value = 0;
+};
+
+} // namespace jrl
 
 #endif // JRL_METAPROGRAM_GUARD
