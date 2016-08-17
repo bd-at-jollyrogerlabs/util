@@ -632,7 +632,6 @@ include_HEADERS = \
 	jrl_macro \
 	jrl_metaprogram \
 	jrl_util \
-	jrl_variadic \
 	stl_usability/algorithm_usability \
 	stl_usability/misc_usability \
 	stl_usability/ostream_innerator \
