@@ -91,7 +91,7 @@ struct variadic_test
   }
 
 private:
-  using counter_type = param_pack_counter<ParameterPack...>;
+  using counter_type = param_pack_size<ParameterPack...>;
 };
 
 TEST_CASE("Test parameter pack counting", "[param_pack_counter]")

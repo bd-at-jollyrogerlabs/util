@@ -88,16 +88,16 @@ namespace jrl
  * type parameters in its parameter pack.
  */
 template<typename... ParameterPack>
-struct param_pack_counter;
+struct param_pack_size;
 
 template<typename First, typename... Rest>
-struct param_pack_counter<First, Rest...>
+struct param_pack_size<First, Rest...>
 {
-  static const unsigned value = 1 + param_pack_counter<Rest...>::value;
+  static const unsigned value = 1 + param_pack_size<Rest...>::value;
 };
 
 template <>
-struct param_pack_counter<>
+struct param_pack_size<>
 {
   static const unsigned value = 0;
 };
@@ -107,17 +107,17 @@ struct param_pack_counter<>
  * non-default bindings made over a set of policy binders.
  */
 template<typename... PolicyBinders>
-struct matched_policy_counter;
+struct policy_bind_counter;
 
 template<typename First, typename... Rest>
-struct matched_policy_counter<First, Rest...>
+struct policy_bind_counter<First, Rest...>
 {
   static const unsigned value =
-    First::is_non_default + matched_policy_counter<Rest...>::value;
+    First::is_non_default + policy_bind_counter<Rest...>::value;
 };
 
 template <>
-struct matched_policy_counter<>
+struct policy_bind_counter<>
 {
   static const unsigned value = 0;
 };
