@@ -59,19 +59,19 @@ namespace jrl
 
 // ********** policy tags **********
 
-struct key_extractor_policy_tag {};
+struct key_extractor_tag {};
 
-struct predicate_policy_tag {};
+struct predicate_tag {};
 
-struct allocator_policy_tag {};
+struct allocator_tag {};
 
-struct hash_function_policy_tag {};
+struct hash_function_tag {};
 
-struct table_length_style_policy_tag {};
+struct table_length_style_tag {};
 
-struct rehash_policy_tag {};
+struct rehash_tag {};
 
-struct bucket_container_policy_tag {};
+struct bucket_container_tag {};
 
 // ********** policy implementation classes **********
 
@@ -93,6 +93,14 @@ struct default_key_extractor_policy
     {
       return arg;
     }
+
+    static const bool can_get_key_from_constructor = true;
+
+    static const key_type &
+    key_from_ctor_args(key_type&& arg) noexcept
+    {
+      return arg;
+    }
   };
 };
 
@@ -102,7 +110,7 @@ struct default_key_extractor_policy
  * NOTE: this is the correct policy for hash_map
  */
 struct pair_first_element_key_extractor_policy
-  : public key_extractor_policy_tag
+  : public key_extractor_tag
 {
   template<typename ValueType>
   struct rebind
@@ -115,14 +123,23 @@ struct pair_first_element_key_extractor_policy
     {
       return arg.first;
     }
+
+    static const bool can_get_key_from_constructor = true;
+
+    template<typename MappedType>
+    static const key_type &
+    key_from_ctor_args(const key_type&& key, const MappedType&& val) noexcept
+    {
+      return key;
+    }
   };
 };
 
-// @todo add support for extracting a key from constructor arguments
-// to improve performance of emplace
-
 // ***** predicate policies *****
 
+/**
+ * default policy: use std::equal_to
+ */
 struct default_predicate_policy
 {
   template<typename KeyType>
@@ -164,11 +181,8 @@ struct default_hash_policy
     SizeType
     operator()(const KeyType &key) const noexcept
     {
-      return hasher_(key);
+      return std::hash<KeyType>()(key);
     }
-
-  private:
-    static std::hash<KeyType> hasher_;
   };
 };
 
@@ -176,7 +190,7 @@ struct default_hash_policy
  * policy: no hash calculation, the key value is passed through
  * unchanged.
  */
-struct trivial_hash_policy : public hash_function_policy_tag
+struct trivial_hash_policy : public hash_function_tag
 {
   template<typename KeyType, typename SizeType>
   struct rebind
@@ -194,7 +208,7 @@ struct trivial_hash_policy : public hash_function_policy_tag
  * values.
  */
 template<typename Derived>
-struct free_function_hash_policy : public hash_function_policy_tag
+struct free_function_hash_policy : public hash_function_tag
 {
   template<typename KeyType, typename SizeType>
   struct rebind
@@ -267,7 +281,7 @@ struct default_table_length_style
  * policy: table length is a power of two and hash values are mapped
  * to buckets by masking away higher order bits
  */
-struct power_of_two_length_table_style : table_length_style_policy_tag
+struct power_of_two_length_table_style : table_length_style_tag
 {
   template<typename SizeType>
   struct rebind
@@ -337,7 +351,7 @@ struct default_rehash_policy
 /**
  * policy: never rehash the table
  */
-struct no_rehash_policy : rehash_policy_tag
+struct no_rehash_policy : rehash_tag
 {
   static bool
   needs_rehash(const float load_factor)
@@ -368,7 +382,7 @@ struct default_bucket_container_policy
 /**
  * policy: bucket container is std::list
  */
-struct std_list_bucket_container_policy : bucket_container_policy_tag
+struct std_list_bucket_container_policy : bucket_container_tag
 {
   template <typename ValueType, typename AllocPolicy>
   struct rebind
@@ -390,43 +404,43 @@ namespace detail
 
 DEFINE_POLICY_BINDER(key_extractor_policy_binder,
 		     default_key_extractor_policy,
-		     key_extractor_policy_tag);
+		     key_extractor_tag);
 
 // ***** predicate policy  binder *****
 
 DEFINE_POLICY_BINDER(predicate_policy_binder,
 		     default_predicate_policy,
-		     predicate_policy_tag);
+		     predicate_tag);
 
 // ***** allocator policy binder *****
 
 DEFINE_POLICY_BINDER(allocator_policy_binder,
 		     default_allocator_policy,
-		     allocator_policy_tag);
+		     allocator_tag);
 
 // ***** hash function policy binder *****
 
 DEFINE_POLICY_BINDER(hash_function_policy_binder,
 		     default_hash_policy,
-		     hash_function_policy_tag);
+		     hash_function_tag);
 
 // ***** table length style policy binder *****
 
 DEFINE_POLICY_BINDER(table_style_policy_binder,
 		     default_table_length_style,
-		     table_length_style_policy_tag);
+		     table_length_style_tag);
 
 // ***** rehash policy binder *****
 
 DEFINE_POLICY_BINDER(rehash_policy_binder,
 		     default_rehash_policy,
-		     rehash_policy_tag);
+		     rehash_tag);
 
 // ***** container type policy binder *****
 
 DEFINE_POLICY_BINDER(bucket_container_policy_binder,
 		     default_bucket_container_policy,
-		     bucket_container_policy_tag);
+		     bucket_container_tag);
 
 } // namespace detail
 
@@ -435,8 +449,7 @@ DEFINE_POLICY_BINDER(bucket_container_policy_binder,
  *
  * @todo full documentation of available policies
  */
-template<typename ValueType,
-	 typename... Policies>
+template<typename ValueType, typename... Policies>
 class hash_set
 {
   // policy configurations
@@ -685,6 +698,40 @@ public:
   std::pair<iterator, bool>
   emplace(Args &&... args)
   {
+    // @todo clean up this implementation (especially factoring out common code)
+    if (Extractor::can_get_key_from_constructor) {
+      const key_type &key =
+	Extractor::key_from_ctor_args(std::forward<Args>(args)...);
+      size_type idx = table_style_.hash_to_bucket(hasher_(key));
+      {
+	BucketType &bucket(table_.at(idx));
+	const auto entry =
+	  find_if(std::begin(bucket), std::end(bucket),
+		  [key](const auto &entry) {
+		    return (Predicate()(key, Extractor::get_key(entry)));
+		  });
+	if (std::end(bucket) != entry) {
+	  // entry already exists
+	  return std::make_pair(iterator(), false);
+	}
+      }
+      // entry does not yet exist, insert it
+      UNUSED const size_type new_size = entry_count_ + 1;
+      bool is_rehashed = false;
+      // rehash, if necessary
+      // @todo modify rehash policy so this while loop isn't necessary
+      while (RehashPolicy::needs_rehash(load_factor())) {
+	rehash();
+	is_rehashed = true;
+      }
+      if (is_rehashed) {
+	idx = table_style_.hash_to_bucket(hasher_(key));;
+      }
+      BucketType &bucket(table_.at(idx));
+      auto itr = bucket.emplace(std::end(bucket), std::forward<Args>(args)...);
+      ++entry_count_;
+      return std::make_pair(iterator(&table_, idx, std::move(itr)), true);
+    }
     // @todo can be done better for cases other than array
     ValueType value = ValueType(args...);
     size_type idx = bucket(value);
