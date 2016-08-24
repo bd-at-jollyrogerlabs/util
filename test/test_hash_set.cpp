@@ -350,12 +350,6 @@ key_retrieval_tests(const vector<TestType> &vec)
     value.get(other2);
     REQUIRE(other1 == other2);
   }
-  cout << "DBG: there were [" << TestType::arg_construct_count
-       << "] argument constructor calls, [" << TestType::copy_construct_count
-       << "] copy constructor calls, [" << TestType::copy_assign_count
-       << "] copy assignment calls, [" << TestType::move_construct_count
-       << "] move constructor calls, and [" << TestType::move_assign_count
-       << "] move assignment calls" << endl;
 }
 
 TEST_CASE("key retrieval", "[hash_set]")
@@ -380,12 +374,6 @@ forwarding_emplace_tests(const vector<int> &iVec, const vector<string> &sVec)
     const auto result = st.emplace(iVec[idx], sVec[idx]);
     REQUIRE(result.second);
   }
-  cout << "DBG: there were [" << TestType::arg_construct_count
-       << "] argument constructor calls, [" << TestType::copy_construct_count
-       << "] copy constructor calls, [" << TestType::copy_assign_count
-       << "] copy assignment calls, [" << TestType::move_construct_count
-       << "] move constructor calls, and [" << TestType::move_assign_count
-       << "] move assignment calls" << endl;
   // only argument constructors should be called for insert()
   // (i.e. showing that emplace properly forwards its arguments to the
   // correct constructor)
