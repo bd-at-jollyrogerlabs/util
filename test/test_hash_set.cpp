@@ -94,6 +94,35 @@ TEST_CASE("insert and find tests", "[hash_set]")
   insert_find_count_tests<StrHashSet>("zero", "one");
 }
 
+template<typename SetType>
+void
+emplace_find_count_tests(const typename SetType::value_type &val1,
+			 const typename SetType::value_type &val2)
+{
+  typename SetType::value_type lVal1 = val1;
+  SetType st;
+  const auto result = st.emplace(std::move(lVal1));
+  REQUIRE(result.second);
+  {
+    const auto entry = st.find(val1);
+    REQUIRE(st.end() != entry);
+    REQUIRE(!st.empty());
+    REQUIRE(1 == st.size());
+    REQUIRE(st.count(val1));
+  }
+  {
+    const auto entry = st.find(val2);
+    REQUIRE(st.end() == entry);
+    REQUIRE(0 == st.count(val2));
+  }
+}
+
+TEST_CASE("emplace and find tests", "[hash_set]")
+{
+  emplace_find_count_tests<IntHashSet>(0, 1);
+  emplace_find_count_tests<StrHashSet>("zero", "one");
+}
+
 template<typename ContainedType>
 void
 iteration_tests(const vector<ContainedType> &vec)
@@ -163,6 +192,7 @@ struct TestType
   TestType(const int i, const string &s)
     : i_val(i), s_val(s)
   {
+    ++arg_construct_count;
   }
 
   TestType(const TestType &src)
@@ -216,12 +246,14 @@ struct TestType
   static void
   clear()
   {
+    arg_construct_count = 0;
     copy_construct_count = 0;
     copy_assign_count = 0;
     move_construct_count = 0;
     move_assign_count = 0;
   }
 
+  static unsigned arg_construct_count;
   static unsigned copy_construct_count;
   static unsigned copy_assign_count;
   static unsigned move_construct_count;
@@ -231,12 +263,13 @@ struct TestType
   string s_val;
 };
 
+unsigned TestType::arg_construct_count = 0;
 unsigned TestType::copy_construct_count = 0;
 unsigned TestType::copy_assign_count = 0;
 unsigned TestType::move_construct_count = 0;
 unsigned TestType::move_assign_count = 0;
 
-struct IntKey : public key_extractor_policy_tag
+struct IntKey : public key_extractor_tag
 {
   template<typename ValueType>
   struct rebind
@@ -252,10 +285,18 @@ struct IntKey : public key_extractor_policy_tag
     {
       return arg.i_val;
     }
+
+    static const bool can_get_key_from_constructor = true;
+
+    static int
+    key_from_ctor_args(int i, const string &s)
+    {
+      return i;
+    }
   };
 };
 
-struct StrKey : public key_extractor_policy_tag
+struct StrKey : public key_extractor_tag
 {
   template<typename ValueType>
   struct rebind
@@ -270,6 +311,14 @@ struct StrKey : public key_extractor_policy_tag
     get_key(const TestType &arg) noexcept
     {
       return arg.s_val;
+    }
+
+    static const bool can_get_key_from_constructor = true;
+
+    static const key_type &
+    key_from_ctor_args(const int i, const string &s)
+    {
+      return s;
     }
   };
 };
@@ -287,6 +336,8 @@ key_retrieval_tests(const vector<TestType> &vec)
     const auto result = st.insert(entry);
     REQUIRE(result.second);
   }
+  // only copy constructors should be called for insert()
+  REQUIRE(0 == TestType::arg_construct_count);
   REQUIRE(vec.size() == TestType::copy_construct_count);
   REQUIRE(0 == TestType::copy_assign_count);
   REQUIRE(0 == TestType::move_construct_count);
@@ -299,6 +350,12 @@ key_retrieval_tests(const vector<TestType> &vec)
     value.get(other2);
     REQUIRE(other1 == other2);
   }
+  cout << "DBG: there were [" << TestType::arg_construct_count
+       << "] argument constructor calls, [" << TestType::copy_construct_count
+       << "] copy constructor calls, [" << TestType::copy_assign_count
+       << "] copy assignment calls, [" << TestType::move_construct_count
+       << "] move constructor calls, and [" << TestType::move_assign_count
+       << "] move assignment calls" << endl;
 }
 
 TEST_CASE("key retrieval", "[hash_set]")
@@ -308,6 +365,54 @@ TEST_CASE("key retrieval", "[hash_set]")
   key_retrieval_tests<IntKey>(vec);
   TestType::clear();
   key_retrieval_tests<StrKey>(vec);
+}
+
+template<typename KeyRetrievalType>
+void
+forwarding_emplace_tests(const vector<int> &iVec, const vector<string> &sVec)
+{
+  using HashSet = hash_set<TestType, KeyRetrievalType>;
+  using ReboundExtractorType = typename KeyRetrievalType::template rebind<TestType>;
+  using KeyType = typename ReboundExtractorType::key_type;
+  using OtherType = typename conditional<is_same<KeyType, string>::value, string, int>::type;
+  HashSet st;
+  for (size_t idx = 0; idx < iVec.size(); ++idx) {
+    const auto result = st.emplace(iVec[idx], sVec[idx]);
+    REQUIRE(result.second);
+  }
+  cout << "DBG: there were [" << TestType::arg_construct_count
+       << "] argument constructor calls, [" << TestType::copy_construct_count
+       << "] copy constructor calls, [" << TestType::copy_assign_count
+       << "] copy assignment calls, [" << TestType::move_construct_count
+       << "] move constructor calls, and [" << TestType::move_assign_count
+       << "] move assignment calls" << endl;
+  // only argument constructors should be called for insert()
+  // (i.e. showing that emplace properly forwards its arguments to the
+  // correct constructor)
+  REQUIRE(iVec.size() == TestType::arg_construct_count);
+  REQUIRE(0 == TestType::copy_construct_count);
+  REQUIRE(0 == TestType::copy_assign_count);
+  REQUIRE(0 == TestType::move_construct_count);
+  REQUIRE(0 == TestType::move_assign_count);
+  for (size_t idx = 0; idx < iVec.size(); ++idx) {
+    const TestType value(iVec[idx], sVec[idx]);
+    const auto entry = st.find(value);
+    REQUIRE(st.end() != entry);
+    OtherType other1, other2;
+    entry->get(other1);
+    value.get(other2);
+    REQUIRE(other1 == other2);
+  }
+}
+
+TEST_CASE("emplacement with perfect forwarding", "[hash_set]")
+{
+  vector<int> iVec{ 0, 1, 2, 3 };
+  vector<string>sVec{ "zero", "one", "two", "three" };
+  TestType::clear();
+  forwarding_emplace_tests<IntKey>(iVec, sVec);
+  TestType::clear();
+  forwarding_emplace_tests<StrKey>(iVec, sVec);
 }
 
 // @todo test that swap produces the correct results for hasher_ and table_style_
