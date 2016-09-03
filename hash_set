@@ -67,7 +67,7 @@ struct allocator_tag {};
 
 struct hash_function_tag {};
 
-struct table_length_style_tag {};
+struct table_length_tag {};
 
 struct rehash_tag {};
 
@@ -97,7 +97,7 @@ struct default_key_extractor_policy
     static const bool can_get_key_from_constructor = true;
 
     static const key_type &
-    key_from_ctor_args(key_type&& arg) noexcept
+    key_from_ctor_args(key_type &&arg) noexcept
     {
       return arg;
     }
@@ -227,39 +227,50 @@ struct free_function_hash_policy : public hash_function_tag
  * default policy: table length is a prime number and hash values are
  * mapped to buckets using modulus (AKA operator%)
  */
-struct default_table_length_style
+struct default_table_length_policy
 {
   template<typename SizeType>
   struct rebind
   {
     rebind()
-      : idx_(INITIAL_BUCKET_COUNT_IDX)
     {
     }
 
     static SizeType
-    initial_bucket_count()
+    initial_bucket_count() noexcept
     {
       return primes(INITIAL_BUCKET_COUNT_IDX);
     }
 
-    SizeType
-    hash_to_bucket(const SizeType hash) const noexcept
+    /**
+     * return the next legal bucket count that is greater than the
+     * argument bucket count.
+     */
+    static SizeType
+    next_bucket_count(const SizeType bucket_count)
     {
-      return hash % primes(idx_);
+      size_t idx = 0;
+      SizeType result = primes(idx);
+      while (result <= bucket_count) {
+	++idx;
+	result = primes(idx);
+      }
+      return result;
     }
 
-    SizeType
-    grow()
+    static SizeType
+    hash_to_bucket(const SizeType hash,
+		   const SizeType bucket_count) noexcept
     {
-      ++idx_;
-      return primes(idx_);
+      // @todo sanity check: ensure that bucket_count is in the set of
+      // primes
+      return hash % bucket_count;
     }
 
   private:
 
     static SizeType
-    primes(const SizeType idx)
+    primes(const size_t idx)
     {
       static const std::vector<SizeType> PRIMES{
 	17, 29, 37, 53, 67, 79, 97, 131, 193, 257, 389, 521, 769,
@@ -268,12 +279,10 @@ struct default_table_length_style
 	12582917, 25165843, 50331653, 100663319, 201326611,
 	402653189, 805306457, 1610612741, 3221225473, 4294967291
       };
-      return PRIMES[idx];
+      return PRIMES.at(idx);
     }
 
   static const SizeType INITIAL_BUCKET_COUNT_IDX = 7;
-
-  SizeType idx_;
   };
 };
 
@@ -281,14 +290,12 @@ struct default_table_length_style
  * policy: table length is a power of two and hash values are mapped
  * to buckets by masking away higher order bits
  */
-struct power_of_two_length_table_style : table_length_style_tag
+struct power_of_two_length_table_policy : table_length_tag
 {
   template<typename SizeType>
   struct rebind
   {
     rebind()
-      : count_(INITIAL_BUCKET_COUNT),
-	mask_(INITIAL_BUCKET_COUNT - 1)
     {
     }
 
@@ -298,43 +305,68 @@ struct power_of_two_length_table_style : table_length_style_tag
       return INITIAL_BUCKET_COUNT;
     }
 
-    SizeType
-    hash_to_bucket(const SizeType hash) const noexcept
+    /**
+     * return the next legal bucket count that is greater than the
+     * argument bucket count.
+     */
+    static SizeType
+    next_bucket_count(const SizeType bucket_count)
     {
-      return hash & mask_;
+      SizeType result = 1;
+      while (result <= bucket_count) {
+	result <<= 1;
+      }
+      return result;
     }
 
-    SizeType
-    grow()
+    static SizeType
+    hash_to_bucket(const SizeType hash,
+		   const SizeType bucket_count) noexcept
     {
-      count_ <<= 1;
-      mask_ <<= 1;
-      mask_ |= 1;
-      return count_;
-      assert(mask_ == (count_ - 1));
+      // @todo sanity check: ensure that bucket_count is a power of 2
+      return hash & (bucket_count - 1);
     }
 
   private:
     static const SizeType INITIAL_BUCKET_COUNT = 128;
-
-    SizeType count_;
-    SizeType mask_;
   };
 };
 
 // ***** rehash policies *****
 
+template<typename SizeType>
+using RehashCheckResult = std::experimental::optional<SizeType>;
+
 /**
  * default policy: calculate the load factor and compare it to a
  * threshold in order to determine if the table should be rehashed
  */
-template<typename Derived>
+template<typename SizeType, typename TableStyle, typename Derived>
 struct load_factor_rehash
 {
-  static bool
-  needs_rehash(const float load_factor)
+  using CheckResult = RehashCheckResult<SizeType>;
+
+  /**
+   * return nullopt_t if the table does not need to be rehashed, or
+   * return the new bucket count if it does
+   */
+  static CheckResult
+  rehash_check(SizeType current_bucket_count,
+	       SizeType next_entry_count)
   {
-    return load_factor > Derived::get_threshold();
+    float load_factor = static_cast<float>(next_entry_count) /
+      static_cast<float>(current_bucket_count);
+    SizeType next_bucket_count;
+    if (load_factor <= Derived::get_threshold()) {
+      return std::experimental::nullopt;
+    }
+    while (load_factor > Derived::get_threshold()) {
+      next_bucket_count =
+	TableStyle::next_bucket_count(current_bucket_count);
+      load_factor = static_cast<float>(next_entry_count) /
+	static_cast<float>(next_bucket_count);
+    }
+    return next_bucket_count;
   }
 };
 
@@ -343,9 +375,38 @@ struct load_factor_rehash
  * exceeds 1.5
  */
 struct default_rehash_policy
-  : public load_factor_rehash<default_rehash_policy>
 {
-  constexpr static float get_threshold() { return 1.5; }
+  constexpr static float get_threshold() noexcept { return 1.5; }
+
+  template<typename SizeType, typename TableStyle>
+  struct rebind
+    : public load_factor_rehash<SizeType, TableStyle,
+				default_rehash_policy>
+  {
+  };
+};
+
+/**
+ * policy: load factor rehash with custom threshold
+ *
+ * NOTE: threshold value is specified by deriving from this class
+ * using CRTP and providing a get_threshold() function in the derived
+ * class.
+ */
+template<typename Derived>
+struct custom_threshold_rehash_policy : rehash_tag
+{
+  constexpr static float
+  get_threshold() noexcept
+  {
+    return Derived::get_threshold();
+  }
+
+  template<typename SizeType, typename TableStyle>
+  struct rebind
+    : public load_factor_rehash<SizeType, TableStyle, Derived>
+  {
+  };
 };
 
 /**
@@ -353,15 +414,19 @@ struct default_rehash_policy
  */
 struct no_rehash_policy : rehash_tag
 {
-  static bool
-  needs_rehash(const float load_factor)
+  template<typename SizeType, typename TableStyle>
+  struct rebind
   {
-    return false;
-  }
-};
+    using CheckResult = RehashCheckResult<SizeType>;
 
-// @todo add rehash threshold policy with easily customizable
-// threshold value
+      static CheckResult
+      rehash_check(SizeType current_bucket_count,
+		   SizeType next_entry_count)
+    {
+      return std::experimental::nullopt;
+    }
+  };
+};
 
 // ***** bucket container policies *****
 
@@ -426,9 +491,9 @@ DEFINE_POLICY_BINDER(hash_function_policy_binder,
 
 // ***** table length style policy binder *****
 
-DEFINE_POLICY_BINDER(table_style_policy_binder,
-		     default_table_length_style,
-		     table_length_style_tag);
+DEFINE_POLICY_BINDER(table_length_policy_binder,
+		     default_table_length_policy,
+		     table_length_tag);
 
 // ***** rehash policy binder *****
 
@@ -457,7 +522,7 @@ class hash_set
   using PredicateBinding = detail::predicate_policy_binder<Policies...>;
   using AllocatorBinding = detail::allocator_policy_binder<Policies...>;
   using HashFunctionBinding = detail::hash_function_policy_binder<Policies...>;
-  using TableStyleBinding = detail::table_style_policy_binder<Policies...>;
+  using TableLengthBinding = detail::table_length_policy_binder<Policies...>;
   using RehashBinding = detail::rehash_policy_binder<Policies...>;
   using BucketContainerBinding =
     detail::bucket_container_policy_binder<Policies...>;
@@ -466,21 +531,24 @@ class hash_set
   using PredicatePolicy = typename PredicateBinding::type;
   using AllocatorPolicy = typename AllocatorBinding::type;
   using HashFunctionPolicy = typename HashFunctionBinding::type;
-  using TableStylePolicy = typename TableStyleBinding::type;
+  using TableLengthPolicy = typename TableLengthBinding::type;
   using RehashPolicy = typename RehashBinding::type;
   using BucketContainerPolicy = typename BucketContainerBinding::type;
 
+  using ParamCounter = jrl::param_pack_size<Policies...>;
+  using PolicyBindCounter =
+    jrl::policy_bind_counter<KeyExtractorBinding,
+			     PredicateBinding,
+			     AllocatorBinding,
+			     HashFunctionBinding,
+			     TableLengthBinding,
+			     RehashBinding,
+			     BucketContainerBinding
+			     >;
+
   // policy configuration check: the length of the policy template
   // pack must equal the number of matched policies.
-  static_assert((jrl::param_pack_size<Policies...>::value ==
-		 jrl::policy_bind_counter<KeyExtractorBinding,
-		                          PredicateBinding,
-		                          AllocatorBinding,
-		                          HashFunctionBinding,
-		                          TableStyleBinding,
-		                          RehashBinding,
-		                          BucketContainerBinding
-		                         >::value),
+  static_assert((ParamCounter::value == PolicyBindCounter::value),
 		"extraneous type specified in hash_table policies");
 
   // rebind parameterized policies
@@ -493,11 +561,14 @@ class hash_set
     typename KeyExtractorPolicy::template rebind<ValueType>;
   using Predicate =
     typename PredicatePolicy::template rebind<typename Extractor::key_type>;
-  using TableStyle =
-    typename TableStylePolicy::template rebind<typename TableType::size_type>;
+  using TableLength =
+    typename TableLengthPolicy::template rebind<typename TableType::size_type>;
   using Hasher =
     typename HashFunctionPolicy::template rebind<typename Extractor::key_type,
 						 typename TableType::size_type>;
+  using Rehasher =
+    typename RehashPolicy::template rebind<typename TableType::size_type,
+					   TableLength>;
 
 public:
   using key_type = typename Extractor::key_type;
@@ -608,7 +679,7 @@ public:
   using const_iterator = IteratorImpl<true>;
 
   hash_set()
-    : table_(TableStyle::initial_bucket_count(), BucketType()), entry_count_(0)
+    : table_(TableLength::initial_bucket_count(), BucketType()), entry_count_(0)
   {
   }
 
@@ -702,7 +773,7 @@ public:
     if (Extractor::can_get_key_from_constructor) {
       const key_type &key =
 	Extractor::key_from_ctor_args(std::forward<Args>(args)...);
-      size_type idx = table_style_.hash_to_bucket(hasher_(key));
+      size_type idx = TableLength::hash_to_bucket(hasher_(key), buckets());
       {
 	BucketType &bucket(table_.at(idx));
 	const auto entry =
@@ -715,17 +786,15 @@ public:
 	  return std::make_pair(iterator(), false);
 	}
       }
+
       // entry does not yet exist, insert it
-      UNUSED const size_type new_size = entry_count_ + 1;
-      bool is_rehashed = false;
+
       // rehash, if necessary
-      // @todo modify rehash policy so this while loop isn't necessary
-      while (RehashPolicy::needs_rehash(load_factor())) {
-	rehash();
-	is_rehashed = true;
-      }
-      if (is_rehashed) {
-	idx = table_style_.hash_to_bucket(hasher_(key));;
+      const auto new_bucket_count =
+	Rehasher::rehash_check(buckets(), size() + 1);
+      if (new_bucket_count) {
+	rehash_internal(*new_bucket_count);
+	idx = TableLength::hash_to_bucket(hasher_(key), buckets());
       }
       BucketType &bucket(table_.at(idx));
       auto itr = bucket.emplace(std::end(bucket), std::forward<Args>(args)...);
@@ -748,16 +817,13 @@ public:
 	return std::make_pair(iterator(), false);
       }
     }
+
     // entry does not yet exist, insert it
-    UNUSED const size_type new_size = entry_count_ + 1;
-    bool is_rehashed = false;
+
     // rehash, if necessary
-    // @todo modify rehash policy so this while loop isn't necessary
-    while (RehashPolicy::needs_rehash(load_factor())) {
-      rehash();
-      is_rehashed = true;
-    }
-    if (is_rehashed) {
+    const auto new_bucket_count = Rehasher::rehash_check(buckets(), size() + 1);
+    if (new_bucket_count) {
+      rehash_internal(*new_bucket_count);
       idx = bucket(value);
     }
     BucketType &bucket(table_.at(idx));
@@ -795,16 +861,16 @@ public:
 	return std::make_pair(iterator(), false);
       }
     }
+
+    // @todo use RAII to restore original state on exception
+
     // entry does not yet exist, insert it
-    UNUSED const size_type new_size = entry_count_ + 1;
-    bool is_rehashed = false;
+
     // rehash, if necessary
-    // @todo modify rehash policy so this while loop isn't necessary
-    while (RehashPolicy::needs_rehash(load_factor())) {
-      rehash();
-      is_rehashed = true;
-    }
-    if (is_rehashed) {
+    const auto new_bucket_count =
+      Rehasher::rehash_check(buckets(), size() + 1);
+    if (new_bucket_count) {
+      rehash_internal(*new_bucket_count);
       idx = bucket(value);
     }
     BucketType &bucket(table_.at(idx));
@@ -831,31 +897,31 @@ public:
     table_.swap(tgt.table_);
     std::swap(entry_count_, tgt.entry_count_);
     std::swap(hasher_, tgt.hasher_);
-    std::swap(table_style_, tgt.table_style_);
   }
 
-  size_type
+  inline size_type
   bucket_count()
   {
     return table_.size();
   }
 
-  size_type
+  inline size_type
   bucket_size(size_type idx) const
   {
     return table_[idx].size();
   }
 
-  size_type
+  inline size_type
   bucket(const ValueType &value) const
   {
-    return table_style_.hash_to_bucket(hasher_(Extractor::get_key(value)));
+    return TableLength::hash_to_bucket(hasher_(Extractor::get_key(value)),
+				       buckets());
   }
 
-  float
+  inline float
   load_factor() const noexcept
   {
-    return static_cast<float>(entry_count_) / static_cast<float>(table_.size());
+    return load_factor(entry_count_);
   }
 
   // float
@@ -864,11 +930,15 @@ public:
   //   // @todo ??
   // }
 
-  // void
-  // rehash(size_type new_bucket_count)
-  // {
-  //   // @todo ??
-  // }
+  void
+  rehash(const size_type new_bucket_count)
+  {
+    auto rehash_check_result =
+      Rehasher::rehash_check(new_bucket_count, size());
+    if ((rehash_check_result) && (buckets() != *rehash_check_result)) {
+      rehash_internal(*rehash_check_result);
+    }
+  }
 
 private:
   using BucketIterator = typename BucketType::iterator;
@@ -878,6 +948,12 @@ private:
   using TableSearchResult =
     std::pair<std::experimental::optional<BucketIterator>, size_type>;
   using HashSetType = hash_set<ValueType, Policies...>;
+
+  float
+  load_factor(size_t entry_count) const noexcept
+  {
+    return static_cast<float>(entry_count) / static_cast<float>(table_.size());
+  }
 
   template<bool IsConst>
   static typename std::conditional<IsConst, const_iterator, iterator>::type
@@ -903,13 +979,13 @@ private:
 
   /**
    * increase the number of table entries to the next size and then
-   * rehash all current elements.
+   * reinsert all current elements.
    */
   void
-  rehash()
+  rehash_internal(const size_type new_bucket_count)
   {
+    // @todo use RAII to restore original state on exception
     TableType temp_copy(table_);
-    const size_type new_bucket_count = table_style_.grow();
     table_ = TableType(new_bucket_count, BucketType());
     UNUSED const size_type old_entry_count = entry_count_;
     // NOTE: reset the entry count to 0 since it will be updated
@@ -926,7 +1002,6 @@ private:
   TableType table_;
   size_type entry_count_;
   Hasher hasher_;
-  TableStyle table_style_;
 };
 
 } // namespace jrl
