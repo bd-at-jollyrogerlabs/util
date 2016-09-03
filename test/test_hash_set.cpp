@@ -403,9 +403,163 @@ TEST_CASE("emplacement with perfect forwarding", "[hash_set]")
   forwarding_emplace_tests<StrKey>(iVec, sVec);
 }
 
+namespace
+{
+// NOTE: this value should be kept in sync with the threshold value in
+// the default rehash policy
+const float MAX_LOAD_FACTOR = 1.5;
+const size_t TERMINATION_MULT = 10;
+const bool DO_MASK_CHECK = true;
+
+// the following two convert() functions support the generalization of
+// rehash_tests to work for size_t and string
+
+void
+convert(const size_t arg, size_t &result)
+{
+  result = arg;
+}
+
+void
+convert(const size_t arg, string &result)
+{
+  result = to_string(arg);
+}
+
+// the following two doMask() functions support the generalization of
+// rehash_tests to work for size_t and string
+
+size_t
+doMask(const size_t value, const size_t mask)
+{
+  return value & mask;
+}
+
+size_t
+doMask(const string value, const size_t mask)
+{
+  THROW_EXCEPTION(logic_error, "called doMask() for string argument");
+}
+
+/**
+ * check that rehashing works correctly
+ *
+ * NOTE: bool template parameter IsCheckMask should be set to 'true'
+ * when testing trivial hash with power of 2 table size.
+ */
+template<typename HashSetType, bool IsCheckMask = false>
+void
+rehash_tests(const float maxLoadFactor,
+	     function<void(HashSetType &, typename HashSetType::value_type)> adder)
+{
+  using ValueType = typename HashSetType::value_type;
+  HashSetType h1;
+  using CheckVec = vector<pair<ValueType, size_t>>;
+  CheckVec c1;
+  auto currentBuckets = h1.buckets();
+  const auto initialBuckets = currentBuckets;
+  for (size_t val = 0; val < (initialBuckets * TERMINATION_MULT); ++val) {
+    ValueType value;
+    convert(val, value);
+    adder(h1, value);
+    REQUIRE(maxLoadFactor >= h1.load_factor());
+    if (h1.buckets() != currentBuckets) {
+      // check if any entries have moved to different buckets
+      bool isBucketChanged = false;
+      for (auto &entry : c1) {
+	const auto bucket = h1.bucket(entry.first);
+	if (bucket != entry.second) {
+	  isBucketChanged = true;
+	  entry.second = bucket;
+	}
+      }
+      REQUIRE(isBucketChanged);
+      currentBuckets = h1.buckets();
+    }
+    c1.push_back(make_pair(value, h1.bucket(value)));
+  }
+  if (!IsCheckMask) {
+    return;
+  }
+  const auto mask = h1.buckets() - 1;
+  for (size_t val = 0; val < (initialBuckets * TERMINATION_MULT); ++val) {
+    ValueType value;
+    convert(val, value);
+    REQUIRE(doMask(value, mask) == h1.bucket(value));
+  }
+}
+
+} // unnamed namespace
+
+TEST_CASE("test of default rehash policy for insert operation", "[hash_set]")
+{
+  using HashSet = hash_set<size_t>;
+  rehash_tests<HashSet>(MAX_LOAD_FACTOR,
+			[](HashSet &h, size_t val) {
+			  h.insert(val);
+			});
+}
+
+TEST_CASE("test of default rehash policy for emplace operation", "[hash_set]")
+{
+  using HashSet = hash_set<size_t>;
+  rehash_tests<HashSet>(MAX_LOAD_FACTOR,
+			[](HashSet &h, size_t val) {
+			  h.emplace(move(val));
+			});
+}
+
+TEST_CASE("test combination of 'power of two' table size and trivial hash "
+	  "function", "[hash_set]")
+{
+  using HashSet = hash_set<size_t, power_of_two_length_table_policy,
+			   trivial_hash_policy>;
+  rehash_tests<HashSet,
+	       DO_MASK_CHECK>(MAX_LOAD_FACTOR,
+			      [](HashSet &h, size_t val) {
+				h.insert(val);
+			      });
+}
+
+/**
+ * Custom rehash threshold policy with threshold value of 1.0.
+ */
+struct ThresholdOneRehashPolicy
+  : public custom_threshold_rehash_policy<ThresholdOneRehashPolicy>
+{
+  constexpr static float
+  get_threshold() noexcept
+  {
+    return 1.0;
+  }
+};
+
+string
+strConv(const size_t arg)
+{
+  return to_string(arg);
+}
+
+TEST_CASE("test of custom rehash threshold value 1.0", "[hash_set]")
+{
+  using HashSet = hash_set<string, ThresholdOneRehashPolicy>;
+  auto func = function<string(const size_t)>(strConv);
+  rehash_tests<HashSet>(1.0,
+			[](HashSet &h, string val) {
+			  h.insert(move(val));
+			});
+}
+
+TEST_CASE("test of no_rehash_policy", "[hash_set]")
+{
+  using HashSet = hash_set<size_t, no_rehash_policy>;
+  HashSet h1;
+  const auto initialBuckets = h1.buckets();
+  for (size_t value = 0; value < (initialBuckets * TERMINATION_MULT);
+       ++value) {
+    h1.insert(value);
+    REQUIRE(initialBuckets == h1.buckets());
+  }
+}
+
 // @todo test that swap produces the correct results for hasher_ and table_style_
-
-// @todo test various loops that check bucket_size and load_factor
-// while adding elements
-
-// @todo build and test custom load factor policy with a threshold of 1.0
