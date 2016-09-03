@@ -18,11 +18,13 @@ For example:
 hash_table<string, string> simple;
 
 // trivial hash of unsigned key which replaces mod with bit mask
-hash_table<size_t, string, trivial_hash_policy, power_of_two_length_table_style> fast;
+hash_table<size_t, string, trivial_hash_policy, power_of_two_length_table_policy> fast;
 
 // hash table that never rehashes (thus avoiding the expense of the calculation)
 hash_table<size_t, string, no_rehash_policy> no_rehash;
 ```
+
+###This work will be presented at the New York C++ Meetup on September 6, 2016
 
 ###Other Stuff
 - unitsafe: eliminate implicit conversion for better safety.
