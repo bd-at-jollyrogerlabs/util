@@ -121,7 +121,9 @@ TESTS = test_log2_int$(EXEEXT) test_boost_usability$(EXEEXT) \
 	test_jrl_geom$(EXEEXT) test_jrl_macro$(EXEEXT) \
 	test_jrl_metaprogram$(EXEEXT) test_jrl_util$(EXEEXT) \
 	test_logging$(EXEEXT) test_iterable_buffer_set$(EXEEXT) \
-	test_stl_usability$(EXEEXT) test_unitsafe$(EXEEXT)
+	test_stl_usability$(EXEEXT) test_unitsafe$(EXEEXT) \
+	test/extraneous_param.compile_error \
+	test/multiple_match.compile_error
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
@@ -445,7 +447,6 @@ am__set_TESTS_bases = \
   bases=`echo $$bases`
 RECHECK_LOGS = $(TEST_LOGS)
 TEST_SUITE_LOG = test-suite.log
-TEST_EXTENSIONS = @EXEEXT@ .test
 LOG_DRIVER = $(SHELL) $(top_srcdir)/test-driver
 LOG_COMPILE = $(LOG_COMPILER) $(AM_LOG_FLAGS) $(LOG_FLAGS)
 am__set_b = \
@@ -460,10 +461,10 @@ am__set_b = \
   esac
 am__test_logs1 = $(TESTS:=.log)
 am__test_logs2 = $(am__test_logs1:@EXEEXT@.log=.log)
-TEST_LOGS = $(am__test_logs2:.test.log=.log)
-TEST_LOG_DRIVER = $(SHELL) $(top_srcdir)/test-driver
-TEST_LOG_COMPILE = $(TEST_LOG_COMPILER) $(AM_TEST_LOG_FLAGS) \
-	$(TEST_LOG_FLAGS)
+TEST_LOGS = $(am__test_logs2:.compile_error.log=.log)
+COMPILE_ERROR_LOG_DRIVER = $(SHELL) $(top_srcdir)/test-driver
+COMPILE_ERROR_LOG_COMPILE = $(COMPILE_ERROR_LOG_COMPILER) \
+	$(AM_COMPILE_ERROR_LOG_FLAGS) $(COMPILE_ERROR_LOG_FLAGS)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -620,9 +621,11 @@ WARNING_FLAGS = \
 # the template meta-programs; currently replaced by a set of relevant
 # warnings (which appear after -Wall in the WARNING_FLAGS variable)
 # -Wextra
-AM_CXXFLAGS = $(WARNING_FLAGS) -std=c++14 $(BOOST_CPPFLAGS)
+CPP_STANDARD = c++14
+AM_CXXFLAGS = $(WARNING_FLAGS) -std=$(CPP_STANDARD) $(BOOST_CPPFLAGS)
 ACLOCAL_AMFLAGS = -I m4
 
+# @todo remove?
 # lib_LTLIBRARIES = \
 # 	libjrlutil.la
 include_HEADERS = \
@@ -637,6 +640,16 @@ include_HEADERS = \
 	stl_usability/ostream_innerator \
 	unitsafe
 
+
+# do not change font colors for test output
+AM_COLOR_TESTS = no
+
+# TEST_EXTENSIONS=.h
+TEST_EXTENSIONS = .compile_error
+
+# H_LOG_COMPILER=./succeed_on_fail.sh
+COMPILE_ERROR_LOG_COMPILER = ./expect_compile_error.sh
+AM_TESTS_ENVIRONMENT = export CC=$(CC); export CXX=$(CXX);
 test_log2_int_SOURCES = \
 	test/test_log2_int.cpp
 
@@ -677,7 +690,7 @@ all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .cpp .lo .log .o .obj .test .test$(EXEEXT) .trs
+.SUFFIXES: .compile_error .compile_error$(EXEEXT) .cpp .lo .log .o .obj .trs
 am--refresh: Makefile
 	@:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -1347,19 +1360,19 @@ test_unitsafe.log: test_unitsafe$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-.test.log:
+.compile_error.log:
 	@p='$<'; \
 	$(am__set_b); \
-	$(am__check_pre) $(TEST_LOG_DRIVER) --test-name "$$f" \
+	$(am__check_pre) $(COMPILE_ERROR_LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_TEST_LOG_DRIVER_FLAGS) $(TEST_LOG_DRIVER_FLAGS) -- $(TEST_LOG_COMPILE) \
+	$(am__common_driver_flags) $(AM_COMPILE_ERROR_LOG_DRIVER_FLAGS) $(COMPILE_ERROR_LOG_DRIVER_FLAGS) -- $(COMPILE_ERROR_LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-@am__EXEEXT_TRUE@.test$(EXEEXT).log:
+@am__EXEEXT_TRUE@.compile_error$(EXEEXT).log:
 @am__EXEEXT_TRUE@	@p='$<'; \
 @am__EXEEXT_TRUE@	$(am__set_b); \
-@am__EXEEXT_TRUE@	$(am__check_pre) $(TEST_LOG_DRIVER) --test-name "$$f" \
+@am__EXEEXT_TRUE@	$(am__check_pre) $(COMPILE_ERROR_LOG_DRIVER) --test-name "$$f" \
 @am__EXEEXT_TRUE@	--log-file $$b.log --trs-file $$b.trs \
-@am__EXEEXT_TRUE@	$(am__common_driver_flags) $(AM_TEST_LOG_DRIVER_FLAGS) $(TEST_LOG_DRIVER_FLAGS) -- $(TEST_LOG_COMPILE) \
+@am__EXEEXT_TRUE@	$(am__common_driver_flags) $(AM_COMPILE_ERROR_LOG_DRIVER_FLAGS) $(COMPILE_ERROR_LOG_DRIVER_FLAGS) -- $(COMPILE_ERROR_LOG_COMPILE) \
 @am__EXEEXT_TRUE@	"$$tst" $(AM_TESTS_FD_REDIRECT)
 
 distdir: $(DISTFILES)

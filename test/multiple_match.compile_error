@@ -1,0 +1,19 @@
+
+template<typename KeyType>
+size_t
+custom_trivial_hash(const KeyType &key) noexcept
+{
+  return key;
+}
+
+struct custom_trivial_hash_function_policy
+  : public free_function_hash_policy<custom_trivial_hash_function_policy>
+{
+  static inline size_t
+  hash(int key) noexcept
+  {
+    return custom_trivial_hash(key);
+  }
+};
+
+using BadHashSet = jrl::hash_set<int, trivial_hash_policy, custom_trivial_hash_function_policy>;

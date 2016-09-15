@@ -52,9 +52,12 @@ WARNING_FLAGS=\
 # warnings (which appear after -Wall in the WARNING_FLAGS variable)
 # -Wextra
 
-AM_CXXFLAGS = $(WARNING_FLAGS) -std=c++14 $(BOOST_CPPFLAGS)
+CPP_STANDARD=c++14
+
+AM_CXXFLAGS = $(WARNING_FLAGS) -std=$(CPP_STANDARD) $(BOOST_CPPFLAGS)
 ACLOCAL_AMFLAGS = -I m4
 
+# @todo remove?
 # lib_LTLIBRARIES = \
 # 	libjrlutil.la
 
@@ -84,6 +87,17 @@ bin_PROGRAMS = \
 	test_stl_usability \
 	test_unitsafe
 
+# do not change font colors for test output
+AM_COLOR_TESTS=no
+
+# TEST_EXTENSIONS=.h
+TEST_EXTENSIONS=.compile_error
+
+# H_LOG_COMPILER=./succeed_on_fail.sh
+COMPILE_ERROR_LOG_COMPILER=./expect_compile_error.sh
+
+AM_TESTS_ENVIRONMENT=export CC=$(CC); export CXX=$(CXX);
+
 TESTS = \
 	test_log2_int \
 	test_boost_usability \
@@ -96,7 +110,9 @@ TESTS = \
 	test_logging \
 	test_iterable_buffer_set \
 	test_stl_usability \
-	test_unitsafe
+	test_unitsafe \
+	test/extraneous_param.compile_error \
+	test/multiple_match.compile_error
 
 test_log2_int_SOURCES = \
 	test/test_log2_int.cpp
