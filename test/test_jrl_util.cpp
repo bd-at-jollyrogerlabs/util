@@ -52,7 +52,7 @@ using namespace jrl;
     REQUIRE(result == ss.str());		\
   } while (0)
 
-TEST_CASE("test of as_binary", "as_binary")
+TEST_CASE("test of as_binary", "[as_binary]")
 {
   // 8 bit value
   DO_TEST(uint8_t, (1 << 3) | (1 << 1), "00001010");
@@ -62,7 +62,7 @@ TEST_CASE("test of as_binary", "as_binary")
 
 #undef DO_TEST
 
-TEST_CASE("test of BitMaskStatic", "BitMaskStatic")
+TEST_CASE("test of BitMaskStatic", "[BitMaskStatic]")
 {
 #define BITS(arg) ((1 << (arg)) - 1)
 
@@ -139,4 +139,30 @@ TEST_CASE("test of BitMaskStatic", "BitMaskStatic")
   }
 
 #undef BITS
+}
+
+TEST_CASE("test of is_power_of_2", "[is_power_of_2]")
+{
+  // all 16 bit cases seems reasonable
+  using ArgType = uint16_t;
+  // start matcher at 2^1
+  ArgType matcher = 1 << 1;
+
+  ArgType counter = 0;
+  const ArgType max = ~counter;
+
+  // handle 0 separately
+  REQUIRE(is_power_of_2(counter));
+  ++counter;
+
+  for (; counter < max; ++counter) {
+    if (is_power_of_2(counter)) {
+      REQUIRE(matcher == counter);
+      // move to the next power of 2 value
+      matcher <<= 1;
+    }
+    else {
+      REQUIRE(matcher != counter);
+    }
+  }
 }
