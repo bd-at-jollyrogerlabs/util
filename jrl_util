@@ -177,7 +177,8 @@ public:
  * numeric?
  */
 template<typename ResultType>
-constexpr ResultType
+constexpr
+typename std::enable_if<std::is_unsigned<ResultType>::value, ResultType>::type
 make_bit_mask(const unsigned bitCount,
 	      const unsigned leftShiftCount = 0)
 {
@@ -189,6 +190,28 @@ make_bit_mask(const unsigned bitCount,
   }
   result <<= leftShiftCount;
   return result;
+}
+
+template<typename ArgType>
+typename std::enable_if<std::is_unsigned<ArgType>::value, bool>::type
+is_power_of_2(const ArgType arg)
+{
+  if (1 == arg) {
+    // 1 is not a power of 2, but the subsequent algorithm would
+    // return true, so it is treated separately
+    return false;
+  }
+  // the standard bit-twiddling hack for extracting the lowest set bit
+  ArgType lowest = arg & ~(arg - 1);
+  // invert the previous result to produce a mask where the lowest set
+  // bit of the argument is cleared and all other bits are set; this
+  // mask has the effect of clearing the lowest set bit of the
+  // argument
+  ArgType mask = ~lowest;
+  // if the argument is a power of 2, then it only has one bit set,
+  // which must thus be the lowest; if this bit is cleared by the mask
+  // and no other bits are set, then the argument must be a power of 2
+  return !(arg & mask);
 }
 
 #if defined(USE_TIMESPEC_WRAP)
