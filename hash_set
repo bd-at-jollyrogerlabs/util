@@ -43,6 +43,7 @@
 
 #include <cassert>
 
+#include <algorithm>
 #include <experimental/optional>
 #include <functional>
 #include <list>
@@ -51,6 +52,7 @@
 #include <boost/iterator.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 
+#include "jrl_util"
 #include "jrl_macro"
 #include "jrl_metaprogram"
 
@@ -239,7 +241,7 @@ struct default_table_length_policy
     static SizeType
     initial_bucket_count() noexcept
     {
-      return primes(INITIAL_BUCKET_COUNT_IDX);
+      return primes().at(INITIAL_BUCKET_COUNT_IDX);
     }
 
     /**
@@ -250,10 +252,10 @@ struct default_table_length_policy
     next_bucket_count(const SizeType bucket_count)
     {
       size_t idx = 0;
-      SizeType result = primes(idx);
+      SizeType result = primes().at(idx);
       while (result <= bucket_count) {
 	++idx;
-	result = primes(idx);
+	result = primes().at(idx);
       }
       return result;
     }
@@ -262,15 +264,15 @@ struct default_table_length_policy
     hash_to_bucket(const SizeType hash,
 		   const SizeType bucket_count) noexcept
     {
-      // @todo sanity check: ensure that bucket_count is in the set of
-      // primes
+      assert(is_in_primes(bucket_count));
       return hash % bucket_count;
     }
 
   private:
+    using SizeTypeVec = std::vector<SizeType>;
 
-    static SizeType
-    primes(const size_t idx)
+    static const SizeTypeVec &
+    primes()
     {
       static const std::vector<SizeType> PRIMES{
 	17, 29, 37, 53, 67, 79, 97, 131, 193, 257, 389, 521, 769,
@@ -279,7 +281,16 @@ struct default_table_length_policy
 	12582917, 25165843, 50331653, 100663319, 201326611,
 	402653189, 805306457, 1610612741, 3221225473, 4294967291
       };
-      return PRIMES.at(idx);
+      return PRIMES;
+    }
+
+    static bool
+    is_in_primes(const SizeType bucket_count)
+    {
+      return (std::end(primes()) !=
+	      std::find(std::begin(primes()),
+			std::end(primes()),
+			bucket_count));
     }
 
   static const SizeType INITIAL_BUCKET_COUNT_IDX = 7;
@@ -323,7 +334,7 @@ struct power_of_two_length_table_policy : table_length_tag
     hash_to_bucket(const SizeType hash,
 		   const SizeType bucket_count) noexcept
     {
-      // @todo sanity check: ensure that bucket_count is a power of 2
+      assert(is_power_of_2(bucket_count));
       return hash & (bucket_count - 1);
     }
 
@@ -501,7 +512,7 @@ DEFINE_POLICY_BINDER(rehash_policy_binder,
 		     default_rehash_policy,
 		     rehash_tag);
 
-// ***** container type policy binder *****
+// ***** bucket container type policy binder *****
 
 DEFINE_POLICY_BINDER(bucket_container_policy_binder,
 		     default_bucket_container_policy,
@@ -535,7 +546,6 @@ class hash_set
   using RehashPolicy = typename RehashBinding::type;
   using BucketContainerPolicy = typename BucketContainerBinding::type;
 
-  using ParamCounter = jrl::param_pack_size<Policies...>;
   using PolicyBindCounter =
     jrl::policy_bind_counter<KeyExtractorBinding,
 			     PredicateBinding,
@@ -543,12 +553,11 @@ class hash_set
 			     HashFunctionBinding,
 			     TableLengthBinding,
 			     RehashBinding,
-			     BucketContainerBinding
-			     >;
+			     BucketContainerBinding>;
 
   // policy configuration check: the length of the policy template
   // pack must equal the number of matched policies.
-  static_assert((ParamCounter::value == PolicyBindCounter::value),
+  static_assert((sizeof...(Policies) == PolicyBindCounter::value),
 		"extraneous type specified in hash_table policies");
 
   // rebind parameterized policies
@@ -952,6 +961,7 @@ private:
   float
   load_factor(size_t entry_count) const noexcept
   {
+    assert(table_.size() > 0);
     return static_cast<float>(entry_count) / static_cast<float>(table_.size());
   }
 
@@ -984,7 +994,8 @@ private:
   void
   rehash_internal(const size_type new_bucket_count)
   {
-    // @todo use RAII to restore original state on exception
+    // @todo build the new table in a separate variable and then swap
+    // it with the current table
     TableType temp_copy(table_);
     table_ = TableType(new_bucket_count, BucketType());
     UNUSED const size_type old_entry_count = entry_count_;
@@ -997,6 +1008,7 @@ private:
       }
     }
     assert(old_entry_count == entry_count_);
+    assert(table_.size() > 0);
   }
 
   TableType table_;
