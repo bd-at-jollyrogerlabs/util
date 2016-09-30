@@ -3,31 +3,103 @@
 * hash_map/hash_set
 NOTE: hash_map should be derived from hash_set with value_type =
 pair<key, value>
-** create a separate hash_table_base class that will be used as the basis of all final classes
-** key extraction
+** ?? create a separate hash_table_base class that will be used as the basis of all final classes
+** investigate better handling of the problem of extracting keys from constructor args
+might be possible to delegate this to a class template and avoid
+duplicated code, e.g. emplace_internal
+*** partial experimental code
+template<bool CanGetKeyFromConstructor, typename KeyType, typename ValueType>
+class KeyHolder;
+
+template<typename KeyType, typename ValueType>
+class KeyHolder<false>
+{
+public:
+  template<typename... Args>
+  KeyHolder(Args &&... args)
+    val_(std::forward<Args>(args)...)
+  {
+  }
+
+private:
+  ValueType val_;
+};
+** review unordered_map interface for noexcept
+** add local_iterator and local_const_iterator
+** member functions in unordered_map that are not in unordered_set
+      //@{
+      /**
+       *  @brief  Subscript ( @c [] ) access to %unordered_map data.
+       *  @param  __k  The key for which data should be retrieved.
+       *  @return  A reference to the data of the (key,data) %pair.
+       *
+       *  Allows for easy lookup with the subscript ( @c [] )operator.  Returns
+       *  data associated with the key specified in subscript.  If the key does
+       *  not exist, a pair with that key is created using default values, which
+       *  is then returned.
+       *
+       *  Lookup requires constant time.
+       */
+      mapped_type&
+      operator[](const key_type& __k)
+      { return _M_h[__k]; }
+
+      mapped_type&
+      operator[](key_type&& __k)
+      { return _M_h[std::move(__k)]; }
+      //@}
+
+      //@{
+      /**
+       *  @brief  Access to %unordered_map data.
+       *  @param  __k  The key for which data should be retrieved.
+       *  @return  A reference to the data whose key is equal to @a __k, if
+       *           such a data is present in the %unordered_map.
+       *  @throw  std::out_of_range  If no such data is present.
+       */
+      mapped_type&
+      at(const key_type& __k)
+      { return _M_h.at(__k); }
+
+      const mapped_type&
+      at(const key_type& __k) const
+      { return _M_h.at(__k); }
+      //@}
 ** policies
 *** common policies between open addressing and bucket table
-**** hash function
-***** std::hash (default)
-***** trivial
-***** custom
-needs research to determine if it makes sense to handle the case of a
-free function differently
-**** table length/hash value remap
-***** prime length + modulus remap (default)
-***** power of two length + mask remap
-***** custom?
-NOTE: it is vital that remap covers the space of table entries; this
-property is guaranteed for modulus in all length styles, but not for
-mask
+**** DONE - key extraction
+**** DONE - hash function
+***** DONE - std::hash (default)
+***** DONE - trivial
+***** DONE - custom
+****** DONE - special support for hash function
+**** DONE - predicate
+**** DONE - table length/hash value remap
+***** DONE - prime length + modulus remap (default)
+***** DONE - power of two length + mask remap
 **** rehash
-***** static time configurable load factor threshold (default)
-***** no rehash
-***** custom?
+***** DONE - fixed threshold value of 1.5 (default)
+***** DONE - static time configurable load factor threshold
+***** DONE - no rehash
+***** high watermark/low watermark
+allow the table to shrink
+***** ?? custom
+maybe based on bucket lengths to detect unbalanced structures (but
+seems like this might be expensive)
+****** one possible impl
+a static time max bucket size and an array with the number of buckets
+for each count that could periodically be scanned for "bad"
+characteristics
+****** another possible impl
+exponential moving average in "lookup time" (i.e. each lookup
+represents a single time "tick") of the number of links required to be
+traversed with a threshold value that schedules a rehash when breached
 **** allocator
-***** std::allocator (default)
-***** non-static
-needs research
+***** DONE - std::allocator (default)
+***** non-static (e.g. pool allocator)
+needs research, probably requires the use of variadic function
+template constructor that can then search for the appropriate argument
+in its arguments.
 ***** custom
 **** critical section safety
 ***** none (default)
@@ -39,25 +111,42 @@ covers all cases and probably most suitable for open addressing table
 *** bucket table policies
 **** bucket_container
 choice of container policy may interact with choice of critical
-section safety
-***** vector (default)
-***** list
+section safety and invalid combinations should automatically generate
+errors via static assert
+***** DONE - vector (default)
+***** DONE - list
 ***** cursor list
+probably fold into planned work on "super list"
 ***** intrusive list
+probably fold into planned work on "super list"
 ***** custom
+***** lock free
+see "critical section safety" below
 **** critical section safety
 ***** none (default)
+***** full table reader/writer lock
 ***** bucket reader/writer lock
-only appropriate for bucket table, requires table lock or COW/RCU for
-rehash
-***** lock-free list?
+***** ?? lock-free bucket structure
 needs research
 *** open addressing table policies
 **** probing
 ***** linear (default)
 ***** quadratic
 ***** double hash
+***** robin hood
+see hacker news article
 ***** custom
+one use case: collision generates a call to a stored function object
+that "disposes of" the current element, which is replaced by the new
+element, useful in order dictionaries in the case where older orders
+are moved to a separate "back book" data structure
+*** multi-threading policy
+**** not-thread-safe (default)
+**** global reader/writer lock
+*** ?? other policies
+**** cache hash value with element to reduce cost of equality test
+currently supported by std::unordered_set/map, but not entirely sure
+that this interface is publicly exposed, need to review the code
 ** basics
 *** iterators
 **** non-const
@@ -139,16 +228,35 @@ given by the argument
 *** assignment operator
 **** copy
 **** move
+*** function preconditions + postconditions
+add these in as calls to the assert() macro
 ** testing
+*** unit testing
+**** rehash
+compare items counts in all buckets before and after rehash
+*** fuzz testing
+**** basic
+create a simple command line test harness program that is
+source-compatible with set and map interfaces and run AFL on versions
+of it compiled for various scenarios
+***** std::map/std::set
+***** std::unordered_map/std::unordered_set
+***** jrl::hash_set/jrl::hash_map
+****** default impl
+****** trivial hash
+****** custom hash
+****** etc.
+**** multi-set/map
+modify the test harness to support multi-set/map and run scenarios
+similar to the above
 *** performance testing
-** multi-threading policy
-*** not-thread-safe
-*** global reader/writer lock
-*** per-bucket reader/writer lock
+**** test performance of open addressing vs default hash buckets
+**** test performance of emplace_hint with iterator pointing to the correct entry
+**** test performance of "power of 2" table size vs default "prime" table size
 ** ordered iterator traversal for trivial hash
+NOTE: probably can't work correctly without imposing substantial cost
+and/or linking elements together with an intrusive d-list.
 *** requires special iterator + sorting of buckets
-** other policies ??
-*** cache hash value with element to reduce cost of equality test
 * iterable_buffer_set
 ** Use of std::string...
 presents issues of object lifetime and ownership which require extra
@@ -185,11 +293,11 @@ configurable?
 Need to convert libbatch to some benchmarking library.
 ** DONE - Move all macro definitions to jrl_macro
 ** DONE Use enable_if + type_traits to constrain the template arguments for asBinary
-* jrl_variadic
-** testing
-*** find a way to add tests for cases that should not compile
-**** extraneous policies
-**** conflicting policies for the same behavior
+* jrl_metaprogram
+** DONE - testing
+*** DONE - find a way to add tests for cases that should not compile
+**** DONE - extraneous policies
+**** DONE - conflicting policies for the same behavior
 * log2int
 ** Convert to C++14
 ** Change name to jrl_log_base2
@@ -205,6 +313,11 @@ Allow users to choose some other implementation such as Boost logging?
 This opens a big can of worms, requiring the addition of an admin
 server.  Should obviously be controlled by conditional compilation.
 Investigate extant solutions to this problem.
+** support function trace logging
+use __func__ standard macro along with name demangling
+*** interface should look something like:
+TRACE_FUNC(arg1, arg2, arg3, ...)
+**** also need a variadic function template or crazy macro hax
 ** Use static buffers to allow logging in low memory conditions
 * unitsafe
 ** Change name to jrl_unitsafe?
@@ -218,6 +331,7 @@ Works in test code but not pcbfixturing.
 * additions
 * project level modifications
 ** DONE - Move all test code to a separate directory
+** remove extraneous prefix underscore characters
 ** Convert to C++14
 log2int
 logging
