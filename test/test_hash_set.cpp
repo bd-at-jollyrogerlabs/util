@@ -34,7 +34,7 @@
  *
  */
 
-#include <iostream> // @todo
+#include <iostream> // @todo remove this eventually
 #include <string>
 
 #include "hash_set"
@@ -49,80 +49,170 @@ using IntHashSet = hash_set<int>;
 
 using StrHashSet = hash_set<string>;
 
-template<typename SetType>
+
+// ********** tests of basic functionality **********
+
+/**
+ * check that an empty set object works correctly
+ */
+template<typename SetContainerType>
 void
 empty_set_tests()
 {
-  SetType st;
+  SetContainerType st;
   REQUIRE(st.empty());
   REQUIRE(0 == st.size());
-  REQUIRE(st.end() == st.begin());
+  REQUIRE(end(st) == st.begin());
   REQUIRE(st.cend() == st.cbegin());
 }
 
-TEST_CASE("empty set tests", "[hash_set]")
+TEST_CASE("empty integer set test", "[hash_set]")
 {
   empty_set_tests<IntHashSet>();
-  empty_set_tests<StrHashSet>();
 }
 
-template<typename SetType>
-void
-insert_find_count_tests(const typename SetType::value_type &val1,
-			const typename SetType::value_type &val2)
+TEST_CASE("empty string set test", "[hash_set]")
 {
-  SetType st;
-  const auto result = st.insert(val1);
-  REQUIRE(result.second);
+  empty_set_tests<IntHashSet>();
+}
+
+// @todo break these apart into separate test cases
+template<typename SetContainerType, typename InsertOrEmplaceType>
+void
+basic_tests(const typename SetContainerType::value_type &val1,
+	    const typename SetContainerType::value_type &val2,
+	    InsertOrEmplaceType insOrEmp)
+{
+  assert(val1 != val2);
+  using ValType = typename SetContainerType::value_type;
+  SetContainerType st;
+  // test insert()/emplace()
+  {
+    // make a copy of val1 to avoid having it be replaced in a move
+    ValType tmp(val1);
+    REQUIRE(0 == st.size());
+    const auto result = insOrEmp(st, move(tmp));
+    // NOTE: val1 should not be used after move
+    REQUIRE(result.second);
+    REQUIRE(1 == st.size());
+  }
+  {
+    // make a copy of val1 to avoid having it be replaced in a move
+    ValType tmp(val1);
+    const auto result = insOrEmp(st, move(tmp));
+    REQUIRE(!result.second);
+    REQUIRE(val1 == *(result.first));
+    REQUIRE(1 == st.size());
+  }
+  // test find() on previously added value
   {
     const auto entry = st.find(val1);
-    REQUIRE(st.end() != entry);
+    REQUIRE(end(st) != entry);
     REQUIRE(!st.empty());
     REQUIRE(1 == st.size());
     REQUIRE(st.count(val1));
   }
+  // test find() on a value known not to be in the set
   {
     const auto entry = st.find(val2);
-    REQUIRE(st.end() == entry);
+    REQUIRE(end(st) == entry);
     REQUIRE(0 == st.count(val2));
   }
-}
-
-TEST_CASE("insert and find tests", "[hash_set]")
-{
-  insert_find_count_tests<IntHashSet>(0, 1);
-  insert_find_count_tests<StrHashSet>("zero", "one");
-}
-
-template<typename SetType>
-void
-emplace_find_count_tests(const typename SetType::value_type &val1,
-			 const typename SetType::value_type &val2)
-{
-  typename SetType::value_type lVal1 = val1;
-  SetType st;
-  const auto result = st.emplace(std::move(lVal1));
-  REQUIRE(result.second);
+  // test erase() on previously added value
   {
-    const auto entry = st.find(val1);
-    REQUIRE(st.end() != entry);
+    const auto count = st.erase(val1);
+    REQUIRE(1 == count);
+    REQUIRE(st.empty());
+    REQUIRE(0 == st.size());
+    REQUIRE(0 == st.count(val1));
+  }
+  // test erase() on a value known not to be in the set
+  {
+    const auto count = st.erase(val2);
+    REQUIRE(0 == count);
+    REQUIRE(0 == st.count(val2));
+  }
+  // test erase() called on an iterator
+  {
+    // make a copy to move from
+    ValType tmp(val1);
+    const auto result = insOrEmp(st, move(tmp));
+    // NOTE: tmp should not be used after move
+    REQUIRE(result.second);
+    const auto entry(result.first);
+    REQUIRE(end(st) != entry);
     REQUIRE(!st.empty());
     REQUIRE(1 == st.size());
     REQUIRE(st.count(val1));
+    const auto next_entry = st.erase(entry);
+    REQUIRE(end(st) == next_entry);
+    REQUIRE(st.empty());
+    REQUIRE(0 == st.size());
+    REQUIRE(0 == st.count(val1));
   }
+  // test clear()
   {
-    const auto entry = st.find(val2);
-    REQUIRE(st.end() == entry);
-    REQUIRE(0 == st.count(val2));
+    ValType tmp(val1);
+    const auto result = insOrEmp(st, move(tmp));
+    // NOTE: tmp should not be used after move
+    REQUIRE(result.second);
+    const auto entry(result.first);
+    REQUIRE(end(st) != entry);
+    REQUIRE(!st.empty());
+    REQUIRE(1 == st.size());
+    REQUIRE(st.count(val1));
+    st.clear();
+    REQUIRE(st.empty());
+    REQUIRE(0 == st.size());
+    REQUIRE(0 == st.count(val1));
   }
 }
 
-TEST_CASE("emplace and find tests", "[hash_set]")
+template<typename HashSetType>
+class Inserter
 {
-  emplace_find_count_tests<IntHashSet>(0, 1);
-  emplace_find_count_tests<StrHashSet>("zero", "one");
+public:
+  auto
+  operator()(HashSetType &st, const typename HashSetType::value_type &val)
+  {
+    return st.insert(val);
+  }
+};
+
+template<typename HashSetType>
+class Emplacer
+{
+public:
+  auto
+  operator()(HashSetType &st, typename HashSetType::value_type &&val)
+  {
+    return st.emplace(move(val));
+  }
+};
+
+TEST_CASE("basic integer insertion tests", "[hash_set]")
+{
+  basic_tests<IntHashSet>(0, 1, Inserter<IntHashSet>());
 }
 
+TEST_CASE("basic string insertion tests", "[hash_set]")
+{
+  basic_tests<StrHashSet>("zero", "one", Inserter<StrHashSet>());
+}
+
+TEST_CASE("basic integer emplacement tests", "[hash_set]")
+{
+  basic_tests<IntHashSet>(0, 1, Emplacer<IntHashSet>());
+}
+
+TEST_CASE("basic string emplacement tests", "[hash_set]")
+{
+  basic_tests<StrHashSet>("zero", "one", Emplacer<StrHashSet>());
+}
+
+/**
+ * check that basic iteration works correctly
+ */
 template<typename ContainedType>
 void
 iteration_tests(const vector<ContainedType> &vec)
@@ -141,51 +231,24 @@ iteration_tests(const vector<ContainedType> &vec)
 using IntVec = vector<int>;
 using StrVec = vector<string>;
 
-TEST_CASE("iteration tests", "[hash_set]")
+TEST_CASE("integer iteration tests", "[hash_set]")
 {
   iteration_tests(IntVec{0, 1, 2, 3, 4});
+}
+
+TEST_CASE("string iteration tests", "[hash_set]")
+{
   iteration_tests(StrVec{"zero", "one", "two", "three", "four"});
 }
 
-/**
- * Simple hash calculation function for strings used to test
- * free_function_hash_policy.
- */
-size_t
-test_string_hash_function(const string &key) noexcept
+namespace key_extraction_unit_tests
 {
-  THROW_ON_FAIL(key.size() <= sizeof(size_t), runtime_error,
-		"weird_string_hash_function received a key [" << key
-		<< "] that was larger than the limit of " << sizeof(size_t));
-  size_t result = 0;
-  for (size_t idx = 0; (idx < key.size()) && (idx <= sizeof(result)); ++idx) {
-    result += static_cast<size_t>(key[idx]);
-    result <<= 1;
-  }
-  return result;
-}
+
+// ********** support code for testing key extraction and predicate **********
 
 /**
- * Hash function policy class for test_string_hash_function.
- */
-struct test_string_hash_function_policy
-  : public free_function_hash_policy<test_string_hash_function_policy>
-{
-  static inline size_t
-  hash(const string &key) noexcept
-  {
-    return test_string_hash_function(key);
-  }
-};
-
-TEST_CASE("insert and find tests for custom hash function", "[hash_set]")
-{
-  using DemoHashSet = hash_set<string, test_string_hash_function_policy>;
-  insert_find_count_tests<DemoHashSet>("zero", "one");
-}
-
-/**
- * Simple class for testing key extraction.
+ * Simple class for testing key extraction, key can be either an int
+ * or a string.
  */
 struct TestType
 {
@@ -253,6 +316,8 @@ struct TestType
     move_assign_count = 0;
   }
 
+  // static variables used to verify that appropriate constructors are
+  // being called
   static unsigned arg_construct_count;
   static unsigned copy_construct_count;
   static unsigned copy_assign_count;
@@ -269,6 +334,21 @@ unsigned TestType::copy_assign_count = 0;
 unsigned TestType::move_construct_count = 0;
 unsigned TestType::move_assign_count = 0;
 
+inline bool
+operator!=(const TestType &lhs, const TestType &rhs)
+{
+  return (lhs.i_val != rhs.i_val) || (lhs.s_val != rhs.s_val);
+}
+
+inline bool
+operator==(const TestType &lhs, const TestType &rhs)
+{
+  return !(lhs != rhs);
+}
+
+/**
+ * Custom policy for treating the int value of TestType as the key.
+ */
 struct IntKey : public key_extractor_tag
 {
   template<typename ValueType>
@@ -296,6 +376,9 @@ struct IntKey : public key_extractor_tag
   };
 };
 
+/**
+ * Custom policy for treating the string value of TestType as the key.
+ */
 struct StrKey : public key_extractor_tag
 {
   template<typename ValueType>
@@ -323,11 +406,18 @@ struct StrKey : public key_extractor_tag
   };
 };
 
-template<typename KeyRetrievalType>
+// @todo consolidate key_retrieval_tests and forwarding_emplace_tests,
+// probably need to consolidate forwarding_emplace_tests arguments
+// arrays and throw in some functor types to grease the wheels.
+
+/**
+ * check that key retrieval works correctly
+ */
+template<typename KeyRetrievalType, typename... ParamPack>
 void
 key_retrieval_tests(const vector<TestType> &vec)
 {
-  using HashSet = hash_set<TestType, KeyRetrievalType>;
+  using HashSet = hash_set<TestType, KeyRetrievalType, ParamPack...>;
   using ReboundExtractorType = typename KeyRetrievalType::template rebind<TestType>;
   using KeyType = typename ReboundExtractorType::key_type;
   using OtherType = typename conditional<is_same<KeyType, string>::value, string, int>::type;
@@ -343,7 +433,7 @@ key_retrieval_tests(const vector<TestType> &vec)
   REQUIRE(0 == TestType::move_construct_count);
   REQUIRE(0 == TestType::move_assign_count);
   for (const auto &value : vec) {
-    const auto entry = st.find(value);
+    const auto entry = st.find(ReboundExtractorType::get_key(value));
     REQUIRE(st.end() != entry);
     OtherType other1, other2;
     entry->get(other1);
@@ -352,20 +442,63 @@ key_retrieval_tests(const vector<TestType> &vec)
   }
 }
 
-TEST_CASE("key retrieval", "[hash_set]")
+template<typename HashSetType>
+void
+emplace_hint_tests(typename HashSetType::value_type &&val)
 {
-  vector<TestType> vec{ {0, "zero"}, {1, "one"}, {2, "two"}, {3, "three"} };
-  TestType::clear();
-  key_retrieval_tests<IntKey>(vec);
-  TestType::clear();
-  key_retrieval_tests<StrKey>(vec);
+  HashSetType st;
+  typename HashSetType::value_type tmp(val);
+  st.emplace_hint(st.cbegin(), move(tmp));
+  // NOTE: tmp is now invalid
+  REQUIRE(end(st) != st.find(val));
+  const auto entry = st.find(val);
+  REQUIRE(*entry == val);
 }
 
-template<typename KeyRetrievalType>
+TEST_CASE("integer emplace_hint tests", "[hash_set]")
+{
+  int val1 = 0;
+  emplace_hint_tests<IntHashSet>(move(val1));
+}
+
+TEST_CASE("string emplace_hint test", "[hash_set]")
+{
+  string val2 = "zero";
+  emplace_hint_tests<StrHashSet>(move(val2));
+}
+
+TEST_CASE("emplace_hint tests for partially ordered types", "[hash_set]")
+{
+# define VAL1_ARGS 0, "zero"
+# define VAL2_ARGS 0, "ZERO"
+  using HashSet = hash_set<TestType, IntKey>;
+  using Extractor = typename IntKey::template rebind<TestType>;
+  HashSet st;
+  const TestType val1(VAL1_ARGS);
+  const TestType val2(VAL2_ARGS);
+  REQUIRE(val1 != val2);
+  auto entry = st.emplace_hint(st.cend(), VAL1_ARGS);
+  REQUIRE(end(st) != entry);
+  REQUIRE(*entry == val1);
+  REQUIRE(1 == st.size());
+  REQUIRE(1 == st.count(Extractor::get_key(val1)));
+  entry = st.emplace_hint(st.cend(), VAL2_ARGS);
+  REQUIRE(end(st) != entry);
+  REQUIRE(*entry == val2);
+  REQUIRE(1 == st.size());
+  REQUIRE(1 == st.count(Extractor::get_key(val2)));
+# undef VAL1_ARGS
+# undef VAL2_ARGS
+}
+
+/**
+ * check that emplace with perfect forwarding works correctly
+ */
+template<typename KeyRetrievalType, typename... ParamPack>
 void
 forwarding_emplace_tests(const vector<int> &iVec, const vector<string> &sVec)
 {
-  using HashSet = hash_set<TestType, KeyRetrievalType>;
+  using HashSet = hash_set<TestType, KeyRetrievalType, ParamPack...>;
   using ReboundExtractorType = typename KeyRetrievalType::template rebind<TestType>;
   using KeyType = typename ReboundExtractorType::key_type;
   using OtherType = typename conditional<is_same<KeyType, string>::value, string, int>::type;
@@ -384,7 +517,7 @@ forwarding_emplace_tests(const vector<int> &iVec, const vector<string> &sVec)
   REQUIRE(0 == TestType::move_assign_count);
   for (size_t idx = 0; idx < iVec.size(); ++idx) {
     const TestType value(iVec[idx], sVec[idx]);
-    const auto entry = st.find(value);
+    const auto entry = st.find(ReboundExtractorType::get_key(value));
     REQUIRE(st.end() != entry);
     OtherType other1, other2;
     entry->get(other1);
@@ -393,21 +526,175 @@ forwarding_emplace_tests(const vector<int> &iVec, const vector<string> &sVec)
   }
 }
 
-TEST_CASE("emplacement with perfect forwarding", "[hash_set]")
+// ********** key retrieval unit tests **********
+
+TEST_CASE("internal integer key retrieval tests", "[hash_set]")
+{
+  vector<TestType> vec{ {0, "zero"}, {1, "one"}, {2, "two"}, {3, "three"} };
+  TestType::clear();
+  key_retrieval_tests<IntKey>(vec);
+}
+
+TEST_CASE("internal string key retrieval tests", "[hash_set]")
+{
+  vector<TestType> vec{ {0, "zero"}, {1, "one"}, {2, "two"}, {3, "three"} };
+  TestType::clear();
+  key_retrieval_tests<StrKey>(vec);
+}
+
+TEST_CASE("internal integer key emplacement with perfect forwarding", "[hash_set]")
 {
   vector<int> iVec{ 0, 1, 2, 3 };
   vector<string>sVec{ "zero", "one", "two", "three" };
   TestType::clear();
   forwarding_emplace_tests<IntKey>(iVec, sVec);
+}
+
+TEST_CASE("internal string key emplacement with perfect forwarding", "[hash_set]")
+{
+  vector<int> iVec{ 0, 1, 2, 3 };
+  vector<string>sVec{ "zero", "one", "two", "three" };
   TestType::clear();
   forwarding_emplace_tests<StrKey>(iVec, sVec);
 }
 
-namespace
+} // namespace key_extraction_unit_tests
+
+namespace predicate_and_custom_hash_function_unit_tests
 {
-// NOTE: this value should be kept in sync with the threshold value in
-// the default rehash policy
-const float MAX_LOAD_FACTOR = 1.5;
+
+// ********** support code for testing custom predicate + hash function **********
+
+// NOTE: if it is reasonable for a key type to have a non-trivial
+// custom predicate, then it is unlikely for std::hash to work
+// correctly for that type; as a result, custom predicate will
+// generally imply custom hash function and the combination is tested
+// here.
+
+using key_extraction_unit_tests::TestType;
+
+/**
+ * Simple hash calculation function for TestType used to test
+ * free_function_hash_policy.
+ */
+size_t
+test_type_hash_function(const TestType &key) noexcept
+{
+  return (hash<int>()(key.i_val) << 1) ^ hash<string>()(key.s_val);
+}
+
+/**
+ * Hash function policy class for test_type_hash_function.
+ */
+MAKE_FREE_FUNCTION_HASH_POLICY(test_type_hash_function_policy, size_t,
+			       test_type_hash_function, TestType);
+
+/**
+ * Custom policy for predicate
+ */
+struct both_equals_predicate : public predicate_tag
+{
+  template<typename DummyType>
+  struct rebind
+  {
+    static_assert(is_same<DummyType, TestType>::value,
+		  "rebind class template should only be passed TestType for "
+		  "both_equals_predicate" /*" but received " + typeid(DummyType).name()*/);
+    bool
+    operator()(const TestType &lhs, const TestType &rhs) const
+    {
+      int lhsInt;
+      int rhsInt;
+      lhs.get(lhsInt);
+      rhs.get(rhsInt);
+      string lhsStr;
+      string rhsStr;
+      lhs.get(lhsStr);
+      rhs.get(rhsStr);
+      return ((lhsInt == rhsInt) && (lhsStr == rhsStr));
+    }
+  };
+};
+
+// ********** custom predicate + custom hash function unit tests **********
+
+TEST_CASE("predicate and custom hash function insert tests", "[hash_set]")
+{
+  // specialized type under test is TestType where the entire object
+  // is the key and both_equals_predicate is the predicate.
+  using TestTypeSet = hash_set<TestType, both_equals_predicate,
+			       test_type_hash_function_policy>;
+
+  TestType v0(0, "zero");
+  TestType v1(1, "one");
+  basic_tests<TestTypeSet>(move(v0), move(v1), Inserter<TestTypeSet>());
+}
+
+TEST_CASE("predicate and custom hash function emplace tests", "[hash_set]")
+{
+  // specialized type under test is TestType where the entire object
+  // is the key and both_equals_predicate is the predicate.
+  using TestTypeSet = hash_set<TestType, both_equals_predicate,
+			       test_type_hash_function_policy>;
+
+  TestType v0(0, "zero");
+  TestType v1(1, "one");
+  basic_tests<TestTypeSet>(move(v0), move(v1), Emplacer<TestTypeSet>());
+}
+
+} // namespace predicate_and_custom_hash_function_unit_tests
+
+namespace custom_hash_function_unit_tests
+{
+
+// ********** support code for testing custom hash functions **********
+
+/**
+ * Simple hash calculation function for strings used to test
+ * free_function_hash_policy.
+ */
+size_t
+test_string_hash_function(const string &key) noexcept
+{
+  THROW_ON_FAIL(key.size() <= sizeof(size_t), runtime_error,
+		"weird_string_hash_function received a key [" << key
+		<< "] that was larger than the limit of " << sizeof(size_t));
+  size_t result = 0;
+  for (size_t idx = 0; (idx < key.size()) && (idx <= sizeof(result)); ++idx) {
+    result += static_cast<size_t>(key[idx]);
+    result <<= 1;
+  }
+  return result;
+}
+
+/**
+ * Hash function policy class for test_string_hash_function.
+ */
+MAKE_FREE_FUNCTION_HASH_POLICY(test_string_hash_function_policy, size_t,
+			       test_string_hash_function, string);
+
+// ********** custom hash function unit tests **********
+
+TEST_CASE("insert and find tests for custom hash function", "[hash_set]")
+{
+  using DemoHashSet = hash_set<string, test_string_hash_function_policy>;
+  basic_tests<DemoHashSet>("zero", "one", Inserter<DemoHashSet>());
+}
+
+// @todo verify that std::hash<std::string> produces results that are
+// radically different from test_string_hash_function and then add a
+// test case to verify that at least some of the assigned buckets are
+// different when inserting a list of string values into both an
+// instance of hash_set<string> and an instance of
+// hash_set<string, test_string_hash_function_policy>
+
+} // namespace custom_hash_function_unit_tests
+
+namespace rehash_unit_tests
+{
+
+// ********** constants and support code for testing rehash **********
+
 const size_t TERMINATION_MULT = 10;
 const bool DO_MASK_CHECK = true;
 
@@ -489,38 +776,6 @@ rehash_tests(const float maxLoadFactor,
   }
 }
 
-} // unnamed namespace
-
-TEST_CASE("test of default rehash policy for insert operation", "[hash_set]")
-{
-  using HashSet = hash_set<size_t>;
-  rehash_tests<HashSet>(MAX_LOAD_FACTOR,
-			[](HashSet &h, size_t val) {
-			  h.insert(val);
-			});
-}
-
-TEST_CASE("test of default rehash policy for emplace operation", "[hash_set]")
-{
-  using HashSet = hash_set<size_t>;
-  rehash_tests<HashSet>(MAX_LOAD_FACTOR,
-			[](HashSet &h, size_t val) {
-			  h.emplace(move(val));
-			});
-}
-
-TEST_CASE("test combination of 'power of two' table size and trivial hash "
-	  "function", "[hash_set]")
-{
-  using HashSet = hash_set<size_t, power_of_two_length_table_policy,
-			   trivial_hash_policy>;
-  rehash_tests<HashSet,
-	       DO_MASK_CHECK>(MAX_LOAD_FACTOR,
-			      [](HashSet &h, size_t val) {
-				h.insert(val);
-			      });
-}
-
 /**
  * Custom rehash threshold policy with threshold value of 1.0.
  */
@@ -534,16 +789,50 @@ struct ThresholdOneRehashPolicy
   }
 };
 
-string
-strConv(const size_t arg)
+// ********** rehash unit tests **********
+
+TEST_CASE("test of default rehash policy for insert operation", "[hash_set]")
 {
-  return to_string(arg);
+  using HashSet = hash_set<size_t>;
+  rehash_tests<HashSet>(default_rehash_policy::get_threshold(),
+			[](HashSet &h, size_t val) {
+			  h.insert(val);
+			});
+}
+
+TEST_CASE("test of default rehash policy for emplace operation", "[hash_set]")
+{
+  using HashSet = hash_set<size_t>;
+  rehash_tests<HashSet>(default_rehash_policy::get_threshold(),
+			[](HashSet &h, size_t val) {
+			  h.emplace(move(val));
+			});
+}
+
+TEST_CASE("test of default rehash policy for emplace_hint operation", "[hash_set]")
+{
+  using HashSet = hash_set<size_t>;
+  rehash_tests<HashSet>(default_rehash_policy::get_threshold(),
+			[](HashSet &h, size_t val) {
+			  h.emplace_hint(h.cend(), move(val));
+			});
+}
+
+TEST_CASE("test combination of 'power of two' table size and trivial hash "
+	  "function", "[hash_set]")
+{
+  using HashSet = hash_set<size_t, power_of_two_length_table_policy,
+			   trivial_hash_policy>;
+  rehash_tests<HashSet,
+	       DO_MASK_CHECK>(default_rehash_policy::get_threshold(),
+			      [](HashSet &h, size_t val) {
+				h.insert(val);
+			      });
 }
 
 TEST_CASE("test of custom rehash threshold value 1.0", "[hash_set]")
 {
   using HashSet = hash_set<string, ThresholdOneRehashPolicy>;
-  auto func = function<string(const size_t)>(strConv);
   rehash_tests<HashSet>(1.0,
 			[](HashSet &h, string val) {
 			  h.insert(move(val));
@@ -562,4 +851,31 @@ TEST_CASE("test of no_rehash_policy", "[hash_set]")
   }
 }
 
-// @todo test that swap produces the correct results for hasher_ and table_style_
+} // namespace rehash_unit_tests
+
+namespace bucket_container_type_unit_tests
+{
+
+using BucketListHashSet = hash_set<int, std_list_bucket_container_policy>;
+
+TEST_CASE("basic tests for list bucket container policy", "[hash_set]")
+{
+  empty_set_tests<BucketListHashSet>();
+  basic_tests<BucketListHashSet>(0, 1, Inserter<BucketListHashSet>());
+  basic_tests<BucketListHashSet>(0, 1, Emplacer<BucketListHashSet>());
+}
+
+// @todo add tests of custom bucket container policy
+
+} // namespace bucket_container_type_unit_tests
+
+// @todo test that swap produces the correct results for stateful data
+// members
+
+// @todo test predicate policy
+
+// @todo erase() test case: erase the last entry in the map where it
+// is known that this entry is also the only entry in the last bucket
+
+// @todo test the case where a key cannot be extracted from
+// constructor arguments
