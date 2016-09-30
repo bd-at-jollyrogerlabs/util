@@ -122,6 +122,23 @@ struct policy_bind_counter<>
   static const unsigned value = 0;
 };
 
+/**
+ * Remove the const-ness from an argument.
+ */
+template<typename ContainerType>
+inline typename ContainerType::iterator
+remove_iterator_constness(ContainerType &container,
+			  typename ContainerType::const_iterator itr)
+{
+  // NOTE: nice little hack to remove const-ness from an iterator
+  // given access to its associated container; since second argument
+  // to the range version of erase() specifies ONE PAST the end of the
+  // range, passing the same iterator for both arguments will not
+  // erase any elements, but the member function always returns a
+  // non-const iterator.
+  return container.erase(itr, itr);
+}
+
 } // namespace jrl
 
 #endif // JRL_METAPROGRAM_GUARD
