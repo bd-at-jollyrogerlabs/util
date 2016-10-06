@@ -42,3 +42,5 @@ units_usability
 /test_stack_allocator
 /test_hash_set
 /Makefile
+/cmdline
+/test_hash_map
