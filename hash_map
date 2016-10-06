@@ -1,0 +1,101 @@
+/** -*- mode: c++ -*-
+ *
+ * hash_map
+ *
+ * Highly configurable hash map implementation with an interface that
+ *  is compatible with std::unordered_map.
+ *
+ * Copyright (C) 2015 Brian Davis
+ * All Rights Reserved
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Author: Brian Davis <bd@jollyrogerlabs.com>
+ *
+ */
+
+#if !defined(JRL_UTIL_HASH_MAP_GUARD)
+#define JRL_UTIL_HASH_MAP_GUARD 1
+
+#include <hash_set>
+
+namespace jrl
+{
+
+template<typename KeyType, typename MappedType, typename... Policies>
+class hash_map
+  : public hash_set<std::pair<KeyType, MappedType>,
+		    pair_first_element_key_extractor_policy,
+		    Policies...>
+{
+  using ParentType = hash_set<std::pair<KeyType, MappedType>,
+			      pair_first_element_key_extractor_policy,
+			      Policies...>;
+
+public:
+  using key_type = KeyType;
+  using value_type = std::pair<KeyType, MappedType>;
+  using mapped_type = MappedType;
+  using iterator = typename ParentType::iterator;
+  using const_iterator = typename ParentType::const_iterator;
+
+  mapped_type &
+  operator[](const key_type &key)
+  {
+    auto entry = ParentType::find(key);
+    if (ParentType::end() == entry) {
+      auto emplaced =
+	ParentType::emplace_internal(true /* overwrite existing */,
+				     std::move(std::make_pair(key, mapped_type())));
+      entry = emplaced.first;
+    }
+    return entry->second;
+  }
+
+  // mapped_type &
+  // operator[](key_type &&key)
+  // {
+  //   // @todo
+  // }
+
+  mapped_type &
+  at(const key_type &key)
+  {
+    auto entry = ParentType::find(key);
+    THROW_ON_FAIL((ParentType::end() != entry), std::out_of_range, "hash_map::at");
+    return entry->second;
+  }
+
+  const mapped_type &
+  at(const key_type &key) const
+  {
+    auto entry = ParentType::find(key);
+    THROW_ON_FAIL((ParentType::end() != entry), std::out_of_range, "hash_map::at");
+    return entry->second;
+  }
+};
+
+} // namespace jrl
+
+#endif // JRL_UTIL_HASH_MAP_GUARD
