@@ -43,6 +43,9 @@
 #define SELECTIVE_CONST(IsConst, BaseType) \
   typename std::conditional<IsConst, const BaseType, BaseType>::type
 
+#define SELECT_TYPE(condition, TypeIfTrue, TypeIfFalse) \
+  std::conditional<condition, TypeIfTrue, TypeIfFalse>::type
+
 /**
  * Define the body of a policy binder type that can detect subclasses
  * of a tag type in a parameter pack.
