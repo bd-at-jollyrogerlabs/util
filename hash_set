@@ -647,7 +647,7 @@ public:
   template<bool IsConst>
   class IteratorImpl
     : public boost::iterator_facade<IteratorImpl<IsConst>,
-				    ValueType,
+				    SELECTIVE_CONST(IsConst, value_type),
 				    std::forward_iterator_tag>
   {
     // type used for the table pointer that is stored in the iterator
