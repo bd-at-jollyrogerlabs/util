@@ -169,7 +169,7 @@ back_emplacer(_Container& __tgt)
   inline ResultType							\
   name(_Container &__container)						\
   {									\
-    return std::name(begin(__container), std::end(__container));	\
+    return std::name(std::begin(__container), std::end(__container));	\
   }
 
 /**
@@ -194,7 +194,7 @@ NO_OP(reverse, void)
   inline ResultType							\
   name(_Container &__container,  _OpOrOut __opOrOut)			\
   {									\
-    return std::name(begin(__container), std::end(__container), __opOrOut); \
+    return std::name(std::begin(__container), std::end(__container), __opOrOut); \
   }
 
 /**
@@ -231,7 +231,7 @@ APPLY_OP(sort, void)
   inline typename _Container::const_iterator				\
   name(const _Container &__container,  _OpOrOut __opOrOut)		\
   {									\
-    return std::name(begin(__container), std::end(__container), __opOrOut); \
+    return std::name(std::begin(__container), std::end(__container), __opOrOut); \
   }
 
 /**
