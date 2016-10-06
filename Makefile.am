@@ -74,8 +74,10 @@ include_HEADERS = \
 	unitsafe
 
 bin_PROGRAMS = \
+	cmdline \
 	test_log2_int \
 	test_boost_usability \
+	test_hash_map \
 	test_hash_set \
 	test_jrl_algorithm \
 	test_jrl_geom \
@@ -101,6 +103,7 @@ AM_TESTS_ENVIRONMENT=export CC=$(CC); export CXX=$(CXX);
 TESTS = \
 	test_log2_int \
 	test_boost_usability \
+	test_hash_map \
 	test_hash_set \
 	test_jrl_algorithm \
 	test_jrl_geom \
@@ -114,11 +117,17 @@ TESTS = \
 	test/extraneous_param.compile_error \
 	test/multiple_match.compile_error
 
+cmdline_SOURCES = \
+	test/cmdline.cpp
+
 test_log2_int_SOURCES = \
 	test/test_log2_int.cpp
 
 test_boost_usability_SOURCES = \
 	test/test_boost_usability.cpp
+
+test_hash_map_SOURCES = \
+	test/test_hash_map.cpp
 
 test_hash_set_SOURCES = \
 	test/test_hash_set.cpp

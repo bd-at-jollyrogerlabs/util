@@ -110,19 +110,20 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = test_log2_int$(EXEEXT) test_boost_usability$(EXEEXT) \
+bin_PROGRAMS = cmdline$(EXEEXT) test_log2_int$(EXEEXT) \
+	test_boost_usability$(EXEEXT) test_hash_map$(EXEEXT) \
 	test_hash_set$(EXEEXT) test_jrl_algorithm$(EXEEXT) \
 	test_jrl_geom$(EXEEXT) test_jrl_macro$(EXEEXT) \
 	test_jrl_metaprogram$(EXEEXT) test_jrl_util$(EXEEXT) \
 	test_logging$(EXEEXT) test_iterable_buffer_set$(EXEEXT) \
 	test_stl_usability$(EXEEXT) test_unitsafe$(EXEEXT)
 TESTS = test_log2_int$(EXEEXT) test_boost_usability$(EXEEXT) \
-	test_hash_set$(EXEEXT) test_jrl_algorithm$(EXEEXT) \
-	test_jrl_geom$(EXEEXT) test_jrl_macro$(EXEEXT) \
-	test_jrl_metaprogram$(EXEEXT) test_jrl_util$(EXEEXT) \
-	test_logging$(EXEEXT) test_iterable_buffer_set$(EXEEXT) \
-	test_stl_usability$(EXEEXT) test_unitsafe$(EXEEXT) \
-	test/extraneous_param.compile_error \
+	test_hash_map$(EXEEXT) test_hash_set$(EXEEXT) \
+	test_jrl_algorithm$(EXEEXT) test_jrl_geom$(EXEEXT) \
+	test_jrl_macro$(EXEEXT) test_jrl_metaprogram$(EXEEXT) \
+	test_jrl_util$(EXEEXT) test_logging$(EXEEXT) \
+	test_iterable_buffer_set$(EXEEXT) test_stl_usability$(EXEEXT) \
+	test_unitsafe$(EXEEXT) test/extraneous_param.compile_error \
 	test/multiple_match.compile_error
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
@@ -145,13 +146,19 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(includedir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_test_boost_usability_OBJECTS = test_boost_usability.$(OBJEXT)
-test_boost_usability_OBJECTS = $(am_test_boost_usability_OBJECTS)
-test_boost_usability_LDADD = $(LDADD)
+am_cmdline_OBJECTS = cmdline.$(OBJEXT)
+cmdline_OBJECTS = $(am_cmdline_OBJECTS)
+cmdline_LDADD = $(LDADD)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+am_test_boost_usability_OBJECTS = test_boost_usability.$(OBJEXT)
+test_boost_usability_OBJECTS = $(am_test_boost_usability_OBJECTS)
+test_boost_usability_LDADD = $(LDADD)
+am_test_hash_map_OBJECTS = test_hash_map.$(OBJEXT)
+test_hash_map_OBJECTS = $(am_test_hash_map_OBJECTS)
+test_hash_map_LDADD = $(LDADD)
 am_test_hash_set_OBJECTS = test_hash_set.$(OBJEXT)
 test_hash_set_OBJECTS = $(am_test_hash_set_OBJECTS)
 test_hash_set_LDADD = $(LDADD)
@@ -221,15 +228,17 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(test_boost_usability_SOURCES) $(test_hash_set_SOURCES) \
+SOURCES = $(cmdline_SOURCES) $(test_boost_usability_SOURCES) \
+	$(test_hash_map_SOURCES) $(test_hash_set_SOURCES) \
 	$(test_iterable_buffer_set_SOURCES) \
 	$(test_jrl_algorithm_SOURCES) $(test_jrl_geom_SOURCES) \
 	$(test_jrl_macro_SOURCES) $(test_jrl_metaprogram_SOURCES) \
 	$(test_jrl_util_SOURCES) $(test_log2_int_SOURCES) \
 	$(test_logging_SOURCES) $(test_stl_usability_SOURCES) \
 	$(test_unitsafe_SOURCES)
-DIST_SOURCES = $(test_boost_usability_SOURCES) \
-	$(test_hash_set_SOURCES) $(test_iterable_buffer_set_SOURCES) \
+DIST_SOURCES = $(cmdline_SOURCES) $(test_boost_usability_SOURCES) \
+	$(test_hash_map_SOURCES) $(test_hash_set_SOURCES) \
+	$(test_iterable_buffer_set_SOURCES) \
 	$(test_jrl_algorithm_SOURCES) $(test_jrl_geom_SOURCES) \
 	$(test_jrl_macro_SOURCES) $(test_jrl_metaprogram_SOURCES) \
 	$(test_jrl_util_SOURCES) $(test_log2_int_SOURCES) \
@@ -650,11 +659,17 @@ TEST_EXTENSIONS = .compile_error
 # H_LOG_COMPILER=./succeed_on_fail.sh
 COMPILE_ERROR_LOG_COMPILER = ./expect_compile_error.sh
 AM_TESTS_ENVIRONMENT = export CC=$(CC); export CXX=$(CXX);
+cmdline_SOURCES = \
+	test/cmdline.cpp
+
 test_log2_int_SOURCES = \
 	test/test_log2_int.cpp
 
 test_boost_usability_SOURCES = \
 	test/test_boost_usability.cpp
+
+test_hash_map_SOURCES = \
+	test/test_hash_map.cpp
 
 test_hash_set_SOURCES = \
 	test/test_hash_set.cpp
@@ -790,9 +805,17 @@ clean-binPROGRAMS:
 	echo " rm -f" $$list; \
 	rm -f $$list
 
+cmdline$(EXEEXT): $(cmdline_OBJECTS) $(cmdline_DEPENDENCIES) $(EXTRA_cmdline_DEPENDENCIES) 
+	@rm -f cmdline$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(cmdline_OBJECTS) $(cmdline_LDADD) $(LIBS)
+
 test_boost_usability$(EXEEXT): $(test_boost_usability_OBJECTS) $(test_boost_usability_DEPENDENCIES) $(EXTRA_test_boost_usability_DEPENDENCIES) 
 	@rm -f test_boost_usability$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(test_boost_usability_OBJECTS) $(test_boost_usability_LDADD) $(LIBS)
+
+test_hash_map$(EXEEXT): $(test_hash_map_OBJECTS) $(test_hash_map_DEPENDENCIES) $(EXTRA_test_hash_map_DEPENDENCIES) 
+	@rm -f test_hash_map$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(test_hash_map_OBJECTS) $(test_hash_map_LDADD) $(LIBS)
 
 test_hash_set$(EXEEXT): $(test_hash_set_OBJECTS) $(test_hash_set_DEPENDENCIES) $(EXTRA_test_hash_set_DEPENDENCIES) 
 	@rm -f test_hash_set$(EXEEXT)
@@ -844,7 +867,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmdline.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_boost_usability.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_hash_map.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_hash_set.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_iterable_buffer_set.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_jrl_algorithm.Po@am__quote@
@@ -878,6 +903,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LTCXXCOMPILE) -c -o $@ $<
 
+cmdline.o: test/cmdline.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT cmdline.o -MD -MP -MF $(DEPDIR)/cmdline.Tpo -c -o cmdline.o `test -f 'test/cmdline.cpp' || echo '$(srcdir)/'`test/cmdline.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cmdline.Tpo $(DEPDIR)/cmdline.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/cmdline.cpp' object='cmdline.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o cmdline.o `test -f 'test/cmdline.cpp' || echo '$(srcdir)/'`test/cmdline.cpp
+
+cmdline.obj: test/cmdline.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT cmdline.obj -MD -MP -MF $(DEPDIR)/cmdline.Tpo -c -o cmdline.obj `if test -f 'test/cmdline.cpp'; then $(CYGPATH_W) 'test/cmdline.cpp'; else $(CYGPATH_W) '$(srcdir)/test/cmdline.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cmdline.Tpo $(DEPDIR)/cmdline.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/cmdline.cpp' object='cmdline.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o cmdline.obj `if test -f 'test/cmdline.cpp'; then $(CYGPATH_W) 'test/cmdline.cpp'; else $(CYGPATH_W) '$(srcdir)/test/cmdline.cpp'; fi`
+
 test_boost_usability.o: test/test_boost_usability.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_boost_usability.o -MD -MP -MF $(DEPDIR)/test_boost_usability.Tpo -c -o test_boost_usability.o `test -f 'test/test_boost_usability.cpp' || echo '$(srcdir)/'`test/test_boost_usability.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_boost_usability.Tpo $(DEPDIR)/test_boost_usability.Po
@@ -891,6 +930,20 @@ test_boost_usability.obj: test/test_boost_usability.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_boost_usability.cpp' object='test_boost_usability.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_boost_usability.obj `if test -f 'test/test_boost_usability.cpp'; then $(CYGPATH_W) 'test/test_boost_usability.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_boost_usability.cpp'; fi`
+
+test_hash_map.o: test/test_hash_map.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_hash_map.o -MD -MP -MF $(DEPDIR)/test_hash_map.Tpo -c -o test_hash_map.o `test -f 'test/test_hash_map.cpp' || echo '$(srcdir)/'`test/test_hash_map.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_hash_map.Tpo $(DEPDIR)/test_hash_map.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_hash_map.cpp' object='test_hash_map.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_hash_map.o `test -f 'test/test_hash_map.cpp' || echo '$(srcdir)/'`test/test_hash_map.cpp
+
+test_hash_map.obj: test/test_hash_map.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_hash_map.obj -MD -MP -MF $(DEPDIR)/test_hash_map.Tpo -c -o test_hash_map.obj `if test -f 'test/test_hash_map.cpp'; then $(CYGPATH_W) 'test/test_hash_map.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_hash_map.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_hash_map.Tpo $(DEPDIR)/test_hash_map.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/test_hash_map.cpp' object='test_hash_map.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_hash_map.obj `if test -f 'test/test_hash_map.cpp'; then $(CYGPATH_W) 'test/test_hash_map.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test_hash_map.cpp'; fi`
 
 test_hash_set.o: test/test_hash_set.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_hash_set.o -MD -MP -MF $(DEPDIR)/test_hash_set.Tpo -c -o test_hash_set.o `test -f 'test/test_hash_set.cpp' || echo '$(srcdir)/'`test/test_hash_set.cpp
@@ -1286,6 +1339,13 @@ test_log2_int.log: test_log2_int$(EXEEXT)
 test_boost_usability.log: test_boost_usability$(EXEEXT)
 	@p='test_boost_usability$(EXEEXT)'; \
 	b='test_boost_usability'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_hash_map.log: test_hash_map$(EXEEXT)
+	@p='test_hash_map$(EXEEXT)'; \
+	b='test_hash_map'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
