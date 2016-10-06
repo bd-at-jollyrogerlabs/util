@@ -879,3 +879,11 @@ TEST_CASE("basic tests for list bucket container policy", "[hash_set]")
 
 // @todo test the case where a key cannot be extracted from
 // constructor arguments
+
+// @todo add test of reserve(): start with an empty set, add elements
+// until a rehash is detected, create a new empty set, reserve rehash
+// count + 2 elements, add rehash count + 1 elements, require that no
+// rehash has occurred
+
+// @todo test the case where a value is not move constructable or move
+// assignable
