@@ -145,8 +145,13 @@ struct pair_first_element_key_extractor_policy
   template<typename ValueType>
   struct rebind
   {
-    using key_type = ValueType;
+    using key_type = typename ValueType::first_type;
 
+    // @todo in order for this implementation to work correctly, the
+    // ValueType instance must continue to own the key, i.e. it must
+    // not be the case that the key must be constructed based on the
+    // ValueType and then held separate from it; this requirement must
+    // be documented
     template<typename MappedType>
     static const key_type &
     get_key(const std::pair<key_type, MappedType> &arg) noexcept
@@ -687,9 +692,9 @@ public:
     }
 
   private:
-    friend class hash_set<ValueType, Policies...>;
+    friend class hash_set<value_type, Policies...>;
     friend class boost::iterator_core_access;
-    using Type = IteratorImpl<IsConst>;
+    using type = IteratorImpl<IsConst>;
 
 #   define SANITY_CHECK()					\
     do {							\
@@ -724,11 +729,11 @@ public:
 	return;
       }
       // no valid entries remaining
-      *this = Type();
+      *this = type();
     }
 
     bool
-    equal(const Type &that) const
+    equal(const type &that) const
     {
       SANITY_CHECK();
       return (table_ == that.table_) &&
@@ -738,10 +743,18 @@ public:
 
 #   undef SANITY_CHECK
 
-    ValueType &
-    dereference() const
+    value_type &
+    dereference()
     {
       return *bktItr_;
+    }
+
+    // NOTE: safely add const-ness to the result, required since the
+    // result is already const for const_iterator
+    typename std::add_const<value_type &>::type
+    dereference() const
+    {
+      return const_cast<value_type &>(*bktItr_);
     }
 
     size_type
@@ -763,6 +776,8 @@ public:
 
   using iterator = IteratorImpl<false>;
   using const_iterator = IteratorImpl<true>;
+  using local_iterator = typename IteratorImpl<false>::BucketIterator;
+  using const_local_iterator = typename IteratorImpl<true>::BucketIterator;
 
   hash_set()
     : table_(move(make_initial_table())), entry_count_(0)
@@ -882,9 +897,9 @@ public:
   }
 
   std::pair<iterator, bool>
-  insert(const ValueType &value)
+  insert(const value_type &value)
   {
-    auto fiResult = find_internal(Extractor::get_key(value));
+    auto fiResult = find_internal(*this, Extractor::get_key(value));
     {
       auto entry = fiResult.first;
       if (std::end(*this) != entry) {
@@ -892,15 +907,13 @@ public:
 	return std::make_pair(entry, UNSUCCESSFUL_ADD);
       }
     }
-
     // @todo use RAII to restore original state on exception ??
 
     // entry does not yet exist, insert it
-
-    // rehash, if necessary
     const auto new_bucket_count =
       Rehasher::rehash_check(buckets(), size() + 1);
     if (new_bucket_count) {
+      // needs rehash
       return std::make_pair(rehash_internal(*new_bucket_count, value),
 			    SUCCESSFUL_ADD);
     }
@@ -913,35 +926,37 @@ public:
   }
 
   // std::pair<iterator, bool>
-  // insert(ValueType &&value)
+  // insert(value_type &&value)
   // {
   //   // @todo
   // }
 
-  // iterator
-  // insert(const_iterator hint, const ValueType &value)
-  // {
-  //   // @todo
-  // }
+  iterator
+  insert(const_iterator hint, const value_type &value)
+  {
+    return emplace_hint(hint, value);
+  }
 
-  // iterator
-  // insert(const_iterator hint, ValueType &&value)
-  // {
-  //   // @todo
-  // }
+  iterator
+  insert(const_iterator hint, value_type &&value)
+  {
+    return emplacs_hint(hint, std::move(value));
+  }
 
-  // template<typename InputIterator>
-  // void
-  // insert(InputIterator first, InputIterator last)
-  // {
-  //   // @todo
-  // }
+  template<typename InputIterator>
+  void
+  insert(InputIterator first, InputIterator last)
+  {
+    // @todo exception safety ??
+    std::for_each(first, last, [this] (const auto &val) {
+	this->insert(val); });
+  }
 
-  // void
-  // insert(initializer_list<value_type> init)
-  // {
-  //   // @todo
-  // }
+  void
+  insert(std::initializer_list<value_type> init)
+  {
+    insert(std::begin(init), std::end(init));
+  }
 
   iterator
   erase(const const_iterator &pos)
@@ -955,11 +970,11 @@ public:
     return erase_common(pos);
   }
 
-  // @todo unordered_set interface actually takes key_type argument
   size_type
-  erase(const ValueType &val)
+  erase(const key_type &key)
   {
-    auto entry = find(val);
+    auto fiResult = find_internal(*this, key);
+    auto entry = fiResult.first;
     if (end() != entry) {
       // found the element
       entry.tblItr_->erase(entry.bktItr_);
@@ -973,7 +988,7 @@ public:
   // iterator
   // erase(const_iterator first, const_iterator last)
   // {
-  //   // @todo
+  //   // @todo be careful of iterator invalidation
   // }
 
   void
@@ -1006,14 +1021,14 @@ public:
   inline iterator
   find(const key_type &key)
   {
-    auto result = find_internal(key);
+    auto result = find_internal(*this, key);
     return result.first;
   }
 
   inline const_iterator
   find(const key_type &key) const
   {
-    auto result = find_internal(key);
+    auto result = find_internal(*this, key);
     return result.first;
   }
 
@@ -1021,24 +1036,28 @@ public:
   count(const key_type &key) const
   {
     // @todo not suitable for multi set/map
-    auto entry = find_internal(key);
+    auto entry = find_internal(*this, key);
     if (end() == entry.first) {
       return 0;
     }
     return 1;
   }
 
-  // std::pair<iterator, iterator>
-  // equal_range(const key_type &key)
-  // {
-  //   // @todo
-  // }
+  std::pair<iterator, iterator>
+  equal_range(const key_type &key)
+  {
+    // @todo not suitable for multi set/map
+    iterator entry = find(key);
+    return std::make_pair(std::move(entry), std::move(entry));
+  }
 
-  // std::pair<const_iterator, const_iterator>
-  // equal_range(const key_type &key)
-  // {
-  //   // @todo
-  // }
+  std::pair<const_iterator, const_iterator>
+  equal_range(const key_type &key) const
+  {
+    // @todo not suitable for multi set/map
+    const_iterator entry = find(key);
+    return std::make_pair(std::move(entry), std::move(entry));
+  }
 
   inline size_type
   bucket_count() noexcept
@@ -1046,11 +1065,11 @@ public:
     return table_.size();
   }
 
-  // size_type
-  // max_bucket_count() const noexcept
-  // {
-  //   // @todo
-  // }
+  size_type
+  max_bucket_count() const noexcept
+  {
+    return table_.max_size();
+  }
 
   inline size_type
   bucket_size(size_type idx) const
@@ -1059,47 +1078,65 @@ public:
   }
 
   inline size_type
-  bucket(const ValueType &value) const
+  bucket(const value_type &value) const
   {
     return TableLength::hash_to_bucket(Hasher()(Extractor::get_key(value)),
 				       buckets());
   }
 
-  // local_iterator
-  // begin(size_type idx)
-  // {
-  //   // @todo
-  // }
+  // @todo current implementation assumes that it is undefined
+  // behavior to pass an index that exceeds the table size, this
+  // should be checked against the spec for std::unordered_set
+  local_iterator
+  begin(size_type idx)
+  {
+    return table_.at(idx).begin();
+  }
 
-  // const_local_iterator
-  // begin(size_type idx) const
-  // {
-  //   // @todo
-  // }
+  // @todo current implementation assumes that it is undefined
+  // behavior to pass an index that exceeds the table size, this
+  // should be checked against the spec for std::unordered_set
+  const_local_iterator
+  begin(size_type idx) const
+  {
+    return table_.at(idx).begin();
+  }
 
-  // const_local_iterator
-  // cbegin(size_type idx) const
-  // {
-  //   // @todo
-  // }
+  // @todo current implementation assumes that it is undefined
+  // behavior to pass an index that exceeds the table size, this
+  // should be checked against the spec for std::unordered_set
+  const_local_iterator
+  cbegin(size_type idx) const
+  {
+    return table_.at(idx).begin();
+  }
 
-  // local_iterator
-  // end(size_type idx)
-  // {
-  //   // @todo
-  // }
+  // @todo current implementation assumes that it is undefined
+  // behavior to pass an index that exceeds the table size, this
+  // should be checked against the spec for std::unordered_set
+  local_iterator
+  end(size_type idx)
+  {
+    return table_.at(idx).end();
+  }
 
-  // const_local_iterator
-  // end(size_type idx) const
-  // {
-  //   // @todo
-  // }
+  // @todo current implementation assumes that it is undefined
+  // behavior to pass an index that exceeds the table size, this
+  // should be checked against the spec for std::unordered_set
+  const_local_iterator
+  end(size_type idx) const
+  {
+    return table_.at(idx).end();
+  }
 
-  // const_local_iterator
-  // cend(size_type idx) const
-  // {
-  //   // @todo
-  // }
+  // @todo current implementation assumes that it is undefined
+  // behavior to pass an index that exceeds the table size, this
+  // should be checked against the spec for std::unordered_set
+  const_local_iterator
+  cend(size_type idx) const
+  {
+    return table_.at(idx).end();
+  }
 
   inline float
   load_factor() const noexcept
@@ -1116,20 +1153,16 @@ public:
   void
   rehash(const size_type new_bucket_count)
   {
-    auto rehash_check_result =
-      Rehasher::rehash_check(new_bucket_count, size());
-    if ((rehash_check_result) && (buckets() != *rehash_check_result)) {
-      rehash_internal(*rehash_check_result);
-    }
+    rehash_reserve_internal(new_bucket_count, size());
   }
 
-  // void
-  // reserve(size_type sz)
-  // {
-  //   // @todo
-  // }
+  void
+  reserve(size_type sz)
+  {
+    rehash_reserve_internal(buckets(), sz);
+  }
 
-private:
+protected:
   using BucketIterator = typename BucketType::iterator;
   using BucketConstIterator = typename BucketType::const_iterator;
   using TableIterator = typename TableType::iterator;
@@ -1213,41 +1246,29 @@ private:
    *         in the set), and the second being the bucket index
    *         generated by the key.
    */
-  std::pair<const_iterator, size_type>
-  find_internal(const key_type &key) const
+  template<typename HashSetType>
+  static std::pair<typename std::conditional<std::is_const<HashSetType>::value,
+					     const_iterator, iterator>::type,
+		   size_type>
+  find_internal(HashSetType &hashSet, const key_type &key)
   {
-    size_type idx = TableLength::hash_to_bucket(Hasher()(key), buckets());
-    const TableType *table(&table_);
-    auto &bucket(table->at(idx));
+    // alias types as appropriate for the const-ness of the argument hash set
+    using ItrType = typename SELECT_TYPE(std::is_const<HashSetType>::value,
+					 const_iterator, iterator);
+    using TblPtr = typename SELECT_TYPE(std::is_const<HashSetType>::value,
+					 const TableType *, TableType *);
+    using BktType = typename SELECT_TYPE(std::is_const<HashSetType>::value,
+					 const BucketType, BucketType);
+    size_type idx = TableLength::hash_to_bucket(Hasher()(key),
+						hashSet.buckets());
+    TblPtr table(&(hashSet.table_));
+    BktType &bucket(table->at(idx));
     auto entry =
       find_if(std::begin(bucket), std::end(bucket), KeyMatcher(key));
     if (std::end(bucket) == entry) {
-      return std::make_pair(const_iterator(), idx);
+      return std::make_pair(ItrType(), idx);
     }
-    return std::make_pair(const_iterator(table, idx, std::move(entry)), idx);
-  }
-
-  /**
-   * Find a value in the set.
-   *
-   * @return a pair of values, the first being an iterator that
-   *         references the position of an entry having the same key
-   *         as the argument (equal to end() if no such entry exists
-   *         in the set), and the second being the bucket index
-   *         generated by the key.
-   */
-  std::pair<iterator, size_type>
-  find_internal(const key_type &key)
-  {
-    size_type idx = TableLength::hash_to_bucket(Hasher()(key), buckets());
-    TableType *table(&table_);
-    auto &bucket(table->at(idx));
-    auto entry =
-      find_if(std::begin(bucket), std::end(bucket), KeyMatcher(key));
-    if (std::end(bucket) == entry) {
-      return std::make_pair(iterator(), idx);
-    }
-    return std::make_pair(iterator(table, idx, std::move(entry)), idx);
+    return std::make_pair(ItrType(table, idx, std::move(entry)), idx);
   }
 
   template<typename... Args>
@@ -1255,23 +1276,23 @@ private:
   emplace_internal(const bool isOverwriteExistingEntry, Args &&... args)
   {
     const auto &argsKey = Extractor::key_from_ctor_args(std::forward<Args>(args)...);
-    const auto fiResult = find_internal(argsKey);
+    const auto fiResult = find_internal(*this, argsKey);
     const auto entry = fiResult.first;
     const auto idx = fiResult.second;
     if (end() == entry) {
       // entry does not yet exist, add it
       const auto newBucketCount =
-	Rehasher::rehash_check(buckets(), size() + 1);
+  	Rehasher::rehash_check(buckets(), size() + 1);
       if (newBucketCount) {
-	// needs rehash
-	return std::make_pair(rehash_internal(*newBucketCount,
-					      std::forward<Args>(args)...),
-			      SUCCESSFUL_ADD);
+  	// needs rehash
+  	return std::make_pair(rehash_internal(*newBucketCount,
+  					      std::forward<Args>(args)...),
+  			      SUCCESSFUL_ADD);
       }
       // no rehash
       return std::make_pair(emplace_at_index(table_, idx, DO_INCREMENT,
-					     std::forward<Args>(args)...),
-			    SUCCESSFUL_ADD);
+  					     std::forward<Args>(args)...),
+  			    SUCCESSFUL_ADD);
     }
     // entry already exists
     if (isOverwriteExistingEntry) {
@@ -1290,7 +1311,7 @@ private:
   emplace_internal(const bool isOverwriteExistingEntry, value_type &&val)
   {
     const auto &argsKey = Extractor::get_key(val);
-    const auto fiResult = find_internal(argsKey);
+    const auto fiResult = find_internal(*this, argsKey);
     const auto entry = fiResult.first;
     const auto idx = fiResult.second;
     if (end() == entry) {
@@ -1393,6 +1414,17 @@ private:
       for (const auto &entry : *this) {
 	insert_one(table, buckets, entry);
       }
+    }
+  }
+
+  void
+  rehash_reserve_internal(const size_type bucket_count,
+			  const size_type entry_count)
+  {
+    auto rehash_check_result =
+      Rehasher::rehash_check(bucket_count, entry_count);
+    if (rehash_check_result && (buckets() != *rehash_check_result)) {
+      rehash_internal(*rehash_check_result);
     }
   }
 
