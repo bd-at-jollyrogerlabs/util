@@ -2,20 +2,46 @@
 
 #include <iostream>
 #include <iterator>
+#include <utility>
 #include <vector>
 
-#include <jrl_macro>
-#include <stl_usability/algorithm_usability>
-#include <stl_usability/ostream_innerator>
+#include <boost/program_options.hpp>
+#include <boost/tokenizer.hpp>
 
-#include "cmdline_config.h"
+namespace jrl
+{
+
+using IntPair = std::pair<int, int>;
+using HelpPair = std::pair<char, const char *>;
+
+template<typename FirstType, typename SecondType>
+std::ostream &
+operator<<(std::ostream &strm, const typename std::pair<FirstType, SecondType> &val)
+{
+  strm << "(" << val.first << "," << val.second << ")";
+  return strm;
+}
+
+} // namespace jrl
+
+#include "jrl_macro"
+#include "hash_map" // also includes hash_set
+#include "stl_usability/algorithm_usability"
+#include "stl_usability/ostream_innerator"
+
+using namespace jrl;
+
+using HashSet = hash_set<int>;
+using HashMap = hash_map<int, int>;
 
 using namespace std;
+namespace po = boost::program_options;
 
 /**
  * Line iteration proxy, cribbed from stackoverflow:
  * http://stackoverflow.com/questions/1567082/how-do-i-iterate-over-cin-line-by-line-in-c/1567703
  */
+// @todo move this into usability
 class Line
 {
   std::string line_;
@@ -56,6 +82,7 @@ struct StreamRange
 namespace
 {
 
+// command language
 const char HELP_CMD = '?';
 
 const char INSERT_CMD = 'i';
@@ -66,23 +93,35 @@ const char ITERATE_CMD = 'T';
 const char CLEAR_CMD = 'c';
 const char FIND_CMD = 'f';
 const char LOAD_FACTOR_CMD = 'l';
+const char SIZE_CMD = 's';
 
-const vector<char> COMMANDS{
-  INSERT_CMD,
-  EMPLACE_CMD,
-  EMPLACE_HINT_CMD,
-  ERASE_CMD,
-  ITERATE_CMD,
-  CLEAR_CMD,
-  FIND_CMD,
-  LOAD_FACTOR_CMD
+const vector<HelpPair> COMMANDS{
+  make_pair(INSERT_CMD, "insert"),
+  make_pair(EMPLACE_CMD, "emplace"),
+  make_pair(EMPLACE_HINT_CMD, "emplace (hint)"),
+  make_pair(ERASE_CMD, "erase"),
+  make_pair(ITERATE_CMD, "iterate"),
+  make_pair(CLEAR_CMD, "clear"),
+  make_pair(FIND_CMD, "find"),
+  make_pair(LOAD_FACTOR_CMD, "load factor"),
+  make_pair(SIZE_CMD, "size")
 };
 
 /********** globals **********/
 
 HashSet hs_g;
+HashMap hm_g;
 
 } // unnamed namespace
+
+/********** support functions **********/
+
+void
+usage(const char * const program, const po::options_description &desc)
+{
+  cerr << "usage: " << program << desc << endl;
+  exit(1);
+}
 
 string
 trim(const string& line)
@@ -92,126 +131,225 @@ trim(const string& line)
   return line.substr(2);
 }
 
-#if 0
-#define DO_COMMAND(name, action)		\
-  void						\
-  name(const string& line)			\
-  {						\
-    auto data = trim(line);			\
-    int val = stoi(data);			\
-    action;					\
-    /* ignore extraneous input */		\
-  }
-#endif
-
-#define DO_COMMAND(name, action)		\
-  void						\
-  name(const string& line)			\
-  {						\
-    auto data = trim(line);			\
-    action;					\
-    /* ignore extraneous input */		\
-  }
-
-DO_COMMAND(doInsert, (hs_g.insert(stoi(data))))
-
-DO_COMMAND(doEmplace, (hs_g.emplace(stoi(data))))
-
-DO_COMMAND(doEmplaceHint, (hs_g.emplace_hint(hs_g.cend(), stoi(data))))
-
-DO_COMMAND(doErase, (hs_g.erase(stoi(data))))
+using Tokenizer = boost::tokenizer<>;
+using TokenIterator = Tokenizer::iterator;
 
 void
-doIterate()
+increment(TokenIterator &itr, TokenIterator end, const char *info)
+{
+  THROW_ON_FAIL((end != itr), runtime_error, "no " << info << " supplied");
+  ++itr;
+  THROW_ON_FAIL((end != itr), runtime_error, "no " << info << " supplied");
+}
+
+void
+doInsert(TokenIterator itr, TokenIterator end, const bool isMap)
+{
+  increment(itr, end, "key");
+  int key  = stoi(*itr);
+  if (isMap) {
+    increment(itr, end, "value");
+    int value = stoi(*itr);
+    hm_g.insert(make_pair(key, value));
+  }
+  else {
+    hs_g.insert(key);
+  }
+  cout << "inserted" << endl;
+}
+
+void
+doEmplace(TokenIterator itr, TokenIterator end, const bool isMap)
+{
+  increment(itr, end, "key");
+  int key  = stoi(*itr);
+  if (isMap) {
+    increment(itr, end, "value");
+    int value = stoi(*itr);
+    hm_g.emplace(move(key), move(value));
+  }
+  else {
+    hs_g.emplace(move(key));
+  }
+  cout << "emplaced" << endl;
+}
+
+void
+doEmplaceHint(TokenIterator itr, TokenIterator end, const bool isMap)
+{
+  increment(itr, end, "key");
+  int key  = stoi(*itr);
+  if (isMap) {
+    increment(itr, end, "value");
+    int value = stoi(*itr);
+    hm_g.emplace_hint(hm_g.cend(), move(key), move(value));
+  }
+  else {
+    hs_g.emplace_hint(hs_g.cend(), move(key));
+  }
+  cout << "emplaced" << endl;
+}
+
+void
+doErase(TokenIterator &itr, TokenIterator end, const bool isMap)
+{
+  increment(itr, end, "key");
+  int key  = stoi(*itr);
+  if (isMap) {
+    hm_g.erase(key);
+  }
+  else {
+    hs_g.erase(key);
+  }
+  cout << "erased or not present" << endl;
+}
+
+void
+doIterate(const bool isMap)
 {
   cout << "entries: [";
-  copy(hs_g, ostream_innerator<int>(cout, ","));
+  if (isMap) {
+    copy(hm_g, ostream_innerator<IntPair>(cout, ","));
+  }
+  else {
+    copy(hs_g, ostream_innerator<int>(cout, ","));
+  }
   cout << "]" << endl;
 }
 
 void
-doClear()
+doClear(const bool isMap)
 {
-  hs_g.clear();
+  if (isMap) {
+    hm_g.clear();
+  }
+  else {
+    hs_g.clear();
+  }
   cout << "cleared" << endl;
 }
 
+#define DO_FIND(container)				\
+  do {							\
+    auto entry = container.find(stoi(key));		\
+    if (container.end() == entry) {			\
+      cout << "not found" << endl;			\
+    }							\
+    else {						\
+      cout << "entry: [" << *entry << "]" << endl;	\
+    }							\
+  } while (0)
+
 void
-doFind(const string& line)
+doFind(const string& line, const bool isMap)
 {
   auto key = trim(line);
-  auto entry = hs_g.find(stoi(key));
-  if (hs_g.end() == entry) {
-    cout << "not found" << endl;
+  if (isMap) {
+    DO_FIND(hm_g);
   }
   else {
-    cout << "entry: [" << *entry << "]" << endl;
+    DO_FIND(hs_g);
+  }
+}
+
+#undef DO_FIND
+
+void
+doLoadFactor(const bool isMap)
+{
+  if (isMap) {
+    cout << "load factor [" << hm_g.load_factor() << "]" << endl;
+  }
+  else {
+    cout << "load factor [" << hs_g.load_factor() << "]" << endl;
   }
 }
 
 void
-doLoadFactor()
-{
-  cout << "load factor [" << hs_g.load_factor() << "]" << endl;
+doSize(const bool isMap) {
+  if (isMap) {
+    cout << "size [" << hm_g.size() << "]" << endl;
+    return;
+  }
+  cout << "size [" << hs_g.size() << "]" << endl;
 }
-
-#undef DO_COMMAND
 
 int
 main(const int argc,
      const char *argv[])
 {
   try {
+    po::variables_map options;
+    po::options_description desc("options");
+    desc.add_options()
+      /* --help or -h produces help message */
+      ("help,h", "help message")
+      ("map,m", "test hash map (default is to test hash set)");
+    po::store(po::parse_command_line(argc, argv, desc), options);
+    if (options.count("help")) {
+      usage(argv[0], desc);
+    }
+    const bool isTestMap = (1 == options.count("map"));
+
+    cout << "enter commands (? for help, EOF to terminate): " << endl;
     for (const string &line : StreamRange<istream_iterator<Line>>()) {
-      switch (line[0]) {
-      case HELP_CMD:
-	cout << "commands: ";
-	copy(COMMANDS, ostream_innerator<char>(cout, ","));
-	cout << endl;
-	break;
+      try {
+	Tokenizer tokenizer(line);
+	TokenIterator itr = tokenizer.begin();
+	switch (line[0]) {
+	case HELP_CMD:
+	  cout << "commands:\n";
+	  copy(COMMANDS, ostream_innerator<HelpPair>(cout, "\n"));
+	  cout << endl;
+	  break;
 
-      case INSERT_CMD:
-	doInsert(line);
-	cout << "inserted" << endl;
-	break;
+	case INSERT_CMD:
+	  doInsert(itr, tokenizer.end(), isTestMap);
+	  break;
 
-      case EMPLACE_CMD:
-	doEmplace(line);
-	cout << "emplaced" << endl;
-	break;
+	case EMPLACE_CMD:
+	  doEmplace(itr, tokenizer.end(), isTestMap);
+	  break;
 
-      case EMPLACE_HINT_CMD:
-	doEmplaceHint(line);
-	cout << "emplaced" << endl;
-	break;
+	case EMPLACE_HINT_CMD:
+	  doEmplaceHint(itr, tokenizer.end(), isTestMap);
+	  break;
 
-      case ERASE_CMD:
-	doErase(line);
-	cout << "erased" << endl;
-	break;
+	case ERASE_CMD:
+	  doErase(itr, tokenizer.end(), isTestMap);
+	  break;
 
-      case ITERATE_CMD:
-	doIterate();
-	// ignore extraneous input
-	break;
+	case ITERATE_CMD:
+	  doIterate(isTestMap);
+	  break;
 
-      case CLEAR_CMD:
-	doClear();
-	// ignore extraneous input
-	break;
+	case CLEAR_CMD:
+	  doClear(isTestMap);
+	  break;
 
-      case FIND_CMD:
-	doFind(line);
-	break;
+	case FIND_CMD:
+	  doFind(line, isTestMap);
+	  break;
 
-      case LOAD_FACTOR_CMD:
-	doLoadFactor();
-	// ignore extraneous input
-	break;
+	case LOAD_FACTOR_CMD:
+	  doLoadFactor(isTestMap);
+	  break;
 
-      default:
-	cerr << "ERROR: unknown command '" << line[0] << "'" << endl;
+	case SIZE_CMD:
+	  doSize(isTestMap);
+	  break;
+
+	default:
+	  cerr << "ERROR: unknown command '" << line[0] << "'" << endl;
+	}
       }
+      catch (const exception& exc) {
+	cerr << "ERROR: caught exception processing line: " << exc.what() << endl;
+      }
+      catch (...) {
+	cerr << "ERROR: caught unknown exception processing line" << endl;
+      }
+      cout << ": ";
     }
   }
   catch (const exception& exc) {
@@ -224,3 +362,22 @@ main(const int argc,
   }
   return 0;
 }
+
+#if 0
+
+// simple_example_1.cpp
+#include<iostream>
+#include<boost/tokenizer.hpp>
+#include<string>
+
+int main(){
+   using namespace std;
+   using namespace boost;
+   string s = "This is,  a test";
+   tokenizer<> tok(s);
+   for(tokenizer<>::iterator beg=tok.begin(); beg!=tok.end();++beg){
+       cout << *beg << "\n";
+   }
+}
+
+#endif

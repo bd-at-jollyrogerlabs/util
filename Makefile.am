@@ -120,6 +120,8 @@ TESTS = \
 cmdline_SOURCES = \
 	test/cmdline.cpp
 
+cmdline_LDFLAGS=-lboost_program_options
+
 test_log2_int_SOURCES = \
 	test/test_log2_int.cpp
 

@@ -153,6 +153,9 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+cmdline_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(cmdline_LDFLAGS) $(LDFLAGS) -o $@
 am_test_boost_usability_OBJECTS = test_boost_usability.$(OBJEXT)
 test_boost_usability_OBJECTS = $(am_test_boost_usability_OBJECTS)
 test_boost_usability_LDADD = $(LDADD)
@@ -662,6 +665,7 @@ AM_TESTS_ENVIRONMENT = export CC=$(CC); export CXX=$(CXX);
 cmdline_SOURCES = \
 	test/cmdline.cpp
 
+cmdline_LDFLAGS = -lboost_program_options
 test_log2_int_SOURCES = \
 	test/test_log2_int.cpp
 
@@ -807,7 +811,7 @@ clean-binPROGRAMS:
 
 cmdline$(EXEEXT): $(cmdline_OBJECTS) $(cmdline_DEPENDENCIES) $(EXTRA_cmdline_DEPENDENCIES) 
 	@rm -f cmdline$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(cmdline_OBJECTS) $(cmdline_LDADD) $(LIBS)
+	$(AM_V_CXXLD)$(cmdline_LINK) $(cmdline_OBJECTS) $(cmdline_LDADD) $(LIBS)
 
 test_boost_usability$(EXEEXT): $(test_boost_usability_OBJECTS) $(test_boost_usability_DEPENDENCIES) $(EXTRA_test_boost_usability_DEPENDENCIES) 
 	@rm -f test_boost_usability$(EXEEXT)
