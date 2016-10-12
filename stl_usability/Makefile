@@ -1,4 +1,2 @@
-.PHONY: all
 
-all:
-	$(MAKE) -C ..
+include ../rules.inc
