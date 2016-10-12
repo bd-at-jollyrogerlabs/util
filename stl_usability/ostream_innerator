@@ -56,23 +56,23 @@ namespace jrl
  * When not in "innerate" mode, the delimiter is inserted AFTER every
  * element just like ostream_iterator.
  */
-template<typename _Tp, typename _CharT = char,
-	 typename _Traits = std::char_traits<_CharT> >
+template<typename Tp, typename CharT = char,
+	 typename TraitsT = std::char_traits<CharT> >
 class ostream_innerator
   : public std::iterator<std::output_iterator_tag, void, void, void, void>
 {
 public:
-  using char_type = _CharT;
-  using traits_type = _Traits;
-  using ostream_type = std::basic_ostream<_CharT, _Traits>;
+  using char_type = CharT;
+  using traits_type = TraitsT;
+  using ostream_type = std::basic_ostream<CharT, TraitsT>;
 
   /**
    * Construct from an ostream.
    *
    * NOTE: since there is no delimiter, "innerate" mode is irrelevant.
    */
-  ostream_innerator(ostream_type &__tgt)
-    : tgt_(&__tgt), delimiter_(0), innerate_(false), first_(false)
+  ostream_innerator(ostream_type &tgt)
+    : tgt_(&tgt), delimiter_(0), innerate_(false), first_(false)
   {
   }
 
@@ -83,29 +83,29 @@ public:
    * the value of @a innerate.  The delimiter is not copied, and thus
    * must not be destroyed while this iterator is in use.
    *
-   * @param __tgt Underlying ostream to write to.
-   * @param __delimiter CharT delimiter string to insert.
-   * @param __innerate if true, the delimiter is inserted before each
-   *                   element except the first; otherwise, it is
-   *                   inserted after each element.
+   * @param tgt - Underlying ostream to write to.
+   * @param delimiter - CharT delimiter string to insert.
+   * @param innerate - if true, the delimiter is inserted before each
+   *        element except the first; otherwise, it is inserted after
+   *        each element.
    */
-  ostream_innerator(ostream_type &__tgt, const char_type* __delimiter,
-		    bool __innerate = true)
-    : tgt_(&__tgt), delimiter_(__delimiter), innerate_(__innerate), first_(false)
+  ostream_innerator(ostream_type &tgt, const char_type* delimiter,
+		    bool innerate = true)
+    : tgt_(&tgt), delimiter_(delimiter), innerate_(innerate), first_(false)
   {
   }
 
   /// Copy constructor.
-  ostream_innerator(const ostream_innerator &__src)
-    : tgt_(__src.tgt_), delimiter_(__src.delimiter_),
-      innerate_(__src.innerate_), first_(false)
+  ostream_innerator(const ostream_innerator &src)
+    : tgt_(src.tgt_), delimiter_(src.delimiter_),
+      innerate_(src.innerate_), first_(false)
   {
   }
 
   /// Writes @a val to underlying ostream using operator<<.  If
   /// constructed with delimiter string, writes delimiter to ostream.
   ostream_innerator&
-  operator=(const _Tp &__val)
+  operator=(const Tp &val)
   {
     if (innerate_ && (nullptr != delimiter_)) {
       if (!first_) {
@@ -115,7 +115,7 @@ public:
 	*tgt_ << delimiter_;
       }
     }
-    *tgt_ << __val;
+    *tgt_ << val;
     if (!innerate_ && (nullptr != delimiter_)) {
       *tgt_ << delimiter_;
     }
