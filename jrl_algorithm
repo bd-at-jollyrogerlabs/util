@@ -49,9 +49,9 @@ namespace algo_private
 /**
  * Default extender
  */
-template<typename _Container>
+template<typename Container>
 void
-null_extender(_Container &__container, const size_t sz)
+null_extender(Container &container, const size_t sz)
 {
 }
 
@@ -60,58 +60,58 @@ null_extender(_Container &__container, const size_t sz)
 /**
  * @brief Insert a value at the end of a container only if it does not yet
  * exist in the container.
- * @param __container - container to insert the value into.
- * @param __val - value to insert into the container.
- * @param __extender - function-like type, taking the container size
- *                     as argument, to apply to __container when a new
+ * @param container - container to insert the value into.
+ * @param val - value to insert into the container.
+ * @param extender - function-like type, taking the container size
+ *                     as argument, to apply to container when a new
  *                     element is successfully added.
  * @return a 2-tuple where the first element is true if the value was
  *         correctly inserted at the end of the container, false
  *         otherwsie, and the second element is the position at which
  *         the element was either inserted or found.
  *
- * @todo use type_traits to constrain the legal types for _Container
- * and _Extender template formal parameters.
+ * @todo use type_traits to constrain the legal types for Container
+ * and Extender template formal parameters.
  *
  */
-template<typename _Container, typename _Extender =
-	 std::function<void(_Container &, const size_t)>>
-jrl::bool_return<typename _Container::size_type>
-nondestructive_insert(_Container &__container,
-		      const typename _Container::value_type &__val,
-		      _Extender __extender =
-		      algo_private::null_extender<_Container>)
+template<typename Container, typename Extender =
+	 std::function<void(Container &, const size_t)>>
+jrl::bool_return<typename Container::size_type>
+nondestructive_insert(Container &container,
+		      const typename Container::value_type &val,
+		      Extender extender =
+		      algo_private::null_extender<Container>)
 {
-  using result_type = jrl::bool_return<typename _Container::size_type>;
+  using result_type = jrl::bool_return<typename Container::size_type>;
   // @todo fix the following statement
-  // static_assert(std::is_member_function_pointer<typename _Container::push_back>::value,
+  // static_assert(std::is_member_function_pointer<typename Container::push_back>::value,
   // 		"_Container type parameter must be a class supporting a "
   // 		"push_back member function");
-  typename _Container::const_iterator entry =
-    std::find(__container.begin(), __container.end(), __val);
-  if (__container.end() == entry) {
-    __container.push_back(__val);
-    __extender(__container, __container.size());
+  typename Container::const_iterator entry =
+    std::find(container.begin(), container.end(), val);
+  if (container.end() == entry) {
+    container.push_back(val);
+    extender(container, container.size());
     // successful insert and extension
-    return result_type(__container.size() - 1, true);
+    return result_type(container.size() - 1, true);
   }
   // value already exists
-  return result_type(std::distance(entry, __container.cbegin()), false);
+  return result_type(std::distance(entry, container.cbegin()), false);
 }
 
 /**
  * Move all elements (potentially destructively) from source
  * container/range to target.
  */
-template<typename _Container, typename _OutputIterator>
-inline _OutputIterator
-move_all(_Container &__src, _OutputIterator __tgt)
+template<typename Container, typename OutputIterator>
+inline OutputIterator
+move_all(Container &src, OutputIterator tgt)
 {
-  for (auto &entry : __src) {
-    *__tgt = std::move(entry);
-    ++__tgt;
+  for (auto &entry : src) {
+    *tgt = std::move(entry);
+    ++tgt;
   }
-  return __tgt;
+  return tgt;
 }
 
 /**
@@ -121,23 +121,23 @@ move_all(_Container &__src, _OutputIterator __tgt)
  * @todo can this be done for n-ary operator using a variadic
  * template?
  */
-template<typename _Container1, typename _Container2, typename _Container3,
-	 typename _OutputIterator, typename _TernaryOperator>
-inline _OutputIterator
-transform(const _Container1 &__container1, const _Container2 &__container2,
-	  const _Container3 &__container3, _OutputIterator __result,
-	  _TernaryOperator __ternary_op)
+template<typename Container1, typename Container2, typename Container3,
+	 typename OutputIterator, typename TernaryOperator>
+inline OutputIterator
+transform(const Container1 &container1, const Container2 &container2,
+	  const Container3 &container3, OutputIterator result,
+	  TernaryOperator ternary_op)
 {
-  using C1Iter = typename _Container1::iterator;
-  using C2Iter = typename _Container2::iterator;
-  using C3Iter = typename _Container3::iterator;
-  C1Iter c1 = __container1.begin();
-  C2Iter c2 = __container2.begin();
-  C3Iter c3 = __container3.begin();
-  for (; __container1.end() != c1; ++c1, ++c2, ++c3, ++__result) {
-    *__result = __ternary_op(*c1, *c2, *c3);
+  using C1Iter = typename Container1::iterator;
+  using C2Iter = typename Container2::iterator;
+  using C3Iter = typename Container3::iterator;
+  C1Iter c1 = container1.begin();
+  C2Iter c2 = container2.begin();
+  C3Iter c3 = container3.begin();
+  for (; container1.end() != c1; ++c1, ++c2, ++c3, ++result) {
+    *result = ternary_op(*c1, *c2, *c3);
   }
-  return __result;
+  return result;
 }
 
 } // namespace jrl
