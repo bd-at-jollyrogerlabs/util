@@ -1,0 +1,140 @@
+/** -*- mode: c++ -*-
+ *
+ * unitsafe_math
+ *
+ * Support for use of functions from cmath on unitsafe types.
+ *
+ * Copyright (C) 2015 Brian Davis
+ * All Rights Reserved
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Author: Brian Davis <bd@jollyrogerlabs.com>
+ *
+ */
+
+#if !defined(UNITSAFE_MATH_GUARD)
+#define UNITSAFE_MATH_GUARD
+
+#include "unitsafe"
+#include <cmath>
+
+namespace jrl
+{
+
+#define MAKE_MATH_FUNC(name)						\
+template<typename _BaseType, typename _TypeTag>			        \
+inline typename jrl::UnitSafeWrapper<_BaseType, _TypeTag>::type	        \
+name(const typename jrl::UnitSafeWrapper<_BaseType, _TypeTag> val)	\
+{									\
+  return ::name(base_cast(val));					\
+}
+
+// trigonometric functions
+
+MAKE_MATH_FUNC(acos)
+
+MAKE_MATH_FUNC(asin)
+
+MAKE_MATH_FUNC(atan)
+
+MAKE_MATH_FUNC(atan2)
+
+MAKE_MATH_FUNC(cos)
+
+MAKE_MATH_FUNC(sin)
+
+MAKE_MATH_FUNC(tan)
+
+// hyperbolic functions
+
+MAKE_MATH_FUNC(acosh)
+
+MAKE_MATH_FUNC(asinh)
+
+MAKE_MATH_FUNC(atanh)
+
+MAKE_MATH_FUNC(cosh)
+
+MAKE_MATH_FUNC(sinh)
+
+MAKE_MATH_FUNC(tanh)
+
+// exponential and logarithmic functions
+
+MAKE_MATH_FUNC(exp)
+
+MAKE_MATH_FUNC(log)
+
+MAKE_MATH_FUNC(log10)
+
+#ifdef __USE_GNU
+
+MAKE_MATH_FUNC(exp10)
+
+MAKE_MATH_FUNC(pow10)
+
+#endif
+
+#if defined __USE_XOPEN_EXTENDED || defined __USE_ISOC99
+
+MAKE_MATH_FUNC(expm1)
+
+MAKE_MATH_FUNC(log1p)
+
+#endif
+
+#ifdef __USE_ISOC99
+
+MAKE_MATH_FUNC(exp2)
+
+MAKE_MATH_FUNC(log2)
+
+#endif
+
+// roots
+
+MAKE_MATH_FUNC(sqrt)
+
+#if defined __USE_XOPEN_EXTENDED || defined __USE_ISOC99
+
+MAKE_MATH_FUNC(cbrt)
+
+#endif
+
+// misc
+
+MAKE_MATH_FUNC(ceil)
+
+MAKE_MATH_FUNC(floor)
+
+MAKE_MATH_FUNC(fabs)
+
+#undef MAKE_MATH_FUNC
+
+// @todo many have been skipped
+
+} // namespace jrl
+
+#endif // UNITSAFE_MATH_GUARD
