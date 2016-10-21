@@ -51,15 +51,15 @@ namespace jrl
  * element giving a boolean result code indicating success or failure
  * of (some aspect of) the operation.
  */
-template<typename __BaseType>
-struct bool_return : public std::tuple<__BaseType, bool>
+template<typename BaseType>
+struct bool_return : public std::tuple<BaseType, bool>
 {
   enum {
     VALUE = 0,
     RESULT = 1
   };
-  using Inner = std::tuple<__BaseType, bool>;
-  bool_return(const __BaseType value,
+  using Inner = std::tuple<BaseType, bool>;
+  bool_return(const BaseType value,
 	      const bool isSuccess)
     : Inner(value, isSuccess)
   {
@@ -67,7 +67,7 @@ struct bool_return : public std::tuple<__BaseType, bool>
   /**
    * Single-argument constructor gives successful return.
    */
-  bool_return(const __BaseType value)
+  bool_return(const BaseType value)
     : Inner(value, true)
   {
   }
@@ -172,9 +172,6 @@ public:
 /**
  * Function that produces a bit mask with a number of bits set and
  * then shifted to the left by a specified number of positions.
- *
- * @todo use static assert to force the result type to be unsigned
- * numeric?
  */
 template<typename ResultType>
 constexpr
