@@ -54,8 +54,13 @@ WARNING_FLAGS=\
 
 CPP_STANDARD=c++14
 
-AM_CXXFLAGS = $(WARNING_FLAGS) -std=$(CPP_STANDARD) $(BOOST_CPPFLAGS)
-ACLOCAL_AMFLAGS = -I m4
+AM_CXXFLAGS = \
+	$(WARNING_FLAGS) \
+	-std=$(CPP_STANDARD) \
+	$(BOOST_CPPFLAGS) \
+	-I/home/bd/install/include
+
+ACLOCAL_AMFLAGS=-I m4
 
 # @todo remove?
 # lib_LTLIBRARIES = \
@@ -75,6 +80,7 @@ include_HEADERS = \
 
 bin_PROGRAMS = \
 	cmdline \
+	hash_benchmark \
 	test_log2_int \
 	test_boost_usability \
 	test_hash_map \
@@ -120,7 +126,18 @@ TESTS = \
 cmdline_SOURCES = \
 	test/cmdline.cpp
 
-cmdline_LDFLAGS=-lboost_program_options
+hash_benchmark_SOURCES = \
+	test/benchmark/hash_benchmark.cpp
+
+hash_benchmark_CXXFLAGS = $(AM_CXXFLAGS) -O3 -fno-omit-frame-pointer
+
+hash_benchmark_LDFLAGS = \
+	-L/home/bd/install/lib \
+	-lbenchmark \
+	-lpthread
+
+cmdline_LDFLAGS = \
+	-lboost_program_options
 
 test_log2_int_SOURCES = \
 	test/test_log2_int.cpp

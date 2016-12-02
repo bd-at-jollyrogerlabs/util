@@ -110,13 +110,14 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = cmdline$(EXEEXT) test_log2_int$(EXEEXT) \
-	test_boost_usability$(EXEEXT) test_hash_map$(EXEEXT) \
-	test_hash_set$(EXEEXT) test_jrl_algorithm$(EXEEXT) \
-	test_jrl_geom$(EXEEXT) test_jrl_macro$(EXEEXT) \
-	test_jrl_metaprogram$(EXEEXT) test_jrl_util$(EXEEXT) \
-	test_logging$(EXEEXT) test_iterable_buffer_set$(EXEEXT) \
-	test_stl_usability$(EXEEXT) test_unitsafe$(EXEEXT)
+bin_PROGRAMS = cmdline$(EXEEXT) hash_benchmark$(EXEEXT) \
+	test_log2_int$(EXEEXT) test_boost_usability$(EXEEXT) \
+	test_hash_map$(EXEEXT) test_hash_set$(EXEEXT) \
+	test_jrl_algorithm$(EXEEXT) test_jrl_geom$(EXEEXT) \
+	test_jrl_macro$(EXEEXT) test_jrl_metaprogram$(EXEEXT) \
+	test_jrl_util$(EXEEXT) test_logging$(EXEEXT) \
+	test_iterable_buffer_set$(EXEEXT) test_stl_usability$(EXEEXT) \
+	test_unitsafe$(EXEEXT)
 TESTS = test_log2_int$(EXEEXT) test_boost_usability$(EXEEXT) \
 	test_hash_map$(EXEEXT) test_hash_set$(EXEEXT) \
 	test_jrl_algorithm$(EXEEXT) test_jrl_geom$(EXEEXT) \
@@ -156,6 +157,13 @@ am__v_lt_1 =
 cmdline_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(cmdline_LDFLAGS) $(LDFLAGS) -o $@
+am_hash_benchmark_OBJECTS = hash_benchmark-hash_benchmark.$(OBJEXT)
+hash_benchmark_OBJECTS = $(am_hash_benchmark_OBJECTS)
+hash_benchmark_LDADD = $(LDADD)
+hash_benchmark_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
+	$(hash_benchmark_CXXFLAGS) $(CXXFLAGS) \
+	$(hash_benchmark_LDFLAGS) $(LDFLAGS) -o $@
 am_test_boost_usability_OBJECTS = test_boost_usability.$(OBJEXT)
 test_boost_usability_OBJECTS = $(am_test_boost_usability_OBJECTS)
 test_boost_usability_LDADD = $(LDADD)
@@ -231,17 +239,17 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(cmdline_SOURCES) $(test_boost_usability_SOURCES) \
-	$(test_hash_map_SOURCES) $(test_hash_set_SOURCES) \
-	$(test_iterable_buffer_set_SOURCES) \
+SOURCES = $(cmdline_SOURCES) $(hash_benchmark_SOURCES) \
+	$(test_boost_usability_SOURCES) $(test_hash_map_SOURCES) \
+	$(test_hash_set_SOURCES) $(test_iterable_buffer_set_SOURCES) \
 	$(test_jrl_algorithm_SOURCES) $(test_jrl_geom_SOURCES) \
 	$(test_jrl_macro_SOURCES) $(test_jrl_metaprogram_SOURCES) \
 	$(test_jrl_util_SOURCES) $(test_log2_int_SOURCES) \
 	$(test_logging_SOURCES) $(test_stl_usability_SOURCES) \
 	$(test_unitsafe_SOURCES)
-DIST_SOURCES = $(cmdline_SOURCES) $(test_boost_usability_SOURCES) \
-	$(test_hash_map_SOURCES) $(test_hash_set_SOURCES) \
-	$(test_iterable_buffer_set_SOURCES) \
+DIST_SOURCES = $(cmdline_SOURCES) $(hash_benchmark_SOURCES) \
+	$(test_boost_usability_SOURCES) $(test_hash_map_SOURCES) \
+	$(test_hash_set_SOURCES) $(test_iterable_buffer_set_SOURCES) \
 	$(test_jrl_algorithm_SOURCES) $(test_jrl_geom_SOURCES) \
 	$(test_jrl_macro_SOURCES) $(test_jrl_metaprogram_SOURCES) \
 	$(test_jrl_util_SOURCES) $(test_log2_int_SOURCES) \
@@ -634,7 +642,12 @@ WARNING_FLAGS = \
 # warnings (which appear after -Wall in the WARNING_FLAGS variable)
 # -Wextra
 CPP_STANDARD = c++14
-AM_CXXFLAGS = $(WARNING_FLAGS) -std=$(CPP_STANDARD) $(BOOST_CPPFLAGS)
+AM_CXXFLAGS = \
+	$(WARNING_FLAGS) \
+	-std=$(CPP_STANDARD) \
+	$(BOOST_CPPFLAGS) \
+	-I/home/bd/install/include
+
 ACLOCAL_AMFLAGS = -I m4
 
 # @todo remove?
@@ -665,7 +678,18 @@ AM_TESTS_ENVIRONMENT = export CC=$(CC); export CXX=$(CXX);
 cmdline_SOURCES = \
 	test/cmdline.cpp
 
-cmdline_LDFLAGS = -lboost_program_options
+hash_benchmark_SOURCES = \
+	test/benchmark/hash_benchmark.cpp
+
+hash_benchmark_CXXFLAGS = $(AM_CXXFLAGS) -O3 -fno-omit-frame-pointer
+hash_benchmark_LDFLAGS = \
+	-L/home/bd/install/lib \
+	-lbenchmark \
+	-lpthread
+
+cmdline_LDFLAGS = \
+	-lboost_program_options
+
 test_log2_int_SOURCES = \
 	test/test_log2_int.cpp
 
@@ -813,6 +837,10 @@ cmdline$(EXEEXT): $(cmdline_OBJECTS) $(cmdline_DEPENDENCIES) $(EXTRA_cmdline_DEP
 	@rm -f cmdline$(EXEEXT)
 	$(AM_V_CXXLD)$(cmdline_LINK) $(cmdline_OBJECTS) $(cmdline_LDADD) $(LIBS)
 
+hash_benchmark$(EXEEXT): $(hash_benchmark_OBJECTS) $(hash_benchmark_DEPENDENCIES) $(EXTRA_hash_benchmark_DEPENDENCIES) 
+	@rm -f hash_benchmark$(EXEEXT)
+	$(AM_V_CXXLD)$(hash_benchmark_LINK) $(hash_benchmark_OBJECTS) $(hash_benchmark_LDADD) $(LIBS)
+
 test_boost_usability$(EXEEXT): $(test_boost_usability_OBJECTS) $(test_boost_usability_DEPENDENCIES) $(EXTRA_test_boost_usability_DEPENDENCIES) 
 	@rm -f test_boost_usability$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(test_boost_usability_OBJECTS) $(test_boost_usability_LDADD) $(LIBS)
@@ -872,6 +900,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmdline.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hash_benchmark-hash_benchmark.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_boost_usability.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_hash_map.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_hash_set.Po@am__quote@
@@ -920,6 +949,20 @@ cmdline.obj: test/cmdline.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/cmdline.cpp' object='cmdline.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o cmdline.obj `if test -f 'test/cmdline.cpp'; then $(CYGPATH_W) 'test/cmdline.cpp'; else $(CYGPATH_W) '$(srcdir)/test/cmdline.cpp'; fi`
+
+hash_benchmark-hash_benchmark.o: test/benchmark/hash_benchmark.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hash_benchmark_CXXFLAGS) $(CXXFLAGS) -MT hash_benchmark-hash_benchmark.o -MD -MP -MF $(DEPDIR)/hash_benchmark-hash_benchmark.Tpo -c -o hash_benchmark-hash_benchmark.o `test -f 'test/benchmark/hash_benchmark.cpp' || echo '$(srcdir)/'`test/benchmark/hash_benchmark.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hash_benchmark-hash_benchmark.Tpo $(DEPDIR)/hash_benchmark-hash_benchmark.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/benchmark/hash_benchmark.cpp' object='hash_benchmark-hash_benchmark.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hash_benchmark_CXXFLAGS) $(CXXFLAGS) -c -o hash_benchmark-hash_benchmark.o `test -f 'test/benchmark/hash_benchmark.cpp' || echo '$(srcdir)/'`test/benchmark/hash_benchmark.cpp
+
+hash_benchmark-hash_benchmark.obj: test/benchmark/hash_benchmark.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hash_benchmark_CXXFLAGS) $(CXXFLAGS) -MT hash_benchmark-hash_benchmark.obj -MD -MP -MF $(DEPDIR)/hash_benchmark-hash_benchmark.Tpo -c -o hash_benchmark-hash_benchmark.obj `if test -f 'test/benchmark/hash_benchmark.cpp'; then $(CYGPATH_W) 'test/benchmark/hash_benchmark.cpp'; else $(CYGPATH_W) '$(srcdir)/test/benchmark/hash_benchmark.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hash_benchmark-hash_benchmark.Tpo $(DEPDIR)/hash_benchmark-hash_benchmark.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test/benchmark/hash_benchmark.cpp' object='hash_benchmark-hash_benchmark.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hash_benchmark_CXXFLAGS) $(CXXFLAGS) -c -o hash_benchmark-hash_benchmark.obj `if test -f 'test/benchmark/hash_benchmark.cpp'; then $(CYGPATH_W) 'test/benchmark/hash_benchmark.cpp'; else $(CYGPATH_W) '$(srcdir)/test/benchmark/hash_benchmark.cpp'; fi`
 
 test_boost_usability.o: test/test_boost_usability.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_boost_usability.o -MD -MP -MF $(DEPDIR)/test_boost_usability.Tpo -c -o test_boost_usability.o `test -f 'test/test_boost_usability.cpp' || echo '$(srcdir)/'`test/test_boost_usability.cpp
