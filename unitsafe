@@ -38,8 +38,11 @@
 #if !defined(UNITSAFE_GUARD)
 #define UNITSAFE_GUARD
 
+#include <functional>
 #include <sstream>
 #include <type_traits>
+
+#include <jrl_macro>
 
 namespace jrl
 {
@@ -47,23 +50,24 @@ namespace jrl
 /**
  * Wrapper for constructing a safe type around a simple numeric type.
  */
-template<typename _BaseType, typename _TypeTag>
+template<typename BaseType, typename TypeTag>
 class UnitSafeWrapper
 {
-  static_assert(std::is_fundamental<_BaseType>::value,
+  // @todo maybe some other condition besides is_fundamental
+  static_assert(std::is_fundamental<BaseType>::value,
 		"UnitSafeWrapper is only usable with fundamental types");
 public:
   // @todo 'type' may be too confusing, maybe base_type?  or
   // underlying_type, which may actually be reserved in C++14
-  using type = _BaseType;
+  using type = BaseType;
 
   UnitSafeWrapper()
     : value_()
   {
   }
 
-  // NOTE: UnitSafeWrapper is designed for fundamental types
-  UnitSafeWrapper(_BaseType value)
+  // construction from base type
+  UnitSafeWrapper(BaseType value)
     : value_(value)
   {
   }
@@ -77,7 +81,19 @@ public:
     return *this;
   }
 
-#define MAKE_COMPOUND_OPERATOR(op)		\
+  /**
+   * Pre-increment operator.
+   *
+   * NOTE: post-increment not supported.
+   */
+  type &
+  operator++()
+  {
+    ++value_;
+    return value_;
+  }
+
+# define MAKE_COMPOUND_OPERATOR(op)		\
   inline UnitSafeWrapper &			\
   operator op(const UnitSafeWrapper &rhs)	\
   {						\
@@ -101,14 +117,16 @@ public:
 
   MAKE_COMPOUND_OPERATOR(^=)
 
+# undef MAKE_COMPOUND_OPERATOR
+
   explicit
-  operator _BaseType() const
+  operator BaseType() const
   {
     return value_;
   }
 
 private:
-  _BaseType value_;
+  BaseType value_;
 };
 
 // binary comparison operators
@@ -180,11 +198,120 @@ operator<<(std::ostream &strm, const UnitSafeWrapper<_BaseType, _TypeTag>& val)
 
 // @todo do something smart with type_traits to avoid creation of a
 // temporary?
-template<typename _UnitSafeType>
-inline typename _UnitSafeType::type
-base_cast(_UnitSafeType arg)
+template<typename UnitSafeType>
+inline typename UnitSafeType::type
+base_cast(UnitSafeType arg)
 {
-  return typename _UnitSafeType::type(arg);
+  return typename UnitSafeType::type(arg);
+}
+
+template<typename UnitSafeType>
+struct hash
+{
+  size_t
+  operator()(UnitSafeType& val) const noexcept
+  {
+    return std::hash<typename UnitSafeType::type>()(base_cast(val));
+  }
+};
+
+
+/**
+ * Wrapper for constructing a safe type around a complex type.
+ */
+template<typename BaseType, typename TypeTag>
+class ComplexUnitSafeWrapper
+{
+  static_assert(!std::is_fundamental<BaseType>::value,
+		"ComplexUnitSafeWrapper is only usable with non-fundamental types");
+public:
+  // @todo 'type' may be too confusing, maybe base_type?  or
+  // underlying_type, which may actually be reserved in C++14
+  using type = BaseType;
+
+  // construction from base type
+  ComplexUnitSafeWrapper(BaseType value)
+    : value_(value)
+  {
+  }
+
+  DEFAULT_CONSTRUCTABLE(ComplexUnitSafeWrapper);
+
+  DEFAULT_DESTRUCTABLE(ComplexUnitSafeWrapper);
+
+  DEFAULT_COPYABLE(ComplexUnitSafeWrapper);
+
+  DEFAULT_MOVEABLE(ComplexUnitSafeWrapper);
+
+  // @todo compound operator += may not work for all possible BaseType
+  // arguments
+# define MAKE_COMPOUND_OPERATOR(op)			\
+  inline ComplexUnitSafeWrapper &			\
+  operator op(const ComplexUnitSafeWrapper &rhs)	\
+  {							\
+    value_ op rhs.value_;				\
+    return *this;					\
+  }
+
+  MAKE_COMPOUND_OPERATOR(+=)
+
+# undef MAKE_COMPOUND_OPERATOR
+
+  explicit
+  operator BaseType() const
+  {
+    return value_;
+  }
+
+private:
+  BaseType value_;
+};
+
+// binary comparison operators
+
+  // @todo comparison operators may not work for all possible BaseType
+  // arguments, maybe need some enable_if here?
+#define MAKE_COMPARISON_OPERATOR(op)					\
+  template<typename _BaseType, typename _TypeTag>			\
+  inline bool								\
+  operator op(const ComplexUnitSafeWrapper<_BaseType, _TypeTag> &lhs,	\
+	      const ComplexUnitSafeWrapper<_BaseType, _TypeTag> &rhs)	\
+  {									\
+    return base_cast(lhs) op base_cast(rhs);				\
+  }
+
+MAKE_COMPARISON_OPERATOR(==)
+
+MAKE_COMPARISON_OPERATOR(!=)
+
+#undef MAKE_COMPARISON_OPERATOR
+
+  // @todo comparison operators may not work for all possible BaseType
+  // arguments, maybe need some enable_if here?
+#define MAKE_OPERATOR(binOp, compoundOp)				\
+  template<typename _BaseType, typename _TypeTag>			\
+  inline ComplexUnitSafeWrapper<_BaseType, _TypeTag>			\
+  operator binOp(const ComplexUnitSafeWrapper<_BaseType, _TypeTag> &lhs, \
+		 const ComplexUnitSafeWrapper<_BaseType, _TypeTag> &rhs) \
+  {									\
+    using WrappedType = ComplexUnitSafeWrapper<_BaseType, _TypeTag>;	\
+    WrappedType result(lhs);						\
+    result compoundOp rhs;						\
+    return result;							\
+  }
+
+// binary arithmetic operators
+
+MAKE_OPERATOR(+, +=)
+
+#undef MAKE_OPERATOR
+
+template<typename _BaseType, typename _TypeTag>
+inline std::ostream &
+operator<<(std::ostream &strm, const ComplexUnitSafeWrapper<_BaseType, _TypeTag>& val)
+{
+  strm << static_cast<typename ComplexUnitSafeWrapper<_BaseType, _TypeTag>::type>(val);
+  return strm;
 }
 
 } // namespace jrl
@@ -216,5 +343,34 @@ accessibility:								\
  */
 #define MAKE_PUBLIC_UNITSAFE(UnitSafeType, BaseType)		\
   MAKE_CONTAINED_UNITSAFE(UnitSafeType, BaseType, public)
+
+/**
+ * Helper macro which creates a new safe type that wraps a complex
+ * type.
+ *
+ * NOTE: this macro cannot be used create a publicly accessible type
+ * in a class, use MAKE_PUBLIC_UNITSAFE instead.
+ */
+#define MAKE_COMPLEX_UNITSAFE(ComplexUnitSafeType, BaseType)		\
+  namespace jrl_unitsafetag { struct UnitSafeType ## TAG {}; }		\
+  using ComplexUnitSafeType =						\
+    jrl::ComplexUnitSafeWrapper<BaseType, jrl_unitsafetag::UnitSafeType ## TAG>
+
+/**
+ * Helper macro which creates a new safe type that wraps a complex
+ * type and exists within an enclosing class.
+ */
+#define MAKE_COMPLEX_CONTAINED_UNITSAFE(UnitSafeType, BaseType, accessibility) \
+private:								\
+  struct UnitSafeType ## TAG {};					\
+accessibility:								\
+ using UnitSafeType = jrl::ComplexUnitSafeWrapper<BaseType, UnitSafeType ## TAG>
+
+/**
+ * Helper macro which creates a new safe type that wraps a complex
+ * type and is publicly accessible from within its enclosing class.
+ */
+#define MAKE_PUBLIC_COMPLEX_UNITSAFE(UnitSafeType, BaseType)		\
+  MAKE_COMPLEX_CONTAINED_UNITSAFE(UnitSafeType, BaseType, public)
 
 #endif // UNITSAFE_GUARD
