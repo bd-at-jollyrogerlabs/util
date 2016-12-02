@@ -41,6 +41,7 @@
 // @todo move utilities that require bitset to a separate file
 #include <bitset>
 #include <limits>
+#include <type_traits>
 
 namespace jrl
 {
@@ -210,6 +211,95 @@ is_power_of_2(const ArgType arg)
   // and no other bits are set, then the argument must be a power of 2
   return !(arg & mask);
 }
+
+/**
+ * Lazy iteration over a range of floating point numbers.
+ */
+template <typename FloatingPointType,
+	  template<typename> class EndPredicate = std::less>
+class float_iterator
+{
+  static_assert(std::is_floating_point<FloatingPointType>::value,
+		"float_iterator parameter not a floating point type");
+public:
+  using ThisType = float_iterator<FloatingPointType, EndPredicate>;
+
+  float_iterator()
+    : isEnd_(true), val_(0.0), end_(0.0), incr_(0.0)
+  {
+  }
+
+  float_iterator(const FloatingPointType begin,
+		 const FloatingPointType end,
+		 const FloatingPointType increment)
+    : isEnd_(false), val_(begin), end_(end), incr_(increment)
+  {
+  }
+
+  ~float_iterator() = default;
+  float_iterator(const float_iterator &src) = default;
+  float_iterator &operator=(const float_iterator &src) = default;
+  float_iterator(float_iterator &&src) = default;
+  float_iterator &operator=(float_iterator &&src) = default;
+
+  FloatingPointType
+  operator*() const
+  {
+    return val_;
+  }
+
+  void
+  operator++()
+  {
+    val_ += incr_;
+    if (!pred_(val_, end_)) {
+      *this = float_iterator();
+    }
+  }
+
+  // NOTE: post-increment not supported
+
+  void
+  operator--()
+  {
+    val_ -= incr_;
+    if (!pred_(val_, end_)) {
+      *this = float_iterator();
+    }
+  }
+
+  // NOTE: post-decrement not supported
+
+  float_iterator
+  end() const
+  {
+    return float_iterator();
+  }
+
+  template<typename RhsType>
+  // @todo: OLD CODE typename std::enable_if<std::is_same<typename std::remove_const<RhsType>::type, ThisType>::value, bool>::type
+  typename std::enable_if<std::is_same<RhsType, ThisType>::value, bool>::type
+  operator==(const RhsType &rhs)
+  {
+    return (!isEnd_ && !rhs.isEnd_ &&
+       (val_ == rhs.val_) && (end_ == rhs.end_) && (incr_ == rhs.incr_)) ||
+      (isEnd_ && rhs.isEnd_);
+  }
+
+  template<typename RhsType>
+  typename std::enable_if<std::is_same<RhsType, ThisType>::value, bool>::type
+  operator!=(const RhsType &rhs)
+  {
+    return !(*this == rhs);
+  }
+
+private:
+  EndPredicate<FloatingPointType> pred_;
+  bool isEnd_;
+  FloatingPointType val_;
+  FloatingPointType end_;
+  FloatingPointType incr_;
+};
 
 #if defined(USE_TIMESPEC_WRAP)
 /**
