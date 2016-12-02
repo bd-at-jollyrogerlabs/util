@@ -166,3 +166,15 @@ TEST_CASE("test of is_power_of_2", "[is_power_of_2]")
     }
   }
 }
+
+TEST_CASE("float_iterator forward, default predicate", "[float_iterator]")
+{
+  using FwdFloatItr = float_iterator<float>;
+  size_t counter = 0;
+  vector<float> values{ 0.0, 1.0, 2.0, 3.0 };
+  FwdFloatItr end;
+  for (FwdFloatItr itr(0.0, 4.0, 1.0); itr != end; ++itr, ++counter) {
+    REQUIRE(*itr == values[counter]);
+  }
+  REQUIRE(values.size() == counter);
+}
