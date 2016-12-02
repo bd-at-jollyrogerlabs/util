@@ -71,6 +71,12 @@
 #define UNUSED __attribute__((unused))
 
 /**
+ * Macro that allows declarations to be marked as deprecated, causing
+ * them to produce compiler warnings when used.
+ */
+#define DEPRECATED __attribute__((deprecated))
+
+/**
  * Macro double expansion trick to produce a string from a non-string
  * token that is already a macro, (e.g. __LINE__).
  */
