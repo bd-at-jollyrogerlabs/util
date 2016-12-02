@@ -8,3 +8,6 @@ check:
 
 cmdline:
 	$(MAKE) -C .. $(MAKECMDGOALS)
+
+hash_benchmark:
+	$(MAKE) -C .. $(MAKECMDGOALS)
