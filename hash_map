@@ -3,7 +3,7 @@
  * hash_map
  *
  * Highly configurable hash map implementation with an interface that
- *  is compatible with std::unordered_map.
+ * is compatible with std::unordered_map.
  *
  * Copyright (C) 2015 Brian Davis
  * All Rights Reserved
@@ -59,6 +59,7 @@ public:
   using mapped_type = MappedType;
   using iterator = typename ParentType::iterator;
   using const_iterator = typename ParentType::const_iterator;
+  using size_type = typename ParentType::size_type;
 
   mapped_type &
   operator[](const key_type &key)
@@ -93,6 +94,18 @@ public:
     auto entry = ParentType::find(key);
     THROW_ON_FAIL((ParentType::end() != entry), std::out_of_range, "hash_map::at");
     return entry->second;
+  }
+
+  const size_type
+  erase(const key_type &key)
+  {
+    auto pos = ParentType::find(key);
+    if (ParentType::end() == pos) {
+      return 0;
+    }
+    // @todo should be different for multimap
+    ParentType::erase(pos);
+    return 1;
   }
 };
 
