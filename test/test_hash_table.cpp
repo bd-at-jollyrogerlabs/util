@@ -34,10 +34,8 @@
  *
  */
 
-// System includes
 #include <cassert>
 
-// STL includes
 #include <experimental/optional>
 #include <iostream>
 #include <stdexcept>
@@ -45,9 +43,6 @@
 #include <typeinfo>
 #include <vector>
 
-// Boost includes
-
-// Other library includes
 #include <jrl_macro>
 #include <jrl_variadic>
 
@@ -257,6 +252,8 @@ struct no_rehash_policy
 }
 
 
+// hash table definition
+
 namespace detail
 {
 using namespace hash_table_policies;
@@ -318,7 +315,7 @@ private:
 		"extraneous type specified in hash_table policies");
 
 public:
-  using hasher = hash_function_policy;
+  // @todo: OLD CODE using hasher = hash_function_policy;
 
   hash_table()
     : table_(table_style_policy::initial_bucket_count(), bucket_type()), entry_count_(0)
@@ -476,7 +473,6 @@ struct weird_hash_function_wrap
   : public hash_table_policies::free_function_hash<const string &,
 						   StringHashFreeFunction>
 {
-public:
   weird_hash_function_wrap()
   {
     function_ = &weird_string_hash_function;
@@ -612,4 +608,13 @@ TEST_CASE("custom load factor test", "[load_factor_1]")
     const string value = make_string("bar", counter);
     REQUIRE(*result == value);
   }
+}
+
+#include "hash_set"
+
+TEST_CASE("basic hash set test", "[hash_set]")
+{
+  using namespace jrl;
+
+  // @todo: OLD CODE using IntHashSet = hash_set<int>;
 }

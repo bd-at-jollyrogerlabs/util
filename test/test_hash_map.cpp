@@ -34,15 +34,16 @@
  *
  */
 
-#include <iostream> // @todo remove this eventually
+#include <chrono>
+#include <map>
 #include <string>
+#include <unordered_map>
 
 #include "hash_map"
+#include "hash_test_support.h"
 
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
-
-#include <map>
 
 using namespace std;
 using namespace jrl;
@@ -106,7 +107,7 @@ TEST_CASE("empty (string, integer) map test", "[hash_map]")
   empty_map_tests<StringIntHashMap>();
 }
 
-TEST_CASE("insert and lookup", "[hash_map]")
+TEST_CASE("insert/lookup/erase", "[hash_map]")
 {
   const int key = 20010911;
   const int value = 19700101;
@@ -116,6 +117,7 @@ TEST_CASE("insert and lookup", "[hash_map]")
   REQUIRE(end(mp) != result.first);
   REQUIRE(key == result.first->first);
   REQUIRE(value == result.first->second);
+  REQUIRE(1 == mp.count(key));
   {
     auto ref = mp[key];
     REQUIRE(value == ref);
@@ -131,4 +133,50 @@ TEST_CASE("insert and lookup", "[hash_map]")
     REQUIRE(key == entry->first);
     REQUIRE(value == entry->second);
   }
+  REQUIRE(1 == mp.erase(key));
+  REQUIRE(0 == mp.count(key));
+}
+
+// support constants for probabalistic test
+namespace
+{
+
+const double EXPECTED_TIME_BETWEEN_ORDER_ARRIVAL_EVENTS(40.0);
+const double EXPECTED_ORDER_LIFETIME(40.0);
+
+const auto SEED = chrono::system_clock::now().time_since_epoch().count();
+
+} // unnamed namespace
+
+TEST_CASE("probabalistic test", "[hash_map]")
+{
+
+  auto events = generateEvents(SEED, 1 << 14,
+			       EXPECTED_TIME_BETWEEN_ORDER_ARRIVAL_EVENTS,
+			       EXPECTED_ORDER_LIFETIME);
+
+  using StdOrders = unordered_map<OrderIdType, OrderState, Hasher>;
+  using HashMapOrders =
+    hash_map<OrderIdType, OrderState,
+		  free_function_hash_policy<UnitSafeTrivialHasher<OrderIdType>>,
+		  power_of_two_length_table_policy>;
+
+  // perform identical operations on both map types
+  StdOrders stdOrders;
+  processSequencedOrderEvents(stdOrders, events);
+  HashMapOrders hashMapOrders;
+  processSequencedOrderEvents(hashMapOrders, events);
+
+  // resulting maps should be the same size
+  REQUIRE(stdOrders.size() == hashMapOrders.size());
+
+  // all keys in hashMapOrders should also be in stdOrders
+  for (auto entry : hashMapOrders) {
+    const auto key = entry.first;
+    REQUIRE(1 == stdOrders.count(key));
+    stdOrders.erase(key);
+  }
+
+  // stdOrders should contain no other keys
+  REQUIRE(0 == stdOrders.size());
 }
