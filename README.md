@@ -24,7 +24,8 @@ hash_table<size_t, string, trivial_hash_policy, power_of_two_length_table_policy
 hash_table<size_t, string, no_rehash_policy> no_rehash;
 ```
 
-###This work will be presented at the New York C++ Meetup on September 6, 2016
+An early version of this work was presented at the New York C++ Meetup on September 6, 2016 in a talk entitled "C++ Dark Arts: Configurable Policy-Based Class Design with Variadic Templates"
+https://www.meetup.com/nyccpp/events/233772015/
 
 ###Other Stuff
 - unitsafe: eliminate implicit conversion for better safety.
@@ -32,6 +33,8 @@ hash_table<size_t, string, no_rehash_policy> no_rehash;
 - iterable_buffer_set: wrapper around a structure similar to iovec that allows iteration and insertion.
 
 ###Under Development/Coming Soon
+Use of variadic templates with unitsafe to implement optional function arguments in a position-independent style similar to "named" arguments in other languages.
+
 Application of variadic templates to create new interfaces for
 interacting with databases.
 
